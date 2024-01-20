@@ -75,6 +75,26 @@ sessions = [
         note="",
         location="US",
     ),
+    SessionInfoNormalPHP(
+        method="POST",
+        url="http://127.0.0.1:8081/shell.php",
+        password="data",
+        name="又一个webshell",
+        session_type=SessionType.ONELINE_PHP,
+        session_id=uuid4(),
+        note="",
+        location="US",
+    ),
+    SessionInfoNormalPHP(
+        method="POST",
+        url="http://127.0.0.1:8081/shell.php",
+        password="data",
+        name="还是一个webshell",
+        session_type=SessionType.ONELINE_PHP,
+        session_id=uuid4(),
+        note="",
+        location="US",
+    ),
 ]
 
 

@@ -167,7 +167,6 @@ main {
 
 .webshells {
     height: 200px;
-    width: 90%;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     grid-column-gap: 20px;
@@ -178,6 +177,7 @@ main {
     /* width: 30%; */
     height: 150px;
     border-radius: 20px;
+    margin-bottom: 20px;
     color: #b1cbd5;
 }
 
