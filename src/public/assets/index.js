@@ -72,9 +72,9 @@ function terminalAddCommand(command, result) {
 
 function terminalExecuteCommand() {
     let cmd = document.querySelector(".action-input").value;
-    fetchJson("/webshell_execute_cmd", {
+    fetchJson("/session_execute_cmd", {
         "cmd": cmd,
-        "webshell_id": getHashParameters().webshell
+        "session_id": getHashParameters().webshell
     }).then(result => terminalAddCommand(cmd, result))
 }
 
@@ -229,7 +229,7 @@ function webshellMain(hashParams) {
 
 function homeMain(hashParams) {
     useTemplateHome("template-home");
-    fetchJson("/list_webshell").then(
+    fetchJson("/list_session").then(
         homeFillWebshells
     );
 }
