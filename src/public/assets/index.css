@@ -320,6 +320,12 @@ main {
     transition: opacity 0.3s ease, top 0.2s, left 0.2s ease;
 }
 
+.webshell-action-list a {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
+
 .webshell-action-item {
     height: 50px;
     padding: 2px 20px 0px 10px;

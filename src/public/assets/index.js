@@ -1,20 +1,37 @@
 
 
-let elementActionListGuessWhat = document.querySelector(".webshell-action-list");
+let elementActionListElement = null;
 let elementActionListTop = 0;
 let elementActionListLeft = 0;
 let lastClickWebshell = null;
 let siteUrl = `${window.location.protocol}//${window.location.host}`
+
 // event functions
 
 function onClickRoot(event) {
     let isWebshellClicked = traverseParents(event.target).map(it => it.classList.contains("webshell")).includes(true);
     if (isWebshellClicked) {
-        showActionList(event.clientY, event.clientX)
         lastClickWebshell = event.target;
+        showActionList(event.clientY, event.clientX)
     } else {
         hideActionList()
     }
+}
+
+function onClickActionList(event) {
+    if (!elementActionListElement) {
+        return
+    }
+    let clickedAction = traverseParents(event.target).filter(
+        element => element.classList.contains("webshell-action-item")
+    )
+    if (clickedAction.length == 0) {
+        console.log("Click Nothing!")
+        return;
+    }
+    clickedAction = clickedAction[0]
+    console.log(clickedAction.id)
+
 }
 
 // template function
@@ -53,27 +70,57 @@ function terminalInit() {
     terminalPaint()
 }
 
-// helper function
-
+// action list
 
 function hideActionList() {
-    elementActionListGuessWhat.style = `
+    if(!elementActionListElement) {
+        return;
+    }
+    elementActionListElement.style = `
         opacity: 0;
         position: absolute;
         top: ${elementActionListTop}px;
         left: ${elementActionListLeft}px;`
+    setTimeout(function () {
+        elementActionListElement.remove();
+        elementActionListElement = null;
+    }, 300);
 }
 
 function showActionList(top, left) {
-    elementActionListTop = top;
-    elementActionListLeft = left;
+    let template = document.getElementById("template-action-list");
     let style = `
         opacity: 1; 
         position: absolute;
-        top: ${elementActionListTop}px; 
-        left: ${elementActionListLeft}px;`
-    elementActionListGuessWhat.style = style;
+        top: ${top}px; 
+        left: ${left}px;`
+    let clickedWebshell = traverseParents(lastClickWebshell).filter(it => it.classList.contains("webshell"))[0];
+    let clickedWebshellId = clickedWebshell.getAttribute("webshell-id")
+    if (!elementActionListElement) {
+        let clone = template.content.cloneNode(true);
+        const mainElement = document.querySelector('main');
+        mainElement.appendChild(clone);
+        elementActionListElement = document.querySelector(".webshell-action-list")
+    }
+
+    elementActionListTop = top;
+    elementActionListLeft = left;
+    Array.from(elementActionListElement.getElementsByClassName("webshell-action-link")).forEach(element => {
+        let itemId = element.querySelector(".webshell-action-item").id;
+        let action = {
+            "webshell-action-terminal": "terminal",
+            "webshell-action-files": "files",
+            "webshell-action-delete-webshell": "delete-webshell",
+        }[itemId];
+        element.href = `#webshell=${clickedWebshellId}&action=${action}`
+    })
+    setTimeout(() => {
+        elementActionListElement.style = style;
+    }, 0)
 }
+
+// helper function
+
 
 function traverseParents(element) {
     let parents = [element,];
@@ -114,12 +161,13 @@ function homeFillWebshells(webshells) {
         webshellsElement.firstChild.remove();
     }
     let template = document.getElementById("template-home-webshell");
-    for(let webshell of webshells) {
+    for (let webshell of webshells) {
         let clone = template.content.cloneNode(true);
         clone.querySelector(".webshell-name").textContent = webshell.name
         clone.querySelector(".webshell-note").textContent = webshell.note
         clone.querySelector(".webshell-meta-type").textContent = webshell.type
         clone.querySelector(".webshell-meta-location").textContent = webshell.location
+        clone.querySelector(".webshell").setAttribute("webshell-id", webshell.id)
         webshellsElement.appendChild(clone);
     }
 }
@@ -135,12 +183,22 @@ async function fetchJson(path) {
 
 // 各个入口函数
 
-function webshellMain() {
-    useTemplateHome("template-terminal");
+function webshellMain(hashParams) {
+    let webshell = hashParams.webshell
+    let action = "terminal"
+    if (!webshell) {
+        throw new Error("Webshell should be provided");
+    }
+    if (hashParams.action) {
+        action = hashParams.action;
+    }
+    if (action == "terminal") {
+        useTemplateHome("template-terminal");
+    }
 
 }
 
-function homeMain() {
+function homeMain(hashParams) {
     useTemplateHome("template-home");
     fetchJson("/list_webshell").then(
         homeFillWebshells
@@ -151,9 +209,9 @@ function main() {
     let hashParams = getHashParameters();
     console.log(hashParams)
     if (!hashParams.webshell) {
-        homeMain()
+        homeMain(hashParams)
     } else {
-        webshellMain()
+        webshellMain(hashParams)
     }
 }
 main();
