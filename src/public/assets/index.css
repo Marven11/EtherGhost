@@ -168,12 +168,14 @@ main {
 .webshells {
     height: 200px;
     width: 90%;
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-column-gap: 20px;
 }
 
 .webshell {
     background-color: #242933;
-    width: 30%;
+    /* width: 30%; */
     height: 150px;
     border-radius: 20px;
     color: #b1cbd5;
@@ -201,7 +203,7 @@ main {
     justify-content: center;
 }
 
-.webshell .webshell-description {
+.webshell .webshell-note {
     font-size: 14px;
     margin: 5px 20px 20px;
 
