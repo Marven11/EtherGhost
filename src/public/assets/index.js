@@ -187,15 +187,21 @@ function homeFillWebshells(webshells) {
 async function fetchJson(path, param) {
 
     let url = new URL(siteUrl + path);
+    const param_obj = new URLSearchParams();
     if (param) {
-        const params_obj = new URLSearchParams();
         for (k of Object.keys(param)) {
-            params_obj.append(k, param[k]);
+            param_obj.append(k, param[k]);
         }
-        url.search = params_obj;
+        url.search = param_obj;
     }
 
-    let response = await fetch(url);
+    let response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+        body: param_obj.toString()
+    });
     let response_json = await response.json();
     if (response_json.code != 0) {
         throw new Error(`Wrong response code ${response_json.code} for path ${path}, msg: ${response_json.msg}`);
@@ -216,6 +222,7 @@ function webshellMain(hashParams) {
     }
     if (action == "terminal") {
         useTemplateHome("template-terminal");
+        terminalInit();
     }
 
 }

@@ -2,23 +2,23 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 import session_manager
+from uuid import UUID
 from session.session import Session
 
 app = FastAPI()
 
 app.mount("/public", StaticFiles(directory="public"), name="public")
 
-@app.get("/find_webshell")
-async def find_webshell(webshell_id: str):
-    print(webshell_id)
+@app.post("/find_webshell")
+async def find_webshell(webshell_id: UUID):
     session: Session = session_manager.get_session_by_id(webshell_id)
     return {
         "code": 0,
         "data": session is not None
     }
 
-@app.get("/webshell_execute_cmd")
-async def webshell_execute_cmd(webshell_id: str, cmd: str):
+@app.post("/webshell_execute_cmd")
+async def webshell_execute_cmd(webshell_id: UUID, cmd: str):
     session: Session = session_manager.get_session_by_id(webshell_id)
     if session is None:
         return {
@@ -36,7 +36,7 @@ async def webshell_execute_cmd(webshell_id: str, cmd: str):
         "data": result
     }
 
-@app.get("/list_webshell")
+@app.post("/list_webshell")
 async def list_webshell():
     return {
         "code": 0,
