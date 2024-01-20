@@ -34,10 +34,14 @@ function onClickActionList(event) {
 
 }
 
-// template function
+function onClickTerminalExecute(event) {
+    terminalExecuteCommand();
+}
+
+// template functions
 
 function useTemplateHome(template_id) {
-    const mainElement = document.querySelector('main');
+    let mainElement = document.querySelector('main');
     while (mainElement.firstChild) {
         mainElement.firstChild.remove();
     }
@@ -46,7 +50,7 @@ function useTemplateHome(template_id) {
     mainElement.appendChild(clone);
 }
 
-// terminal function
+// terminal functions
 
 let terminalLines = ["$ "]
 
@@ -60,20 +64,28 @@ function terminalAddCommand(command, result) {
     terminalLines.pop();
     terminalLines.push("$ " + command);
     result.split("\n").forEach(element => {
-        terminalLines.push(element)
+        terminalLines.push(element);
     });
-    terminalLines.push("$ ")
-    terminalPaint()
+    terminalLines.push("$ ");
+    terminalPaint();
+}
+
+function terminalExecuteCommand() {
+    let cmd = document.querySelector(".action-input").value;
+    fetchJson("/webshell_execute_cmd", {
+        "cmd": cmd,
+        "webshell_id": getHashParameters().webshell
+    }).then(result => terminalAddCommand(cmd, result))
 }
 
 function terminalInit() {
     terminalPaint()
 }
 
-// action list
+// action list functions
 
 function hideActionList() {
-    if(!elementActionListElement) {
+    if (!elementActionListElement) {
         return;
     }
     elementActionListElement.style = `
@@ -119,7 +131,7 @@ function showActionList(top, left) {
     }, 0)
 }
 
-// helper function
+// helper functions
 
 
 function traverseParents(element) {
@@ -172,16 +184,26 @@ function homeFillWebshells(webshells) {
     }
 }
 
-async function fetchJson(path) {
-    const response = await fetch(siteUrl + path);
-    const response_json = await response.json();
+async function fetchJson(path, param) {
+
+    let url = new URL(siteUrl + path);
+    if (param) {
+        const params_obj = new URLSearchParams();
+        for (k of Object.keys(param)) {
+            params_obj.append(k, param[k]);
+        }
+        url.search = params_obj;
+    }
+
+    let response = await fetch(url);
+    let response_json = await response.json();
     if (response_json.code != 0) {
-        throw new Error(`Wrong response code ${response_json.code} for path ${path}`);
+        throw new Error(`Wrong response code ${response_json.code} for path ${path}, msg: ${response_json.msg}`);
     }
     return response_json.data;
 }
 
-// 各个入口函数
+// entry functions
 
 function webshellMain(hashParams) {
     let webshell = hashParams.webshell

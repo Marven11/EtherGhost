@@ -5,7 +5,6 @@ from typing import TypedDict
 from uuid import uuid4, UUID
 
 
-
 class SessionType(Enum):
     ONELINE_PHP = "ONELINE_PHP"
 
@@ -24,6 +23,10 @@ class SessionInfoNormalPHP(SessionInfo):
     password: str
 
 
+session_type_readable = {SessionType.ONELINE_PHP: "PHP一句话"}
+
+location_readable = {"US": "🇺🇸"}
+sessions_obj = {}
 session_info_converters = {}
 T = t.TypeVar("T", bound=SessionType)
 
@@ -50,11 +53,39 @@ def session_info_to_session(session_info: T):
     return f(session_info)
 
 
-session_type_readable = {SessionType.ONELINE_PHP: "PHP一句话"}
+def get_session_by_id(session_id: t.Union[str, UUID]):
+    if isinstance(session_id, str):
+        session_id = UUID(session_id)
+    if session_id not in sessions_obj:
+        session_info = [
+            session_info
+            for session_info in sessions_info
+            if session_info["session_id"] == session_id
+        ]
+        if not session_info:
+            return None
+        session_info = session_info[0]
+        sessions_obj[session_id] = session_info_to_session(session_info)
 
-location_readable = {"US": "🇺🇸"}
+    return sessions_obj[session_id]
 
-sessions = [
+
+def list_sessions_readable():
+    results = []
+    for sess in sessions_info:
+        results.append(
+            {
+                "type": session_type_readable.get(sess["session_type"], "未知类型"),
+                "id": sess["session_id"],
+                "name": sess["name"],
+                "note": sess["note"],
+                "location": location_readable.get(sess["location"], "未知位置"),
+            }
+        )
+    return results
+
+
+sessions_info = [
     SessionInfoNormalPHP(
         method="POST",
         url="http://127.0.0.1:8081/shell.php",
@@ -98,16 +129,7 @@ sessions = [
 ]
 
 
-def list_sessions_readable():
-    results = []
-    for sess in sessions:
-        results.append(
-            {
-                "type": session_type_readable.get(sess["session_type"], "未知类型"),
-                "id": sess["session_id"],
-                "name": sess["name"],
-                "note": sess["note"],
-                "location": location_readable.get(sess["location"], "未知位置"),
-            }
-        )
-    return results
+if __name__ == "__main__":
+    uuid = sessions_info[0]["session_id"]
+    print(UUID(str(uuid)) == uuid)
+
