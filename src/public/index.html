@@ -102,41 +102,41 @@
         <template id="template-home">
             <div class="actions">
                 <div class="action action-add">
-                    <p class="action-text">Add Webshell</p>
+                    <p class="action-text">Add Session</p>
                     <p class="action-number">1</p>
                 </div>
                 <input class="action-input" type="text" placeholder="搜索">
             </div>
-            <div class="webshells">
+            <div class="sessions">
             </div>
         </template>
 
-        <template id="template-home-webshell">
-            <div class="webshell">
-                <div class="webshell-main">
-                    <h3 class="webshell-name">一个名字</h3>
-                    <div class="webshell-action-button">
+        <template id="template-home-session">
+            <div class="session">
+                <div class="session-main">
+                    <h3 class="session-name">一个名字</h3>
+                    <div class="session-action-button">
                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M4 12H20M4 8H20M4 16H12" stroke-width="2" stroke-linecap="round"
                                 stroke-linejoin="round" />
                         </svg>
                     </div>
                 </div>
-                <p class="webshell-note">
-                    介绍这个webshell是什么东西
+                <p class="session-note">
+                    介绍这个session是什么东西
                 </p>
-                <div class="webshell-meta">
-                    <div class="webshell-meta-type">
+                <div class="session-meta">
+                    <div class="session-meta-type">
                         PHP - AntSword
                     </div>
-                    <div class="webshell-meta-location">
+                    <div class="session-meta-location">
                         🇺🇸
                     </div>
                 </div>
             </div>
         </template>
 
-        <template id="template-add-webshell">
+        <template id="template-add-session">
             <div class="actions">
                 <div class="action action-back">
                     <p class="action-text">返回</p>
@@ -144,18 +144,18 @@
                 <div class="action action-save">
                     <p class="action-text">保存</p>
                 </div>
-                <div class="action action-testwebshell">
+                <div class="action action-testsession">
                     <p class="action-text">测试可用性</p>
                 </div>
             </div>
             <form class="main-form" action="#">
 
                 <div class="main-form-divider">
-                    <label class="main-form-label" for="webshell-type">
+                    <label class="main-form-label" for="session-type">
                         名称
                     </label>
                 </div>
-                <input type="text" name="url" placeholder="Webshell">
+                <input type="text" name="url" placeholder="Session">
 
                 <div class="main-form-divider">
                     <label class="main-form-label" for="url">
@@ -163,7 +163,7 @@
                     </label>
                 </div>
                 <div class="main-form-row">
-                    <select name="webshell-type" id="">
+                    <select name="session-type" id="">
                         <option value="AntSwordPHP">蚁剑 - PHP</option>
                         <option value="BehinderPHPAES128">冰蝎 - PHP - AES128</option>
                         <option value="BehinderPHPBase64">冰蝎 - PHP - Base64</option>
@@ -193,7 +193,7 @@
                     </div>
                     <div class="main-form-item">
                         <p>Encoder</p>
-                        <select name="webshell-encoder" id="">
+                        <select name="session-encoder" id="">
                             <option value="base64">base64</option>
                             <option value="raw">raw</option>
                             <option value="chr">chr16</option>
@@ -212,10 +212,10 @@
             </form>
         </template>
         <template id="template-action-list">
-            <div class="webshell-action-list" onclick="onClickActionList(event)">
-                <a href="#" class="webshell-action-link" target="_blank" rel="noopener noreferrer">
-                    <div class="webshell-action-item" id="webshell-action-terminal">
-                        <div class="webshell-action-icon">
+            <div class="session-action-list" onclick="onClickActionList(event)">
+                <a href="#" class="session-action-link" target="_blank" rel="noopener noreferrer">
+                    <div class="session-action-item" id="session-action-terminal">
+                        <div class="session-action-icon">
                             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path
                                     d="M8 9L11 12L8 15M13 15H16M7.2 20H16.8C17.9201 20 18.4802 20 18.908 19.782C19.2843 19.5903 19.5903 19.2843 19.782 18.908C20 18.4802 20 17.9201 20 16.8V7.2C20 6.0799 20 5.51984 19.782 5.09202C19.5903 4.71569 19.2843 4.40973 18.908 4.21799C18.4802 4 17.9201 4 16.8 4H7.2C6.0799 4 5.51984 4 5.09202 4.21799C4.71569 4.40973 4.40973 4.71569 4.21799 5.09202C4 5.51984 4 6.07989 4 7.2V16.8C4 17.9201 4 18.4802 4.21799 18.908C4.40973 19.2843 4.71569 19.5903 5.09202 19.782C5.51984 20 6.07989 20 7.2 20Z"
@@ -226,9 +226,9 @@
                     </div>
                 </a>
     
-                <a href="#" class="webshell-action-link" target="_blank" rel="noopener noreferrer">
-                    <div class="webshell-action-item" id="webshell-action-files">
-                        <div class="webshell-action-icon">
+                <a href="#" class="session-action-link" target="_blank" rel="noopener noreferrer">
+                    <div class="session-action-item" id="session-action-files">
+                        <div class="session-action-icon">
                             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path
                                     d="M3 8.2C3 7.07989 3 6.51984 3.21799 6.09202C3.40973 5.71569 3.71569 5.40973 4.09202 5.21799C4.51984 5 5.0799 5 6.2 5H9.67452C10.1637 5 10.4083 5 10.6385 5.05526C10.8425 5.10425 11.0376 5.18506 11.2166 5.29472C11.4184 5.4184 11.5914 5.59135 11.9373 5.93726L12.0627 6.06274C12.4086 6.40865 12.5816 6.5816 12.7834 6.70528C12.9624 6.81494 13.1575 6.89575 13.3615 6.94474C13.5917 7 13.8363 7 14.3255 7H17.8C18.9201 7 19.4802 7 19.908 7.21799C20.2843 7.40973 20.5903 7.71569 20.782 8.09202C21 8.51984 21 9.0799 21 10.2V15.8C21 16.9201 21 17.4802 20.782 17.908C20.5903 18.2843 20.2843 18.5903 19.908 18.782C19.4802 19 18.9201 19 17.8 19H6.2C5.07989 19 4.51984 19 4.09202 18.782C3.71569 18.5903 3.40973 18.2843 3.21799 17.908C3 17.4802 3 16.9201 3 15.8V8.2Z"
@@ -238,16 +238,16 @@
                         <p>浏览文件</p>
                     </div>
                 </a>
-                <a href="#" class="webshell-action-link" target="_blank" rel="noopener noreferrer">
-                    <div class="webshell-action-item webshell-action-item-dangerous" id="webshell-action-delete-webshell">
-                        <div class="webshell-action-icon">
+                <a href="#" class="session-action-link" target="_blank" rel="noopener noreferrer">
+                    <div class="session-action-item session-action-item-dangerous" id="session-action-delete-session">
+                        <div class="session-action-icon">
                             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path
                                     d="M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6M18 6V16.2C18 17.8802 18 18.7202 17.673 19.362C17.3854 19.9265 16.9265 20.3854 16.362 20.673C15.7202 21 14.8802 21 13.2 21H10.8C9.11984 21 8.27976 21 7.63803 20.673C7.07354 20.3854 6.6146 19.9265 6.32698 19.362C6 18.7202 6 17.8802 6 16.2V6M14 10V17M10 10V17"
                                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
                         </div>
-                        <p>删除Webshell</p>
+                        <p>删除Session</p>
                     </div>
                 </a>
             </div>

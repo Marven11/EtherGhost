@@ -165,14 +165,14 @@ main {
     color: #b1cbd5;
 }
 
-.webshells {
+.sessions {
     height: 200px;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     grid-column-gap: 20px;
 }
 
-.webshell {
+.session {
     background-color: #242933;
     /* width: 30%; */
     height: 150px;
@@ -181,19 +181,19 @@ main {
     color: #b1cbd5;
 }
 
-.webshell-main {
+.session-main {
     display: flex;
     flex-direction: row;
     /* align-items: center; */
     justify-content: space-between;
 }
 
-.webshell .webshell-name {
+.session .session-name {
     font-size: 24px;
     margin: 15px 25px 5px;
 }
 
-.webshell .webshell-action-button {
+.session .session-action-button {
     width: 40px;
     height: 40px;
     margin: 15px 25px 5px;
@@ -203,38 +203,38 @@ main {
     justify-content: center;
 }
 
-.webshell .webshell-note {
+.session .session-note {
     font-size: 14px;
     margin: 5px 20px 20px;
 
     color: #64748b;
 }
 
-.webshell-action-button svg {
+.session-action-button svg {
     width: 35px;
     height: 35px;
     stroke: #b1cbd5;
 }
 
-.webshell-action-button:hover {
+.session-action-button:hover {
     background-color: #343b49;
 }
 
-.webshell-meta {
+.session-meta {
     display: flex;
     flex-direction: row;
     /* align-items: center; */
     justify-content: space-between;
 }
 
-.webshell-meta-type {
+.session-meta-type {
     font-size: 14px;
     margin: 5px 20px;
 
     color: #64748b;
 }
 
-.webshell-meta-location {
+.session-meta-location {
     font-size: 18px;
     margin: 0px 37px 10px;
     color: #64748b;
@@ -309,7 +309,7 @@ main {
     height: 100px;
 }
 
-.webshell-action-list {
+.session-action-list {
     opacity: 0;
     position: absolute;
     border-radius: 20px;
@@ -320,13 +320,13 @@ main {
     transition: opacity 0.3s ease, top 0.2s, left 0.2s ease;
 }
 
-.webshell-action-list a {
+.session-action-list a {
     text-decoration: none;
     color: inherit;
     cursor: pointer;
 }
 
-.webshell-action-item {
+.session-action-item {
     height: 50px;
     padding: 2px 20px 0px 10px;
     display: flex;
@@ -337,16 +337,16 @@ main {
     transition: background 0.3s ease;
 }
 
-.webshell-action-item:hover {
+.session-action-item:hover {
     background-color: #394458;
 }
 
-.webshell-action-item-dangerous {
+.session-action-item-dangerous {
     color: #ffae9b;
     stroke: #ffae9b;
 }
 
-.webshell-action-icon {
+.session-action-icon {
     width: 30px;
     height: 30px;
     margin: 0px 15px;

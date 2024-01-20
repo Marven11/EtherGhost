@@ -3,15 +3,15 @@
 let elementActionListElement = null;
 let elementActionListTop = 0;
 let elementActionListLeft = 0;
-let lastClickWebshell = null;
+let lastClickSession = null;
 let siteUrl = `${window.location.protocol}//${window.location.host}`
 
 // event functions
 
 function onClickRoot(event) {
-    let isWebshellClicked = traverseParents(event.target).map(it => it.classList.contains("webshell")).includes(true);
-    if (isWebshellClicked) {
-        lastClickWebshell = event.target;
+    let isSessionClicked = traverseParents(event.target).map(it => it.classList.contains("session")).includes(true);
+    if (isSessionClicked) {
+        lastClickSession = event.target;
         showActionList(event.clientY, event.clientX)
     } else {
         hideActionList()
@@ -23,7 +23,7 @@ function onClickActionList(event) {
         return
     }
     let clickedAction = traverseParents(event.target).filter(
-        element => element.classList.contains("webshell-action-item")
+        element => element.classList.contains("session-action-item")
     )
     if (clickedAction.length == 0) {
         console.log("Click Nothing!")
@@ -74,7 +74,7 @@ function terminalExecuteCommand() {
     let cmd = document.querySelector(".action-input").value;
     fetchJson("/session_execute_cmd", {
         "cmd": cmd,
-        "session_id": getHashParameters().webshell
+        "session_id": getHashParameters().session
     }).then(result => terminalAddCommand(cmd, result))
 }
 
@@ -106,25 +106,25 @@ function showActionList(top, left) {
         position: absolute;
         top: ${top}px; 
         left: ${left}px;`
-    let clickedWebshell = traverseParents(lastClickWebshell).filter(it => it.classList.contains("webshell"))[0];
-    let clickedWebshellId = clickedWebshell.getAttribute("webshell-id")
+    let clickedSession = traverseParents(lastClickSession).filter(it => it.classList.contains("session"))[0];
+    let clickedSessionId = clickedSession.getAttribute("session-id")
     if (!elementActionListElement) {
         let clone = template.content.cloneNode(true);
         const mainElement = document.querySelector('main');
         mainElement.appendChild(clone);
-        elementActionListElement = document.querySelector(".webshell-action-list")
+        elementActionListElement = document.querySelector(".session-action-list")
     }
 
     elementActionListTop = top;
     elementActionListLeft = left;
-    Array.from(elementActionListElement.getElementsByClassName("webshell-action-link")).forEach(element => {
-        let itemId = element.querySelector(".webshell-action-item").id;
+    Array.from(elementActionListElement.getElementsByClassName("session-action-link")).forEach(element => {
+        let itemId = element.querySelector(".session-action-item").id;
         let action = {
-            "webshell-action-terminal": "terminal",
-            "webshell-action-files": "files",
-            "webshell-action-delete-webshell": "delete-webshell",
+            "session-action-terminal": "terminal",
+            "session-action-files": "files",
+            "session-action-delete-session": "delete-session",
         }[itemId];
-        element.href = `#webshell=${clickedWebshellId}&action=${action}`
+        element.href = `#session=${clickedSessionId}&action=${action}`
     })
     setTimeout(() => {
         elementActionListElement.style = style;
@@ -167,20 +167,20 @@ function getHashParameters() {
     return params;
 }
 
-function homeFillWebshells(webshells) {
-    const webshellsElement = document.querySelector('.webshells');
-    while (webshellsElement.firstChild) {
-        webshellsElement.firstChild.remove();
+function homeFillSessions(sessions) {
+    const sessionsElement = document.querySelector('.sessions');
+    while (sessionsElement.firstChild) {
+        sessionsElement.firstChild.remove();
     }
-    let template = document.getElementById("template-home-webshell");
-    for (let webshell of webshells) {
+    let template = document.getElementById("template-home-session");
+    for (let session of sessions) {
         let clone = template.content.cloneNode(true);
-        clone.querySelector(".webshell-name").textContent = webshell.name
-        clone.querySelector(".webshell-note").textContent = webshell.note
-        clone.querySelector(".webshell-meta-type").textContent = webshell.type
-        clone.querySelector(".webshell-meta-location").textContent = webshell.location
-        clone.querySelector(".webshell").setAttribute("webshell-id", webshell.id)
-        webshellsElement.appendChild(clone);
+        clone.querySelector(".session-name").textContent = session.name
+        clone.querySelector(".session-note").textContent = session.note
+        clone.querySelector(".session-meta-type").textContent = session.type
+        clone.querySelector(".session-meta-location").textContent = session.location
+        clone.querySelector(".session").setAttribute("session-id", session.id)
+        sessionsElement.appendChild(clone);
     }
 }
 
@@ -211,11 +211,11 @@ async function fetchJson(path, param) {
 
 // entry functions
 
-function webshellMain(hashParams) {
-    let webshell = hashParams.webshell
+function sessionMain(hashParams) {
+    let session = hashParams.session
     let action = "terminal"
-    if (!webshell) {
-        throw new Error("Webshell should be provided");
+    if (!session) {
+        throw new Error("Session should be provided");
     }
     if (hashParams.action) {
         action = hashParams.action;
@@ -230,17 +230,17 @@ function webshellMain(hashParams) {
 function homeMain(hashParams) {
     useTemplateHome("template-home");
     fetchJson("/list_session").then(
-        homeFillWebshells
+        homeFillSessions
     );
 }
 
 function main() {
     let hashParams = getHashParameters();
     console.log(hashParams)
-    if (!hashParams.webshell) {
+    if (!hashParams.session) {
         homeMain(hashParams)
     } else {
-        webshellMain(hashParams)
+        sessionMain(hashParams)
     }
 }
 main();
