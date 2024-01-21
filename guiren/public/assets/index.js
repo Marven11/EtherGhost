@@ -55,7 +55,7 @@ function onSubmitAddWebshell(event) {
         data[key] = value;
     }
 
-    let json = {
+    let sessionInfo = {
         session_type: data.session_type,
         name: data.name,
         connection: {
@@ -66,8 +66,8 @@ function onSubmitAddWebshell(event) {
         note: data.note,
         location: ""
     }
-    console.log(json)
-    fetchJson(`/add_webshell`, param = {}, data = json)
+    console.log(sessionInfo)
+    fetchJson("/add_webshell", "POST", params = {}, data = sessionInfo)
 }
 
 // template functions
@@ -104,9 +104,9 @@ function terminalAddCommand(command, result) {
 
 function terminalExecuteCommand() {
     let cmd = document.querySelector(".action-input").value;
-    fetchJson("/session_execute_cmd", {
+    let sessionId = getHashParameters().session;
+    fetchJson(`/session/${sessionId}/execute_cmd`, "POST", params = {
         "cmd": cmd,
-        "session_id": getHashParameters().session
     }).then(result => terminalAddCommand(cmd, result))
 }
 
@@ -216,8 +216,8 @@ function homeFillSessions(sessions) {
     }
 }
 
-async function fetchJson(path, param, data) {
-
+async function fetchJson(path, method, param, data) {
+    let fetchOptions;
     let url = new URL(siteUrl + path);
     const param_obj = new URLSearchParams();
     if (param) {
@@ -226,16 +226,23 @@ async function fetchJson(path, param, data) {
         }
         url.search = param_obj;
     }
-    if(!data) {
+    if (!data) {
         data = {};
     }
-    let response = await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    });
+    if (["GET", "HEAD"].indexOf(method.toUpperCase()) != -1) {
+        fetchOptions = {
+            method: method.toUpperCase(),
+        }
+    } else {
+        fetchOptions = {
+            method: method.toUpperCase(),
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        }
+    }
+    let response = await fetch(url, fetchOptions);
     let response_json = await response.json();
     if (response_json.code != 0) {
         throw new Error(`Wrong response code ${response_json.code} for path ${path}, msg: ${response_json.msg}`);
@@ -267,7 +274,7 @@ function addWebshellMain(hashParams) {
 
 function homeMain(hashParams) {
     useTemplateHome("template-home");
-    fetchJson("/list_session").then(homeFillSessions);
+    fetchJson("/session", "GET").then(homeFillSessions);
 }
 
 function main() {

@@ -1,7 +1,7 @@
 from enum import Enum
 from uuid import UUID, uuid4
-from pydantic import BaseModel
 import typing as t
+from pydantic import BaseModel, model_validator
 
 __all__ = [
     "SessionType",
@@ -43,6 +43,13 @@ class SessionInfo(BaseModel):
     session_id: UUID = uuid4()
     note: str = ""
     location: str = ""
+
+    @model_validator(mode="after")
+    def validator(self):
+        conn_class = type_to_class[self.session_type]
+        if not isinstance(self.connection, conn_class):
+            raise ValueError(f"Wrong connection data for {self.session_type}")
+        return self
 
     class Config:
         from_attributes = True
