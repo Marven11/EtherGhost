@@ -38,6 +38,12 @@ function onClickTerminalExecute(event) {
     terminalExecuteCommand();
 }
 
+function onKeydownTerminal(event) {
+    if (event.key === "Enter") {
+        terminalExecuteCommand();
+    }
+}
+
 // template functions
 
 function useTemplateHome(template_id) {
@@ -199,7 +205,7 @@ async function fetchJson(path, param) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
-          },
+        },
         body: param_obj.toString()
     });
     let response_json = await response.json();

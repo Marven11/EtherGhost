@@ -86,7 +86,7 @@
 
         <template id="template-terminal">
             <div class="actions">
-                <input class="action-input" type="text" placeholder="cat /etc/passwd">
+                <input class="action-input" onkeydown="onKeydownTerminal(event)" type="text" placeholder="cat /etc/passwd">
                 <div class="action-icon action-end" onclick="onClickTerminalExecute(event)">
                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
