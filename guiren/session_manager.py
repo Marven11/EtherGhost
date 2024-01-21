@@ -11,6 +11,18 @@ class SessionType(Enum):
     ONELINE_PHP = "ONELINE_PHP"
 
 
+class SessionConnectionInfo(TypedDict):
+    pass
+
+
+class SessionConnOnelinePHP(SessionConnectionInfo):
+    """PHP一句话webshell的连接方法"""
+
+    method: str
+    url: str
+    password: str
+
+
 class SessionInfo(TypedDict):
     """session的基本信息"""
 
@@ -19,45 +31,37 @@ class SessionInfo(TypedDict):
     name: str
     note: str
     location: str
-
-
-class SessionInfoOnelinePHP(SessionInfo):
-    """PHP一句话webshell的信息"""
-
-    method: str
-    url: str
-    password: str
+    connection: SessionConnectionInfo
 
 
 session_type_readable = {SessionType.ONELINE_PHP: "PHP一句话"}
 
 location_readable = {"US": "🇺🇸"}
 sessions_obj = {}
-session_info_converters = {}
-T = t.TypeVar("T", bound=SessionType)
+session_con_converters = {}
 
 
-def session_info_converter(session_type):
+def session_conn_converter(session_type):
     """标记将session info转换为session对象的函数"""
 
     def _wrapper(f):
-        session_info_converters[session_type] = f
+        session_con_converters[session_type] = f
         return f
 
     return _wrapper
 
 
-@session_info_converter(SessionType.ONELINE_PHP)
-def php_normal(session_info: T):
+@session_conn_converter(SessionType.ONELINE_PHP)
+def php_normal(session_conn: SessionConnectionInfo):
     """将PHP一句话的info转换成对象"""
     return session.PHPWebshellNormal(
-        method=session_info["method"],
-        url=session_info["url"],
-        password=session_info["password"],
+        method=session_conn["method"],
+        url=session_conn["url"],
+        password=session_conn["password"],
     )
 
 
-def session_info_to_session(session_info: T) -> session.Session:
+def session_info_to_session(session_info: SessionInfo) -> session.Session:
     """将session info转成session对象
 
     Args:
@@ -66,8 +70,8 @@ def session_info_to_session(session_info: T) -> session.Session:
     Returns:
         session.Session: session对象
     """
-    f = session_info_converters[session_info["session_type"]]
-    return f(session_info)
+    f = session_con_converters[session_info["session_type"]]
+    return f(session_info["connection"])
 
 
 def get_session_info_by_id(
@@ -134,40 +138,48 @@ def list_sessions_readable() -> t.List[SessionInfo]:
 
 
 sessions_info = [
-    SessionInfoOnelinePHP(
-        method="POST",
-        url="http://127.0.0.1:8081/shell.php",
-        password="data",
+    SessionInfo(
+        connection=SessionConnOnelinePHP(
+            method="POST",
+            url="http://127.0.0.1:8081/shell.php",
+            password="data",
+        ),
         name="本地webshell",
         session_type=SessionType.ONELINE_PHP,
         session_id=uuid4(),
         note="",
         location="US",
     ),
-    SessionInfoOnelinePHP(
-        method="POST",
-        url="http://127.0.0.1:8081/shell.php",
-        password="data",
+    SessionInfo(
+        connection=SessionConnOnelinePHP(
+            method="POST",
+            url="http://127.0.0.1:8081/shell.php",
+            password="data",
+        ),
         name="另一个webshell",
         session_type=SessionType.ONELINE_PHP,
         session_id=uuid4(),
         note="",
         location="US",
     ),
-    SessionInfoOnelinePHP(
-        method="POST",
-        url="http://127.0.0.1:8081/shell.php",
-        password="data",
+    SessionInfo(
+        connection=SessionConnOnelinePHP(
+            method="POST",
+            url="http://127.0.0.1:8081/shell.php",
+            password="data",
+        ),
         name="又一个webshell",
         session_type=SessionType.ONELINE_PHP,
         session_id=uuid4(),
         note="",
         location="US",
     ),
-    SessionInfoOnelinePHP(
-        method="POST",
-        url="http://127.0.0.1:8081/shell.php",
-        password="data",
+    SessionInfo(
+        connection=SessionConnOnelinePHP(
+            method="POST",
+            url="http://127.0.0.1:8081/shell.php",
+            password="data",
+        ),
         name="还是一个webshell",
         session_type=SessionType.ONELINE_PHP,
         session_id=uuid4(),
