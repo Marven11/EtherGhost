@@ -3,7 +3,6 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
-from pydantic import BaseModel
 
 from . import session_manager, session_types
 from .session.session import Session
@@ -20,27 +19,13 @@ async def find_session(session_id: UUID):
     return {"code": 0, "data": session is not None}
 
 
-@app.post("/add_webshell/ONELINE_PHP")
-async def add_webshell_oneline_php(
-    name: str,
-    url: str,
-    password: str,
-    note: str = "",
-    location: str = "",
-    session_encoder: str = "",
-    http_obfs: str = ""
+@app.post("/add_webshell")
+async def add_webshell(
+    session_info: session_types.SessionInfo
 ):
-    """添加PHP一句话webshell"""
-    session_info = session_types.SessionInfo(
-        session_type=session_types.SessionType.ONELINE_PHP,
-        name=name,
-        connection=session_types.SessionConnOnelinePHP(
-            url=url, password=password, method="POST"
-        ),
-        note=note,
-        location=location,
-    )
-    session_manager.add_session_info(session_info)
+    """添加webshell"""
+    print(session_info)
+    # session_manager.add_session_info(session_info)
     return {"code": 0, "data": True}
 
 

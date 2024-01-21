@@ -6,7 +6,12 @@ import typing as t
 from pathlib import Path
 import sqlalchemy as sa
 from sqlalchemy_utils import ChoiceType, UUIDType
-from .session_types import SessionType, SessionInfo, SessionConnOnelinePHP
+from .session_types import (
+    SessionType,
+    SessionInfo,
+    SessionConnOnelinePHP,
+    type_to_class,
+)
 
 DB_FILENAME = "guiren.db"
 
@@ -51,15 +56,22 @@ Base.metadata.create_all(engine)
 
 
 def model_to_info(model: SessionInfoModel) -> SessionInfo:
-    info = {}
-    for sessinfo_k in SessionInfo.__annotations__:
-        info[sessinfo_k] = getattr(model, sessinfo_k)
-    return SessionInfo(**info)
+    if model.session_type not in type_to_class:
+        raise TypeError(f"session type not found: {model.session_type}")
+    connection = type_to_class[model.session_type](**model.connection)
+    result = SessionInfo(
+        session_type=model.session_type,
+        name=model.name,
+        connection=connection,
+        session_id=model.session_id,
+        note=model.note,
+        location=model.location,
+    )
+    return result
 
 
 def info_to_model(info: SessionInfo) -> SessionInfoModel:
-    info = info.__dict__
-    info["connection"] = info["connection"].__dict__
+    info = info.model_dump()
     return SessionInfoModel(**info)
 
 

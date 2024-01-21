@@ -49,16 +49,25 @@ function onSubmitAddWebshell(event) {
     event.preventDefault();
     const form = event.target;
     const formData = new FormData(form);
-    const data = {};
+    let data = {};
 
     for (const [key, value] of formData.entries()) {
         data[key] = value;
     }
 
-    const sessionType = data["session-type"];
-    delete data["session-type"];
-
-    fetchJson(`/add_webshell/${sessionType}`, param = data)
+    let json = {
+        session_type: data.session_type,
+        name: data.name,
+        connection: {
+            url: data.url,
+            password: data.password,
+            method: "POST",
+        },
+        note: data.note,
+        location: ""
+    }
+    console.log(json)
+    fetchJson(`/add_webshell`, param = {}, data = json)
 }
 
 // template functions
@@ -207,7 +216,7 @@ function homeFillSessions(sessions) {
     }
 }
 
-async function fetchJson(path, param) {
+async function fetchJson(path, param, data) {
 
     let url = new URL(siteUrl + path);
     const param_obj = new URLSearchParams();
@@ -217,13 +226,15 @@ async function fetchJson(path, param) {
         }
         url.search = param_obj;
     }
-
+    if(!data) {
+        data = {};
+    }
     let response = await fetch(url, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
+            'Content-Type': 'application/json'
         },
-        body: param_obj.toString()
+        body: JSON.stringify(data)
     });
     let response_json = await response.json();
     if (response_json.code != 0) {

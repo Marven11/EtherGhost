@@ -1,12 +1,14 @@
 from enum import Enum
-from dataclasses import dataclass
 from uuid import UUID, uuid4
+from pydantic import BaseModel
+import typing as t
 
 __all__ = [
     "SessionType",
     "SessionConnectionInfo",
     "SessionInfo",
     "SessionConnOnelinePHP",
+    "type_to_class",
 ]
 
 
@@ -16,13 +18,23 @@ class SessionType(Enum):
     ONELINE_PHP = "ONELINE_PHP"
 
 
-@dataclass
-class SessionConnectionInfo:
+# 各个session的连接信息
+class SessionConnectionInfoBase(BaseModel):
     """session的连接信息"""
 
 
-@dataclass
-class SessionInfo:
+class SessionConnOnelinePHP(SessionConnectionInfoBase):
+    """PHP一句话webshell的连接信息"""
+
+    url: str
+    password: str
+    method: str = "POST"
+
+
+SessionConnectionInfo = t.Union[SessionConnOnelinePHP,]
+
+
+class SessionInfo(BaseModel):
     """session的基本信息"""
 
     session_type: SessionType
@@ -32,14 +44,10 @@ class SessionInfo:
     note: str = ""
     location: str = ""
 
+    class Config:
+        from_attributes = True
 
-# 各个session的连接信息
 
-
-@dataclass
-class SessionConnOnelinePHP(SessionConnectionInfo):
-    """PHP一句话webshell的连接信息"""
-
-    url: str
-    password: str
-    method: str = "POST"
+type_to_class = {
+    SessionType.ONELINE_PHP: SessionConnOnelinePHP,
+}
