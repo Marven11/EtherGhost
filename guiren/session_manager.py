@@ -1,41 +1,15 @@
 import typing as t
-from enum import Enum
-from typing import TypedDict
-from uuid import uuid4, UUID
-from session import session
-
-
-class SessionType(Enum):
-    """session的类型"""
-
-    ONELINE_PHP = "ONELINE_PHP"
-
-
-class SessionConnectionInfo(TypedDict):
-    pass
-
-
-class SessionConnOnelinePHP(SessionConnectionInfo):
-    """PHP一句话webshell的连接方法"""
-
-    method: str
-    url: str
-    password: str
-
-
-class SessionInfo(TypedDict):
-    """session的基本信息"""
-
-    session_type: SessionType
-    session_id: UUID
-    name: str
-    note: str
-    location: str
-    connection: SessionConnectionInfo
+from uuid import UUID
+from . import db
+from .session import session
+from .session_types import (
+    SessionType,
+    SessionInfo,
+    SessionConnOnelinePHP,
+)
 
 
 session_type_readable = {SessionType.ONELINE_PHP: "PHP一句话"}
-
 location_readable = {"US": "🇺🇸"}
 sessions_obj = {}
 session_con_converters = {}
@@ -52,7 +26,7 @@ def session_conn_converter(session_type):
 
 
 @session_conn_converter(SessionType.ONELINE_PHP)
-def php_normal(session_conn: SessionConnectionInfo):
+def php_normal(session_conn: SessionConnOnelinePHP):
     """将PHP一句话的info转换成对象"""
     return session.PHPWebshellNormal(
         method=session_conn["method"],
@@ -70,8 +44,8 @@ def session_info_to_session(session_info: SessionInfo) -> session.Session:
     Returns:
         session.Session: session对象
     """
-    f = session_con_converters[session_info["session_type"]]
-    return f(session_info["connection"])
+    f = session_con_converters[session_info.session_type]
+    return f(session_info.connection)
 
 
 def get_session_info_by_id(
@@ -87,14 +61,7 @@ def get_session_info_by_id(
     """
     if isinstance(session_id, str):
         session_id = UUID(session_id)
-    session_infos = [
-        session_info
-        for session_info in sessions_info
-        if session_info["session_id"] == session_id
-    ]
-    if not session_infos:
-        return None
-    return session_infos[0]
+    return db.get_session_info_by_id(session_id)
 
 
 def get_session_by_id(session_id: t.Union[str, UUID]) -> t.Union[None, session.Session]:
@@ -124,71 +91,14 @@ def list_sessions_readable() -> t.List[SessionInfo]:
         t.List[SessionInfo]: 所有的session info
     """
     results = []
-    for sess in sessions_info:
+    for sess in db.list_sessions():
         results.append(
             {
-                "type": session_type_readable.get(sess["session_type"], "未知类型"),
-                "id": sess["session_id"],
-                "name": sess["name"],
-                "note": sess["note"],
-                "location": location_readable.get(sess["location"], "未知位置"),
+                "type": session_type_readable.get(sess.session_type, "未知类型"),
+                "id": sess.session_id,
+                "name": sess.name,
+                "note": sess.note,
+                "location": location_readable.get(sess.location, "未知位置"),
             }
         )
     return results
-
-
-sessions_info = [
-    SessionInfo(
-        connection=SessionConnOnelinePHP(
-            method="POST",
-            url="http://127.0.0.1:8081/shell.php",
-            password="data",
-        ),
-        name="本地webshell",
-        session_type=SessionType.ONELINE_PHP,
-        session_id=uuid4(),
-        note="",
-        location="US",
-    ),
-    SessionInfo(
-        connection=SessionConnOnelinePHP(
-            method="POST",
-            url="http://127.0.0.1:8081/shell.php",
-            password="data",
-        ),
-        name="另一个webshell",
-        session_type=SessionType.ONELINE_PHP,
-        session_id=uuid4(),
-        note="",
-        location="US",
-    ),
-    SessionInfo(
-        connection=SessionConnOnelinePHP(
-            method="POST",
-            url="http://127.0.0.1:8081/shell.php",
-            password="data",
-        ),
-        name="又一个webshell",
-        session_type=SessionType.ONELINE_PHP,
-        session_id=uuid4(),
-        note="",
-        location="US",
-    ),
-    SessionInfo(
-        connection=SessionConnOnelinePHP(
-            method="POST",
-            url="http://127.0.0.1:8081/shell.php",
-            password="data",
-        ),
-        name="还是一个webshell",
-        session_type=SessionType.ONELINE_PHP,
-        session_id=uuid4(),
-        note="",
-        location="US",
-    ),
-]
-
-
-if __name__ == "__main__":
-    uuid = sessions_info[0]["session_id"]
-    print(UUID(str(uuid)) == uuid)

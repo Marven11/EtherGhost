@@ -2,8 +2,8 @@ from uuid import UUID
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
-import session_manager
-from session.session import Session
+from . import session_manager
+from .session.session import Session
 
 app = FastAPI()
 
@@ -40,7 +40,3 @@ async def hello_world():
     return RedirectResponse("/public/index.html")
 
 
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run("__main__:app", host="0.0.0.0", port=8000, reload=True)

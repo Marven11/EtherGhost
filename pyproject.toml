@@ -12,7 +12,7 @@ requests = "*"
 pycryptodome = "*"
 sqlalchemy = "*"
 uvicorn = "*"
-
+sqlalchemy-utils = "*"
 
 [build-system]
 requires = ["poetry-core"]
