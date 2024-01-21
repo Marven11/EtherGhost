@@ -300,6 +300,23 @@ main {
     text-indent: 2px;
 }
 
+.main-form-button {
+    font-size: 16px;
+    height: 50px;
+    min-width: 100px;
+    margin: 20px;
+    border-color: #9fe88d;
+    margin-right: 10px;
+    border-width: 0.15rem;
+    border-style: solid;
+    background-color: #242933;
+    color: #b1cbd5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 12px;
+}
+
 .main-form-row {
     display: flex;
     flex-direction: row;

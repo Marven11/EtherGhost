@@ -58,6 +58,8 @@ def model_to_info(model: SessionInfoModel) -> SessionInfo:
 
 
 def info_to_model(info: SessionInfo) -> SessionInfoModel:
+    info = info.__dict__
+    info["connection"] = info["connection"].__dict__
     return SessionInfoModel(**info)
 
 
@@ -69,7 +71,7 @@ def list_sessions() -> t.List[SessionInfo]:
 
 
 def add_session_info(info: SessionInfo):
-    orm_session.add(SessionInfoModel(**info))
+    orm_session.add(info_to_model(info))
     orm_session.commit()
 
 

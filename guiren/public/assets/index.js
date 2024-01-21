@@ -19,6 +19,7 @@ function onClickRoot(event) {
 }
 
 function onClickActionList(event) {
+    // TODO: check whether we should delete it
     if (!elementActionListElement) {
         return
     }
@@ -42,6 +43,22 @@ function onKeydownTerminal(event) {
     if (event.key === "Enter") {
         terminalExecuteCommand();
     }
+}
+
+function onSubmitAddWebshell(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = {};
+
+    for (const [key, value] of formData.entries()) {
+        data[key] = value;
+    }
+
+    const sessionType = data["session-type"];
+    delete data["session-type"];
+
+    fetchJson(`/add_webshell/${sessionType}`, param = data)
 }
 
 // template functions
@@ -233,20 +250,23 @@ function sessionMain(hashParams) {
 
 }
 
+function addWebshellMain(hashParams) {
+    useTemplateHome("template-add-webshell");
+}
+
 function homeMain(hashParams) {
     useTemplateHome("template-home");
-    fetchJson("/list_session").then(
-        homeFillSessions
-    );
+    fetchJson("/list_session").then(homeFillSessions);
 }
 
 function main() {
     let hashParams = getHashParameters();
-    console.log(hashParams)
-    if (!hashParams.session) {
-        homeMain(hashParams)
+    if (hashParams.session) {
+        sessionMain(hashParams);
+    } else if (hashParams.action == "add-webshell") {
+        addWebshellMain(hashParams);
     } else {
-        sessionMain(hashParams)
+        homeMain(hashParams);
     }
 }
 main();

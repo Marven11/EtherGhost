@@ -102,7 +102,7 @@
         <template id="template-home">
             <div class="actions">
                 <div class="action action-add">
-                    <p class="action-text">Add Session</p>
+                    <p class="action-text">Add Webshell</p>
                     <p class="action-number">1</p>
                 </div>
                 <input class="action-input" type="text" placeholder="搜索">
@@ -136,26 +136,23 @@
             </div>
         </template>
 
-        <template id="template-add-session">
+        <template id="template-add-webshell">
             <div class="actions">
                 <div class="action action-back">
                     <p class="action-text">返回</p>
-                </div>
-                <div class="action action-save">
-                    <p class="action-text">保存</p>
                 </div>
                 <div class="action action-testsession">
                     <p class="action-text">测试可用性</p>
                 </div>
             </div>
-            <form class="main-form" action="#">
+            <form class="main-form" onsubmit="onSubmitAddWebshell(event)">
 
                 <div class="main-form-divider">
                     <label class="main-form-label" for="session-type">
                         名称
                     </label>
                 </div>
-                <input type="text" name="url" placeholder="Session">
+                <input type="text" name="name" placeholder="Session">
 
                 <div class="main-form-divider">
                     <label class="main-form-label" for="url">
@@ -164,9 +161,10 @@
                 </div>
                 <div class="main-form-row">
                     <select name="session-type" id="">
-                        <option value="AntSwordPHP">蚁剑 - PHP</option>
-                        <option value="BehinderPHPAES128">冰蝎 - PHP - AES128</option>
-                        <option value="BehinderPHPBase64">冰蝎 - PHP - Base64</option>
+                        <option value="ONELINE_PHP">PHP一句话</option>
+                        <!-- TODO: 适配 -->
+                        <!-- <option value="BehinderPHPAES128">冰蝎 - PHP - AES128</option> -->
+                        <!-- <option value="BehinderPHPBase64">冰蝎 - PHP - Base64</option> -->
                     </select>
                     <input type="text" name="url" placeholder="http://example.com/shell.php">
                 </div>
@@ -187,13 +185,13 @@
                     <div class="main-form-item">
                         <p>流量混淆</p>
                         <label class="switch">
-                            <input type="checkbox" checked>
+                            <input name="http_obfs" type="checkbox" checked>
                             <span class="slider round"></span>
                         </label>
                     </div>
                     <div class="main-form-item">
                         <p>Encoder</p>
-                        <select name="session-encoder" id="">
+                        <select name="session_encoder" id="">
                             <option value="base64">base64</option>
                             <option value="raw">raw</option>
                             <option value="chr">chr16</option>
@@ -208,6 +206,8 @@
                 </div>
                 <input type="text" name="note" placeholder="...">
 
+
+                <input type="submit" class="main-form-button" value="保存">
 
             </form>
         </template>

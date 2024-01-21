@@ -102,3 +102,6 @@ def list_sessions_readable() -> t.List[SessionInfo]:
             }
         )
     return results
+
+def add_session_info(info: SessionInfo):
+    db.add_session_info(info)

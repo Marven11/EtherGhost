@@ -1,6 +1,6 @@
 from enum import Enum
 from dataclasses import dataclass
-from uuid import UUID
+from uuid import UUID, uuid4
 
 __all__ = [
     "SessionType",
@@ -26,9 +26,9 @@ class SessionInfo:
     """session的基本信息"""
 
     session_type: SessionType
-    session_id: UUID
     name: str
     connection: SessionConnectionInfo
+    session_id: UUID = uuid4()
     note: str = ""
     location: str = ""
 
