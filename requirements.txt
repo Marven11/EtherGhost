@@ -1,4 +1,5 @@
 fastapi
 requests
 pycryptodome
+sqlalchemy
 uvicorn[standard]

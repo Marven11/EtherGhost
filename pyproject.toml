@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "guiren"
+version = "0.1.0"
+description = ""
+authors = ["Marven11 <110723864+Marven11@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+fastapi = "*"
+requests = "*"
+pycryptodome = "*"
+sqlalchemy = "*"
+uvicorn = "*"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
