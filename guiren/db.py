@@ -107,7 +107,11 @@ def delete_session_info_by_id(
 ) -> bool:
     if isinstance(session_id, str):
         session_id = UUID(session_id)
-    model = get_session_info_by_id(session_id)
+    model = (
+        orm_session.query(SessionInfoModel)
+        .filter(SessionInfoModel.session_id == session_id)
+        .first()
+    )
     if model is None:
         return ignore_unexist  # True if ignore_unexist else False
     orm_session.delete(model)

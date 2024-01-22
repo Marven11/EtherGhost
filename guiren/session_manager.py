@@ -105,3 +105,6 @@ def list_sessions_readable() -> t.List[SessionInfo]:
 
 def add_session_info(info: SessionInfo):
     db.add_session_info(info)
+
+def delete_session_info_by_id(session_id: UUID):
+    db.delete_session_info_by_id(session_id)

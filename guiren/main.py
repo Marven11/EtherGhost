@@ -18,13 +18,15 @@ async def get_sessions(session_id: t.Union[UUID, None] = None):
     """列出所有的session"""
     if session_id is None:
         return {"code": 0, "data": session_manager.list_sessions_readable()}
-    session: Session = session_manager.get_session_by_id(session_id)
+    session: Session = session_manager.get_session_info_by_id(session_id)
     return {"code": 0, "data": session}
 
 
-@app.post("/add_webshell")
-async def add_webshell(session_info: session_types.SessionInfo):
-    """添加webshell"""
+@app.post("/update_webshell")
+async def update_webshell(session_info: session_types.SessionInfo):
+    """添加或更新webshell"""
+    if session_manager.get_session_info_by_id(session_info.session_id):
+        session_manager.delete_session_info_by_id(session_info.session_id)
     session_manager.add_session_info(session_info)
     return {"code": 0, "data": True}
 

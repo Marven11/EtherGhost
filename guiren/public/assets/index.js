@@ -1,5 +1,3 @@
-
-
 let elementActionListElement = null;
 let elementActionListTop = 0;
 let elementActionListLeft = 0;
@@ -57,7 +55,7 @@ function onKeydownTerminal(event) {
     }
 }
 
-function onSubmitAddWebshell(event) {
+function onSubmitWebshellEditor(event) {
     event.preventDefault();
     const form = event.target;
     const formData = new FormData(form);
@@ -76,10 +74,14 @@ function onSubmitAddWebshell(event) {
             method: "POST",
         },
         note: data.note,
-        location: ""
+        location: "",
+        session_id: data.session_id
     }
-    console.log(sessionInfo)
-    fetchJson("/add_webshell", "POST", params = {}, data = sessionInfo)
+    if(!sessionInfo.session_id) {
+        // tell server to insert (not update) the webshell
+        delete sessionInfo.session_id
+    }
+    fetchJson("/update_webshell", "POST", params = {}, data = sessionInfo)
 }
 
 // template functions
@@ -92,6 +94,24 @@ function useTemplateHome(template_id) {
     let template = document.getElementById(template_id);
     let clone = template.content.cloneNode(true);
     mainElement.appendChild(clone);
+}
+
+// webshell editor functions
+
+function fillEditorInput(session_info) {
+    let sessionTypeElement = document.querySelector("[name='session_type']");
+    sessionTypeElement.selectedIndex = (
+        Array.from(sessionTypeElement.getElementsByTagName("option"))
+            .map(it => it.value)
+            .indexOf(session_info["session_type"])
+    )
+    document.querySelector("[name='name']").value = session_info["name"]
+    document.querySelector("[name='note']").value = session_info["note"]
+    document.querySelector("[name='session_id']").value = session_info["session_id"]
+    if (session_info["session_type"] == "ONELINE_PHP") {
+        document.querySelector("[name='url']").value = session_info["connection"]["url"]
+        document.querySelector("[name='password']").value = session_info["connection"]["password"]
+    }
 }
 
 // terminal functions
@@ -166,6 +186,7 @@ function showActionList(top, left) {
         let action = {
             "session-action-terminal": "terminal",
             "session-action-files": "files",
+            "session-action-edit-webshell": "edit-webshell",
             "session-action-delete-session": "delete-session",
         }[itemId];
         element.href = `#session=${clickedSessionId}&action=${action}`
@@ -280,8 +301,15 @@ function sessionMain(hashParams) {
 
 }
 
+function editWebshellMain(hashParams) {
+    useTemplateHome("template-webshell-editor");
+    fetchJson("/session", "GET", {
+        "session_id": hashParams.session
+    }).then(fillEditorInput)
+}
+
 function addWebshellMain(hashParams) {
-    useTemplateHome("template-add-webshell");
+    useTemplateHome("template-webshell-editor");
 }
 
 function homeMain(hashParams) {
@@ -291,11 +319,14 @@ function homeMain(hashParams) {
 
 function main() {
     let hashParams = getHashParameters();
-    if (hashParams.session) {
-        sessionMain(hashParams);
-    } else if (hashParams.action == "add-webshell") {
+    if (hashParams.action == "add-webshell") {
         addWebshellMain(hashParams);
-    } else {
+    } else if (hashParams.action == "edit-webshell") {
+        editWebshellMain(hashParams);
+    } else if (hashParams.session) {
+        sessionMain(hashParams);
+    }
+    else {
         homeMain(hashParams);
     }
 }
