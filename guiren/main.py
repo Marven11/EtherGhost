@@ -42,6 +42,17 @@ async def session_execute_cmd(session_id: UUID, cmd: str):
         return {"code": -400, "msg": "Execute Failed"}
     return {"code": 0, "data": result}
 
+
+@app.delete("/session/{session_id}")
+async def delete_session(session_id: UUID):
+    """使用session执行shell命令"""
+    session: Session = session_manager.get_session_info_by_id(session_id)
+    if not session:
+        return {"code": -400, "msg": "Session not found"}
+    session_manager.delete_session_info_by_id(session_id)
+    return {"code": 0, "data": True}
+
+
 @app.get("/")
 async def hello_world():
     """转到主页"""

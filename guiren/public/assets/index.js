@@ -3,7 +3,7 @@ let elementActionListTop = 0;
 let elementActionListLeft = 0;
 let lastClickSession = null;
 let siteUrl = `${window.location.protocol}//${window.location.host}`
-
+let currentPage = null;
 // event functions
 
 function onClickRoot(event) {
@@ -49,6 +49,27 @@ function onClickNavbarButton(event) {
     }
 }
 
+function onClickHomeAddWebshellButton(event) {
+    window.location = "/#action=add-webshell"
+}
+
+function onClickEditorBackButton(event) {
+    window.location = "/"
+}
+
+function onClickEditorDeleteButton(event) {
+    console.log(event)
+    let session_id = document.querySelector("[name='session_id']").value
+    if (!session_id) {
+        alert("No session id!");
+    }
+    fetchJson(`/session/${session_id}`, "DELETE").then(success => {
+        if (success) {
+            window.location = "/"
+        }
+    })
+}
+
 function onKeydownTerminal(event) {
     if (event.key === "Enter") {
         terminalExecuteCommand();
@@ -77,7 +98,7 @@ function onSubmitWebshellEditor(event) {
         location: "",
         session_id: data.session_id
     }
-    if(!sessionInfo.session_id) {
+    if (!sessionInfo.session_id) {
         // tell server to insert (not update) the webshell
         delete sessionInfo.session_id
     }
@@ -181,13 +202,14 @@ function showActionList(top, left) {
 
     elementActionListTop = top;
     elementActionListLeft = left;
-    Array.from(elementActionListElement.getElementsByClassName("session-action-link")).forEach(element => {
+    Array.from(elementActionListElement.getElementsByClassName("session-action-link")).filter(it => !it.classList.contains("link-nohref")).forEach(element => {
         let itemId = element.querySelector(".session-action-item").id;
         let action = {
             "session-action-terminal": "terminal",
             "session-action-files": "files",
             "session-action-edit-webshell": "edit-webshell",
-            "session-action-delete-session": "delete-session",
+            "session-action-proxy": "proxy",
+            "session-action-machine-info": "machine-info",
         }[itemId];
         element.href = `#session=${clickedSessionId}&action=${action}`
     })
@@ -297,8 +319,8 @@ function sessionMain(hashParams) {
     if (action == "terminal") {
         useTemplateHome("template-terminal");
         terminalInit();
+        currentPage = "edit-webshell";
     }
-
 }
 
 function editWebshellMain(hashParams) {
@@ -306,15 +328,19 @@ function editWebshellMain(hashParams) {
     fetchJson("/session", "GET", {
         "session_id": hashParams.session
     }).then(fillEditorInput)
+    currentPage = "edit-webshell";
 }
 
 function addWebshellMain(hashParams) {
     useTemplateHome("template-webshell-editor");
+    currentPage = "add-webshell";
+
 }
 
 function homeMain(hashParams) {
     useTemplateHome("template-home");
     fetchJson("/session", "GET").then(homeFillSessions);
+    currentPage = "home";
 }
 
 function main() {
