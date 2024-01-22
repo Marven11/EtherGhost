@@ -39,6 +39,18 @@ function onClickTerminalExecute(event) {
     terminalExecuteCommand();
 }
 
+function onClickNavbarButton(event) {
+    let icon = traverseParents(event.target).filter(it => it.classList.contains("navbar-icon"))[0]
+    if (icon == undefined) {
+        throw new Error(`No button was clicked for target ${event.target}.`);
+    }
+    if (icon.id == "navbar-icon-home") {
+        window.location = "/"
+    } else if (icon.id == "navbar-icon-terminal") {
+        alert("请点击对应webshell打开终端")
+    }
+}
+
 function onKeydownTerminal(event) {
     if (event.key === "Enter") {
         terminalExecuteCommand();
@@ -287,4 +299,5 @@ function main() {
         homeMain(hashParams);
     }
 }
+
 main();
