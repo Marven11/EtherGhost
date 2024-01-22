@@ -167,7 +167,7 @@ main {
 }
 
 .sessions {
-    height: 200px;
+    height: 170px;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     grid-column-gap: 20px;
@@ -176,7 +176,7 @@ main {
 .session {
     background-color: #242933;
     /* width: 30%; */
-    height: 150px;
+    height: 170px;
     border-radius: 20px;
     margin-bottom: 20px;
     color: #b1cbd5;
@@ -191,13 +191,13 @@ main {
 
 .session .session-name {
     font-size: 24px;
-    margin: 15px 25px 5px;
+    margin: 15px 25px 10px;
 }
 
 .session .session-action-button {
     width: 40px;
     height: 40px;
-    margin: 15px 25px 5px;
+    margin: 15px 25px 10px;
     border-radius: 20px;
     display: flex;
     align-items: center;
@@ -206,8 +206,8 @@ main {
 
 .session .session-note {
     font-size: 14px;
-    margin: 5px 20px 20px;
-
+    margin: 5px 25px 20px;
+    min-height: 30px;
     color: #64748b;
 }
 
@@ -230,14 +230,14 @@ main {
 
 .session-meta-type {
     font-size: 14px;
-    margin: 5px 20px;
+    margin: 5px 25px;
 
     color: #64748b;
 }
 
 .session-meta-location {
     font-size: 18px;
-    margin: 0px 37px 10px;
+    margin: 0px 25px 10px;
     color: #64748b;
 }
 
