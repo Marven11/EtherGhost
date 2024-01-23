@@ -108,3 +108,5 @@ def add_session_info(info: SessionInfo):
 
 def delete_session_info_by_id(session_id: UUID):
     db.delete_session_info_by_id(session_id)
+    if session_id in sessions_obj:
+        del sessions_obj[session_id]
