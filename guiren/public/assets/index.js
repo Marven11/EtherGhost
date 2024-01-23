@@ -46,7 +46,6 @@ function onClickActionList(event) {
     let clickedSession = traverseParents(lastClickSession).filter(it => it.classList.contains("session"))[0];
     let clickedSessionId = clickedSession.getAttribute("session-id")
     window.location = `/#session=${clickedSessionId}&action=${targetActions}`
-
 }
 
 function onClickTerminalExecute(event) {
@@ -110,7 +109,10 @@ function onSubmitWebshellEditor(event) {
     const form = event.target;
     let sessionInfo = getEditorInput(form);
     fetchJson("/update_webshell", "POST", params = {}, data = sessionInfo).then(_ => {
-        window.close();
+        showPopup("green", "保存成功", "webshell已成功保存到本地数据库中");
+        setTimeout(() => {
+            window.history.back();
+        }, 800);
     });
 }
 
@@ -142,7 +144,7 @@ function getEditorInput(form) {
         connection: {
             url: data.url,
             password: data.password,
-            method: "POST",
+            method: data.method,
         },
         note: data.note,
         location: "",
@@ -168,6 +170,13 @@ function fillEditorInput(session_info) {
     if (session_info["session_type"] == "ONELINE_PHP") {
         document.querySelector("[name='url']").value = session_info["connection"]["url"]
         document.querySelector("[name='password']").value = session_info["connection"]["password"]
+        document.querySelector("[name='method']").value = session_info["connection"]["method"]
+        let sessionMethodElement = document.querySelector("[name='method']");
+        sessionMethodElement.selectedIndex = (
+            Array.from(sessionMethodElement.getElementsByTagName("option"))
+                .map(it => it.value)
+                .indexOf(session_info["connection"]["method"])
+        );
     }
 }
 

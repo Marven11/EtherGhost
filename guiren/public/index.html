@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    <!-- modifled button from https://www.svgrepo.com/collection/dazzle-line-icons/ -->
+    <!-- modified button from https://www.svgrepo.com/collection/dazzle-line-icons/ -->
     <div class="root" onclick="onClickRoot(event)">
         <header>
             <div class="header-left">
@@ -167,24 +167,27 @@
                     </label>
                 </div>
                 <div class="main-form-row">
-                    <select name="session_type" id="">
+                    <select name="session_type">
                         <option value="ONELINE_PHP">PHP一句话</option>
                         <!-- TODO: 适配 -->
                         <!-- <option value="BehinderPHPAES128">冰蝎 - PHP - AES128</option> -->
                         <!-- <option value="BehinderPHPBase64">冰蝎 - PHP - Base64</option> -->
                     </select>
+                    <select name="method">
+                        <option value="POST">POST</option>
+                        <option value="GET">GET</option>
+                        <!-- TODO: 适配 -->
+                        <!-- <option value="BehinderPHPAES128">冰蝎 - PHP - AES128</option> -->
+                        <!-- <option value="BehinderPHPBase64">冰蝎 - PHP - Base64</option> -->
+                    </select>
                     <input type="text" name="url" placeholder="http://example.com/shell.php">
+                    <input class="input-short" type="text" name="password" placeholder="密码">
                 </div>
-                <div class="main-form-divider">
-                    <label class="main-form-label" for="password">
-                        密码
-                    </label>
-                </div>
-                <input type="text" name="password" placeholder="rebeyond">
+                
 
                 <div class="main-form-divider">
                     <p class="main-form-label">
-                        主要设置
+                        附加配置
                     </p>
                 </div>
                 <div class="main-form-row">

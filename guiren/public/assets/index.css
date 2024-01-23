@@ -283,8 +283,12 @@ main {
     color: #b1cbd5;
     border-radius: 12px;
     height: 40px;
-    min-width: 400px;
+    width: 400px;
     text-indent: 10px;
+}
+
+.main-form .input-short[type="text"] {
+    width: 150px;
 }
 
 .main-form input[type="text"]:focus {
