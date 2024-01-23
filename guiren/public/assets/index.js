@@ -25,20 +25,27 @@ function onClickActionList(event) {
     )[0]
 
     let targetActions = {
-        "session-action-terminal": "terminal"
-    }
+        "session-action-terminal": "terminal",
+        "session-action-files": "files",
+        "session-action-proxy": "proxy",
+        "session-action-machine-info": "machine-info",
+        "session-action-edit-webshell": "edit-webshell",
+    }[clickedAction.id];
     if (!elementActionList || !lastClickSession) {
         return
     }
     if (!clickedAction) {
         console.log("Click Nothing!")
         return;
+    } else if (!targetActions) {
+        console.log("Action not found!");
+        return
     } else {
         console.log(`Click on: ${clickedAction}`)
     }
     let clickedSession = traverseParents(lastClickSession).filter(it => it.classList.contains("session"))[0];
     let clickedSessionId = clickedSession.getAttribute("session-id")
-    window.location = `/#session=${clickedSessionId}&action=${targetActions[clickedAction.id]}`
+    window.location = `/#session=${clickedSessionId}&action=${targetActions}`
 
 }
 
