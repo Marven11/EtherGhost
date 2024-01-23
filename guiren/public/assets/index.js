@@ -63,7 +63,11 @@ function onClickEditorTestButton(event) {
     let sessionInfo = getEditorInput(form);
     console.log(sessionInfo);
     fetchJson("/test_webshell", "POST", params = {}, data = sessionInfo).then(success => {
-        console.log(`test result is ${success}`)
+        if (success) {
+            showPopup("green", "测试成功", "这个webshell可以正常使用")
+        } else {
+            showPopup("yellow", "测试失败", "这个webshell不可以正常使用")
+        }
     });
 }
 
@@ -237,21 +241,25 @@ function showActionList(top, left) {
 
 // popup functions
 
-function reorderPopups() {
-
-}
-
-function showPopup(level, title, text) {
+function showPopup(color, title, text) {
+    // color can be: red, yellow, green, blue
     let template = document.getElementById("template-popup");
     let clone = template.content.cloneNode(true);
     let popUpDelate = 0;
     let duration = Date.now() - lastPopupTime;
-    let elementId = `popup-${Date.now() + Math.floor(Math.random() * 1000)}`;
+    let elementId = `popup-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+    let icons = Array.from(clone.querySelector(".popup-icon").children);
     if (duration < 200) {
         popUpDelate = 200 - duration;
     }
     clone.querySelector(".popup-title").textContent = title;
     clone.querySelector(".popup-text").textContent = text;
+    clone.querySelector(".popup").classList.add(`popup-${color}`);
+
+    icons
+        .filter(icon => !icon.classList.contains(`pop-icon-${color}`))
+        .forEach(icon => icon.remove())
+
     setTimeout(() => {
         document.querySelector(".popups").prepend(clone);
     }, popUpDelate);
@@ -259,13 +267,10 @@ function showPopup(level, title, text) {
         document.querySelector(".popups>:first-child").id = elementId;
     }, popUpDelate + 10);
     setTimeout(() => {
-        console.log(elementId)
         let element = document.getElementById(elementId)
         element.style.opacity = 0;
-        // element.style.height = 0;
     }, popUpDelate + 5000);
     setTimeout(() => {
-        console.log(elementId)
         document.getElementById(elementId).remove();
     }, popUpDelate + 7000);
     lastPopupTime = Date.now() + popUpDelate;
@@ -411,8 +416,5 @@ function main() {
 }
 
 main();
-// for (let i = 0; i < 5; i += 1) {
-//     showPopup("green", '我是一个showPopup的测试', "这只是一个测试，用来测试popup能否被JS创建");
-// }
 
 

@@ -381,7 +381,6 @@ main {
 }
 
 .popup {
-    background-color: #9fe88d;
     border-radius: 20px;
     box-shadow: 2px 2px 15px #242424;
     height: 15%;
@@ -392,11 +391,28 @@ main {
     flex-flow: 1;
 }
 
+.popup-red {
+    background-color: #ffae9b;
+}
+
+.popup-yellow {
+    background-color: #efd057;
+}
+
+.popup-green {
+    background-color: #9fe88d;
+}
+
+.popup-blue {
+    background-color: #28ebff;
+}
+
 @keyframes slide-in {
     0% {
         height: 0;
         transform: translateY(100%);
     }
+
     100% {
         opacity: 1;
         height: 15%;
