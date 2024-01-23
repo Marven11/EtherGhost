@@ -53,8 +53,8 @@ function onClickHomeAddWebshellButton(event) {
     window.location = "/#action=add-webshell"
 }
 
-function onClickEditorBackButton(event) {
-    window.location = "/"
+function onClickEditorDiscardButton(event) {
+    window.close();
 }
 
 function onClickEditorDeleteButton(event) {
@@ -102,7 +102,9 @@ function onSubmitWebshellEditor(event) {
         // tell server to insert (not update) the webshell
         delete sessionInfo.session_id
     }
-    fetchJson("/update_webshell", "POST", params = {}, data = sessionInfo)
+    fetchJson("/update_webshell", "POST", params = {}, data = sessionInfo).then(data => {
+        window.close();
+    })
 }
 
 // template functions
