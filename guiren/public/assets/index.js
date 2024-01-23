@@ -1,10 +1,11 @@
-let elementActionListElement = null;
+let elementActionList = null;
 let elementActionListTop = 0;
 let elementActionListLeft = 0;
 let lastClickSession = null;
 let siteUrl = `${window.location.protocol}//${window.location.host}`
 let currentPage = null;
 let lastPopupTime = Date.now() - 10000;
+
 // event functions
 
 function onClickRoot(event) {
@@ -18,19 +19,26 @@ function onClickRoot(event) {
 }
 
 function onClickActionList(event) {
-    // TODO: check whether we should delete it
-    if (!elementActionListElement) {
-        return
-    }
+
     let clickedAction = traverseParents(event.target).filter(
         element => element.classList.contains("session-action-item")
-    )
-    if (clickedAction.length == 0) {
+    )[0]
+
+    let targetActions = {
+        "session-action-terminal": "terminal"
+    }
+    if (!elementActionList || !lastClickSession) {
+        return
+    }
+    if (!clickedAction) {
         console.log("Click Nothing!")
         return;
+    } else {
+        console.log(`Click on: ${clickedAction}`)
     }
-    clickedAction = clickedAction[0]
-    console.log(clickedAction.id)
+    let clickedSession = traverseParents(lastClickSession).filter(it => it.classList.contains("session"))[0];
+    let clickedSessionId = clickedSession.getAttribute("session-id")
+    window.location = `/#session=${clickedSessionId}&action=${targetActions[clickedAction.id]}`
 
 }
 
@@ -191,17 +199,17 @@ function terminalInit() {
 // action list functions
 
 function hideActionList() {
-    if (!elementActionListElement) {
+    if (!elementActionList) {
         return;
     }
-    elementActionListElement.style = `
+    elementActionList.style = `
         opacity: 0;
         position: absolute;
         top: ${elementActionListTop}px;
         left: ${elementActionListLeft}px;`
     setTimeout(function () {
-        elementActionListElement.remove();
-        elementActionListElement = null;
+        elementActionList.remove();
+        elementActionList = null;
     }, 300);
 }
 
@@ -212,30 +220,17 @@ function showActionList(top, left) {
         position: absolute;
         top: ${top}px; 
         left: ${left}px;`
-    let clickedSession = traverseParents(lastClickSession).filter(it => it.classList.contains("session"))[0];
-    let clickedSessionId = clickedSession.getAttribute("session-id")
-    if (!elementActionListElement) {
+    if (!elementActionList) {
         let clone = template.content.cloneNode(true);
         const mainElement = document.querySelector('main');
         mainElement.appendChild(clone);
-        elementActionListElement = document.querySelector(".session-action-list")
+        elementActionList = document.querySelector(".session-action-list")
     }
 
     elementActionListTop = top;
     elementActionListLeft = left;
-    Array.from(elementActionListElement.getElementsByClassName("session-action-link")).filter(it => !it.classList.contains("link-nohref")).forEach(element => {
-        let itemId = element.querySelector(".session-action-item").id;
-        let action = {
-            "session-action-terminal": "terminal",
-            "session-action-files": "files",
-            "session-action-edit-webshell": "edit-webshell",
-            "session-action-proxy": "proxy",
-            "session-action-machine-info": "machine-info",
-        }[itemId];
-        element.href = `#session=${clickedSessionId}&action=${action}`
-    })
     setTimeout(() => {
-        elementActionListElement.style = style;
+        elementActionList.style = style;
     }, 0)
 }
 
