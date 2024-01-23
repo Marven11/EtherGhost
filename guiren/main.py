@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 
 from . import session_manager, session_types
-from .session.session import Session
+from .sessions import Session
 
 DIR = Path(__file__).parent
 app = FastAPI()
@@ -37,7 +37,7 @@ async def session_execute_cmd(session_id: UUID, cmd: str):
     session: Session = session_manager.get_session_by_id(session_id)
     if session is None:
         return {"code": -400, "msg": "No such session"}
-    result = session.execute_cmd(cmd)
+    result = await session.execute_cmd(cmd)
     if result is None:
         return {"code": -400, "msg": "Execute Failed"}
     return {"code": 0, "data": result}

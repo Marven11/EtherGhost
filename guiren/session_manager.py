@@ -1,7 +1,6 @@
 import typing as t
 from uuid import UUID
-from . import db
-from .session import session
+from . import db, sessions
 from .session_types import (
     SessionType,
     SessionInfo,
@@ -28,14 +27,19 @@ def session_conn_converter(session_type):
 @session_conn_converter(SessionType.ONELINE_PHP)
 def php_normal(session_conn: SessionConnOnelinePHP):
     """将PHP一句话的info转换成对象"""
-    return session.PHPWebshellNormal(
+    return sessions.PHPWebshellOneliner(
         method=session_conn.method,
         url=session_conn.url,
-        password=session_conn.password,
+        password=session_conn.password
     )
+    # return session.PHPWebshellNormal(
+    #     method=session_conn.method,
+    #     url=session_conn.url,
+    #     password=session_conn.password,
+    # )
 
 
-def session_info_to_session(session_info: SessionInfo) -> session.Session:
+def session_info_to_session(session_info: SessionInfo) -> sessions.Session:
     """将session info转成session对象
 
     Args:
@@ -64,7 +68,7 @@ def get_session_info_by_id(
     return db.get_session_info_by_id(session_id)
 
 
-def get_session_by_id(session_id: t.Union[str, UUID]) -> t.Union[None, session.Session]:
+def get_session_by_id(session_id: t.Union[str, UUID]) -> t.Union[None, sessions.Session]:
     """根据id返回session对象，优先返回缓存的对象
 
     Args:
