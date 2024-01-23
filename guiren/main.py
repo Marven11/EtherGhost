@@ -21,6 +21,13 @@ async def get_sessions(session_id: t.Union[UUID, None] = None):
     session: Session = session_manager.get_session_info_by_id(session_id)
     return {"code": 0, "data": session}
 
+@app.post("/test_webshell")
+async def test_webshell(session_info: session_types.SessionInfo):
+    """测试webshell"""
+    session = session_manager.session_info_to_session(session_info)
+    result = await session.test_usablility()
+    return {"code": 0, "data": result}
+
 
 @app.post("/update_webshell")
 async def update_webshell(session_info: session_types.SessionInfo):

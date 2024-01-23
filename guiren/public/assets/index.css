@@ -370,6 +370,67 @@ main {
     margin: 0px 15px;
 }
 
+.popups {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 25%;
+    height: 80%;
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.popup {
+    background-color: #9fe88d;
+    border-radius: 20px;
+    box-shadow: 2px 2px 15px #242424;
+    height: 15%;
+    margin-top: 20px;
+    padding: 10px 20px 0px;
+    animation: slide-in 0.5s ease-in-out;
+    transition: height 1s ease, opacity 0.5s ease;
+    flex-flow: 1;
+}
+
+@keyframes slide-in {
+    0% {
+        height: 0;
+        transform: translateY(100%);
+    }
+    100% {
+        opacity: 1;
+        height: 15%;
+        transform: translateY(0%);
+    }
+}
+
+
+.popup-title-line {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin: 10px 0px 10px;
+}
+
+.popup-title {
+    margin: 0px;
+    font-size: 20px;
+    transition: 0.2s;
+}
+
+.popup-icon {
+    height: 30px;
+    width: 30px;
+    margin: 0px 15px 0px;
+    transition: 0.2s;
+}
+
+.popup-text {
+    margin-left: 10px;
+    transition: 0.2s;
+}
+
+
 .switch {
     position: relative;
     display: inline-block;

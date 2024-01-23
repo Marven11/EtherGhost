@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="assets/index.css">
-    <title>鬼刃Webshell管理器   </title>
+    <title>鬼刃Webshell管理器</title>
 </head>
 
 <body>
@@ -83,6 +83,8 @@
 
         <main id="main">
         </main>
+        <div class="popups">
+        </div>
 
         <template id="template-terminal">
             <div class="actions">
@@ -101,6 +103,7 @@
         </template>
 
         <template id="template-home">
+
             <div class="actions">
                 <div class="action action-add" onclick="onClickHomeAddWebshellButton(event)">
                     <p class="action-text">Add Webshell</p>
@@ -142,7 +145,7 @@
                 <div class="action action-discard" onclick="onClickEditorDiscardButton(event)">
                     <p class="action-text">丢弃</p>
                 </div>
-                <div class="action action-test-session">
+                <div class="action action-test-session" onclick="onClickEditorTestButton(event)">
                     <p class="action-text">测试可用性</p>
                 </div>
                 <div class="action action-delete" onclick="onClickEditorDeleteButton(event)">
@@ -216,6 +219,7 @@
         </template>
 
         <template id="template-action-list">
+
             <div class="session-action-list">
                 <a href="#" class="session-action-link" target="_blank" rel="noopener noreferrer">
                     <div class="session-action-item" id="session-action-terminal">
@@ -281,7 +285,23 @@
             </div>
         </template>
 
+        <template id="template-popup">
+            <div class="popup">
+                <div class="popup-title-line">
+                    <div class="popup-icon">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M4 12.6111L8.92308 17.5L20 6.5" stroke="#000000" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <h3 class="popup-title">测试测试</h3>
+                </div>
+
+                <p class="popup-text">这是一条测试文本，用来测试popup的正文部分</p>
+            </div>
+        </template>
     </div>
+
     <script src="assets/index.js"></script>
 </body>
 

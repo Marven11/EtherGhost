@@ -16,7 +16,7 @@ __all__ = ["PHPWebshellMixin", "PHPWebshellOneliner"]
 
 
 class PHPWebshellMixin:
-    async def execute_cmd(self, cmd: str) -> str:
+    async def execute_cmd(self, cmd: str) -> t.Union[str, None]:
         return await self.submit(f"system({cmd!r});")
 
     async def test_usablility(self) -> bool:
@@ -25,9 +25,9 @@ class PHPWebshellMixin:
             "".join(random.choices(string.ascii_lowercase, k=6)),
         )
         result = await self.submit(f"echo '{first_string}' . '{second_string}';")
-        return (first_string + second_string) in result
+        return result is not None and (first_string + second_string) in result
 
-    async def submit(self, payload: str) -> str:
+    async def submit(self, payload: str) -> t.Union[str, None]:
         start, stop = (
             "".join(random.choices(string.ascii_lowercase, k=6)),
             "".join(random.choices(string.ascii_lowercase, k=6)),

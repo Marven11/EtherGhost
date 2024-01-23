@@ -4,6 +4,7 @@ let elementActionListLeft = 0;
 let lastClickSession = null;
 let siteUrl = `${window.location.protocol}//${window.location.host}`
 let currentPage = null;
+let lastPopupTime = Date.now() - 10000;
 // event functions
 
 function onClickRoot(event) {
@@ -57,6 +58,15 @@ function onClickEditorDiscardButton(event) {
     window.close();
 }
 
+function onClickEditorTestButton(event) {
+    const form = document.querySelector(".main-form");
+    let sessionInfo = getEditorInput(form);
+    console.log(sessionInfo);
+    fetchJson("/test_webshell", "POST", params = {}, data = sessionInfo).then(success => {
+        console.log(`test result is ${success}`)
+    });
+}
+
 function onClickEditorDeleteButton(event) {
     console.log(event)
     let session_id = document.querySelector("[name='session_id']").value
@@ -79,6 +89,27 @@ function onKeydownTerminal(event) {
 function onSubmitWebshellEditor(event) {
     event.preventDefault();
     const form = event.target;
+    let sessionInfo = getEditorInput(form);
+    fetchJson("/update_webshell", "POST", params = {}, data = sessionInfo).then(_ => {
+        window.close();
+    });
+}
+
+// template functions
+
+function useTemplateHome(template_id) {
+    let mainElement = document.querySelector('main');
+    while (mainElement.firstChild) {
+        mainElement.firstChild.remove();
+    }
+    let template = document.getElementById(template_id);
+    let clone = template.content.cloneNode(true);
+    mainElement.appendChild(clone);
+}
+
+// webshell editor functions
+
+function getEditorInput(form) {
     const formData = new FormData(form);
     let data = {};
 
@@ -102,24 +133,8 @@ function onSubmitWebshellEditor(event) {
         // tell server to insert (not update) the webshell
         delete sessionInfo.session_id
     }
-    fetchJson("/update_webshell", "POST", params = {}, data = sessionInfo).then(data => {
-        window.close();
-    })
+    return sessionInfo;
 }
-
-// template functions
-
-function useTemplateHome(template_id) {
-    let mainElement = document.querySelector('main');
-    while (mainElement.firstChild) {
-        mainElement.firstChild.remove();
-    }
-    let template = document.getElementById(template_id);
-    let clone = template.content.cloneNode(true);
-    mainElement.appendChild(clone);
-}
-
-// webshell editor functions
 
 function fillEditorInput(session_info) {
     let sessionTypeElement = document.querySelector("[name='session_type']");
@@ -218,6 +233,42 @@ function showActionList(top, left) {
     setTimeout(() => {
         elementActionListElement.style = style;
     }, 0)
+}
+
+// popup functions
+
+function reorderPopups() {
+
+}
+
+function showPopup(level, title, text) {
+    let template = document.getElementById("template-popup");
+    let clone = template.content.cloneNode(true);
+    let popUpDelate = 0;
+    let duration = Date.now() - lastPopupTime;
+    let elementId = `popup-${Date.now() + Math.floor(Math.random() * 1000)}`;
+    if (duration < 200) {
+        popUpDelate = 200 - duration;
+    }
+    clone.querySelector(".popup-title").textContent = title;
+    clone.querySelector(".popup-text").textContent = text;
+    setTimeout(() => {
+        document.querySelector(".popups").prepend(clone);
+    }, popUpDelate);
+    setTimeout(() => {
+        document.querySelector(".popups>:first-child").id = elementId;
+    }, popUpDelate + 10);
+    setTimeout(() => {
+        console.log(elementId)
+        let element = document.getElementById(elementId)
+        element.style.opacity = 0;
+        // element.style.height = 0;
+    }, popUpDelate + 5000);
+    setTimeout(() => {
+        console.log(elementId)
+        document.getElementById(elementId).remove();
+    }, popUpDelate + 7000);
+    lastPopupTime = Date.now() + popUpDelate;
 }
 
 // helper functions
@@ -360,3 +411,8 @@ function main() {
 }
 
 main();
+// for (let i = 0; i < 5; i += 1) {
+//     showPopup("green", '我是一个showPopup的测试', "这只是一个测试，用来测试popup能否被JS创建");
+// }
+
+
