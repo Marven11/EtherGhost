@@ -358,7 +358,7 @@ async function fetchJson(path, method, param, data) {
     let response = await fetch(url, fetchOptions);
     let response_json = await response.json();
     if (response_json.code != 0) {
-        throw new Error(`Wrong response code ${response_json.code} for path ${path}, msg: ${response_json.msg}`);
+        showPopup("red", "请求失败", `${response_json.code}: ${response_json.msg}`);
     }
     return response_json.data;
 }

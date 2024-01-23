@@ -21,6 +21,7 @@ async def get_sessions(session_id: t.Union[UUID, None] = None):
     session: Session = session_manager.get_session_info_by_id(session_id)
     return {"code": 0, "data": session}
 
+
 @app.post("/test_webshell")
 async def test_webshell(session_info: session_types.SessionInfo):
     """测试webshell"""
@@ -43,10 +44,10 @@ async def session_execute_cmd(session_id: UUID, cmd: str):
     """使用session执行shell命令"""
     session: Session = session_manager.get_session_by_id(session_id)
     if session is None:
-        return {"code": -400, "msg": "No such session"}
+        return {"code": -400, "msg": "没有这个session"}
     result = await session.execute_cmd(cmd)
     if result is None:
-        return {"code": -400, "msg": "Execute Failed"}
+        return {"code": -400, "msg": "执行失败"}
     return {"code": 0, "data": result}
 
 
@@ -55,7 +56,7 @@ async def delete_session(session_id: UUID):
     """使用session执行shell命令"""
     session: Session = session_manager.get_session_info_by_id(session_id)
     if not session:
-        return {"code": -400, "msg": "Session not found"}
+        return {"code": -400, "msg": "没有这个session"}
     session_manager.delete_session_info_by_id(session_id)
     return {"code": 0, "data": True}
 
