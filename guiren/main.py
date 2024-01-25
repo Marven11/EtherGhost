@@ -5,7 +5,7 @@ from fastapi import FastAPI, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 
-from . import session_manager, session_types
+from . import session_manager, session_types, sessions
 from .sessions import Session
 
 DIR = Path(__file__).parent
@@ -35,8 +35,11 @@ async def get_sessions(session_id: t.Union[UUID, None] = None):
 async def test_webshell(session_info: session_types.SessionInfo):
     """测试webshell"""
     session = session_manager.session_info_to_session(session_info)
-    result = await session.test_usablility()
-    return {"code": 0, "data": result}
+    try:
+        result = await session.test_usablility()
+        return {"code": 0, "data": result}
+    except sessions.NetworkError as exc:
+        return {"code": -500, "data": "网络错误：" + str(exc)}
 
 
 @app.post("/update_webshell")
@@ -54,10 +57,13 @@ async def session_execute_cmd(session_id: UUID, cmd: str):
     session: Session = session_manager.get_session_by_id(session_id)
     if session is None:
         return {"code": -400, "msg": "没有这个session"}
-    result = await session.execute_cmd(cmd)
-    if result is None:
-        return {"code": -400, "msg": "执行失败"}
-    return {"code": 0, "data": result}
+    try:
+        result = await session.execute_cmd(cmd)
+        return {"code": 0, "data": result}
+    except sessions.NetworkError as exc:
+        return {"code": -500, "msg": "网络错误: " + str(exc)}
+    except sessions.UnexpectedError as exc:
+        return {"code": -500, "msg": "未知错误: " + str(exc)}
 
 
 @app.delete("/session/{session_id}")

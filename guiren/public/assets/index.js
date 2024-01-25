@@ -48,6 +48,10 @@ function onClickActionList(event) {
     window.location = `/#session=${clickedSessionId}&action=${targetActions}`
 }
 
+function onClickFilesChangeDir(event) {
+
+}
+
 function onClickTerminalExecute(event) {
     terminalExecuteCommand();
 }
@@ -102,6 +106,10 @@ function onKeydownTerminal(event) {
     }
 }
 
+function onKeydownFiles(event) {
+    
+}
+
 function onSubmitWebshellEditor(event) {
     event.preventDefault();
     const form = event.target;
@@ -126,54 +134,10 @@ function useTemplateHome(template_id) {
     mainElement.appendChild(clone);
 }
 
-// webshell editor functions
+// session files functions
 
-function getEditorInput(form) {
-    const formData = new FormData(form);
-    let data = {};
-    for (const [key, value] of formData.entries()) {
-        data[key] = value;
-    }
-    data.http_params_obfs = data.http_params_obfs == "on"
-    let sessionInfo = {
-        session_type: data.session_type,
-        name: data.name,
-        connection: {
-            url: data.url,
-            password: data.password,
-            method: data.method,
-            http_params_obfs: data.http_params_obfs,
-            encoder: data.encoder
-        },
-        note: data.note,
-        location: "",
-        session_id: data.session_id
-    }
-    if (!sessionInfo.session_id) {
-        // tell server to insert (not update) the webshell
-        delete sessionInfo.session_id
-    }
-    return sessionInfo;
-}
+function filesChangeDir(target_dir) {
 
-function fillEditorInput(session_info) {
-    let setOptionByIndex = (element, option) => {
-        element.selectedIndex = Array.from(element.getElementsByTagName("option"))
-            .map(it => it.value)
-            .indexOf(option)
-    }
-    setOptionByIndex(document.querySelector("[name='session_type']"), session_info["session_type"])
-    document.querySelector("[name='name']").value = session_info["name"]
-    document.querySelector("[name='note']").value = session_info["note"]
-    document.querySelector("[name='session_id']").value = session_info["session_id"]
-    if (session_info["session_type"] == "ONELINE_PHP") {
-        document.querySelector("[name='url']").value = session_info["connection"]["url"]
-        document.querySelector("[name='password']").value = session_info["connection"]["password"]
-        document.querySelector("[name='method']").value = session_info["connection"]["method"]
-        document.querySelector("[name='http_params_obfs']").checked = session_info["connection"]["http_params_obfs"]
-        setOptionByIndex(document.querySelector("[name='method']"), session_info["connection"]["method"])
-        setOptionByIndex(document.querySelector("[name='encoder']"), session_info["connection"]["encoder"])
-    }
 }
 
 // terminal functions
@@ -245,6 +209,58 @@ function showActionList(top, left) {
         elementActionList.style = style;
     }, 0)
 }
+
+
+// webshell editor functions
+
+function getEditorInput(form) {
+    const formData = new FormData(form);
+    let data = {};
+    for (const [key, value] of formData.entries()) {
+        data[key] = value;
+    }
+    data.http_params_obfs = data.http_params_obfs == "on"
+    let sessionInfo = {
+        session_type: data.session_type,
+        name: data.name,
+        connection: {
+            url: data.url,
+            password: data.password,
+            method: data.method,
+            http_params_obfs: data.http_params_obfs,
+            encoder: data.encoder
+        },
+        note: data.note,
+        location: "",
+        session_id: data.session_id
+    }
+    if (!sessionInfo.session_id) {
+        // tell server to insert (not update) the webshell
+        delete sessionInfo.session_id
+    }
+    return sessionInfo;
+}
+
+function fillEditorInput(session_info) {
+    let setOptionByIndex = (element, option) => {
+        element.selectedIndex = Array.from(element.getElementsByTagName("option"))
+            .map(it => it.value)
+            .indexOf(option)
+    }
+    setOptionByIndex(document.querySelector("[name='session_type']"), session_info["session_type"])
+    document.querySelector("[name='name']").value = session_info["name"]
+    document.querySelector("[name='note']").value = session_info["note"]
+    document.querySelector("[name='session_id']").value = session_info["session_id"]
+    if (session_info["session_type"] == "ONELINE_PHP") {
+        document.querySelector("[name='url']").value = session_info["connection"]["url"]
+        document.querySelector("[name='password']").value = session_info["connection"]["password"]
+        document.querySelector("[name='method']").value = session_info["connection"]["method"]
+        document.querySelector("[name='http_params_obfs']").checked = session_info["connection"]["http_params_obfs"]
+        setOptionByIndex(document.querySelector("[name='method']"), session_info["connection"]["method"])
+        setOptionByIndex(document.querySelector("[name='encoder']"), session_info["connection"]["encoder"])
+    }
+}
+
 
 // popup functions
 
