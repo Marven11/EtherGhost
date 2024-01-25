@@ -13,6 +13,15 @@ app = FastAPI()
 app.mount("/public", StaticFiles(directory=DIR / "public"), name="public")
 
 
+@app.middleware("http")
+async def set_no_cache(request, call_next):
+    response: Response = await call_next(request)
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
+
 @app.get("/session")
 async def get_sessions(session_id: t.Union[UUID, None] = None):
     """列出所有的session"""
