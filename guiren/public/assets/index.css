@@ -5,6 +5,8 @@ html {
 
 /* UI设计参考metacubexd */
 
+/* 基本框架 */
+
 .root {
     display: flex;
     flex-direction: column;
@@ -86,6 +88,8 @@ main {
     flex-direction: column;
 }
 
+/* 第一行的action栏 */
+
 .actions {
     margin: 20px 0px;
     display: flex;
@@ -166,6 +170,85 @@ main {
     color: #b1cbd5;
 }
 
+/* 弹出的提示消息，网络错误保存成功之类的 */
+
+.popups {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 25%;
+    height: 80%;
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.popup {
+    border-radius: 20px;
+    box-shadow: 2px 2px 15px #242424;
+    height: 15%;
+    margin-top: 20px;
+    padding: 10px 20px 0px;
+    animation: slide-in 0.5s ease-in-out;
+    transition: height 1s ease, opacity 0.5s ease;
+    flex-flow: 1;
+}
+
+.popup-red {
+    background-color: #ffae9b;
+}
+
+.popup-yellow {
+    background-color: #efd057;
+}
+
+.popup-green {
+    background-color: #9fe88d;
+}
+
+.popup-blue {
+    background-color: #28ebff;
+}
+
+@keyframes slide-in {
+    0% {
+        height: 0;
+        transform: translateY(100%);
+    }
+
+    100% {
+        opacity: 1;
+        height: 15%;
+        transform: translateY(0%);
+    }
+}
+
+.popup-title-line {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin: 10px 0px 10px;
+}
+
+.popup-title {
+    margin: 0px;
+    font-size: 20px;
+    transition: 0.2s;
+}
+
+.popup-icon {
+    height: 30px;
+    width: 30px;
+    margin: 0px 15px 0px;
+    transition: 0.2s;
+}
+
+.popup-text {
+    margin-left: 10px;
+    transition: 0.2s;
+}
+
+/* 主页的session展示 */
+
 .sessions {
     height: 170px;
     display: grid;
@@ -240,6 +323,8 @@ main {
     margin: 0px 30px 10px;
     color: #64748b;
 }
+
+/* 表格，主要用于webshell编辑界面 */
 
 .main-form {
     display: flex;
@@ -331,126 +416,6 @@ main {
     height: 100px;
 }
 
-.session-action-list {
-    opacity: 0;
-    position: absolute;
-    border-radius: 20px;
-    background-color: #1c212b;
-    color: #b1cbd5;
-    stroke: #b1cbd5;
-    padding: 15px 0px 15px 0px;
-    transition: opacity 0.3s ease, top 0.2s, left 0.2s ease;
-}
-
-.session-action-list a {
-    text-decoration: none;
-    color: inherit;
-    cursor: pointer;
-}
-
-.session-action-item {
-    height: 50px;
-    padding: 2px 20px 0px 10px;
-    display: flex;
-    flex-direction: row;
-    justify-content: left;
-    align-items: center;
-    font-size: 18px;
-    transition: background 0.3s ease;
-}
-
-.session-action-item:hover {
-    background-color: #394458;
-}
-
-.session-action-item-dangerous {
-    color: #ffae9b;
-    stroke: #ffae9b;
-}
-
-.session-action-icon {
-    width: 30px;
-    height: 30px;
-    margin: 0px 15px;
-}
-
-.popups {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 25%;
-    height: 80%;
-    display: flex;
-    flex-direction: column-reverse;
-}
-
-.popup {
-    border-radius: 20px;
-    box-shadow: 2px 2px 15px #242424;
-    height: 15%;
-    margin-top: 20px;
-    padding: 10px 20px 0px;
-    animation: slide-in 0.5s ease-in-out;
-    transition: height 1s ease, opacity 0.5s ease;
-    flex-flow: 1;
-}
-
-.popup-red {
-    background-color: #ffae9b;
-}
-
-.popup-yellow {
-    background-color: #efd057;
-}
-
-.popup-green {
-    background-color: #9fe88d;
-}
-
-.popup-blue {
-    background-color: #28ebff;
-}
-
-@keyframes slide-in {
-    0% {
-        height: 0;
-        transform: translateY(100%);
-    }
-
-    100% {
-        opacity: 1;
-        height: 15%;
-        transform: translateY(0%);
-    }
-}
-
-
-.popup-title-line {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    margin: 10px 0px 10px;
-}
-
-.popup-title {
-    margin: 0px;
-    font-size: 20px;
-    transition: 0.2s;
-}
-
-.popup-icon {
-    height: 30px;
-    width: 30px;
-    margin: 0px 15px 0px;
-    transition: 0.2s;
-}
-
-.popup-text {
-    margin-left: 10px;
-    transition: 0.2s;
-}
-
-
 .switch {
     position: relative;
     display: inline-block;
@@ -500,6 +465,53 @@ input:focus+.slider {
 input:checked+.slider:before {
     transform: translateX(26px);
 }
+
+/* 主页点击session弹出的菜单 */
+
+.session-action-list {
+    opacity: 0;
+    position: absolute;
+    border-radius: 20px;
+    background-color: #1c212b;
+    color: #b1cbd5;
+    stroke: #b1cbd5;
+    padding: 15px 0px 15px 0px;
+    transition: opacity 0.3s ease, top 0.2s, left 0.2s ease;
+}
+
+.session-action-list a {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
+
+.session-action-item {
+    height: 50px;
+    padding: 2px 20px 0px 10px;
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+    align-items: center;
+    font-size: 18px;
+    transition: background 0.3s ease;
+}
+
+.session-action-item:hover {
+    background-color: #394458;
+}
+
+.session-action-item-dangerous {
+    color: #ffae9b;
+    stroke: #ffae9b;
+}
+
+.session-action-icon {
+    width: 30px;
+    height: 30px;
+    margin: 0px 15px;
+}
+
+/* 终端 */
 
 .terminal {
     resize: none;
