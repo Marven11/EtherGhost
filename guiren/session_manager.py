@@ -27,20 +27,17 @@ def session_conn_converter(session_type):
 @session_conn_converter(SessionType.ONELINE_PHP)
 def php_normal(session_conn: SessionConnOnelinePHP):
     """将PHP一句话的info转换成对象"""
+    print(session_conn)
     return sessions.PHPWebshellOneliner(
         method=session_conn.method,
         url=session_conn.url,
         password=session_conn.password,
+        http_params_obfs=session_conn.http_params_obfs,
         options=sessions.php.PHPWebshellOptions(
             encoder=session_conn.encoder,
-            http_params_obfs=session_conn.http_params_obfs
         )
     )
-    # return session.PHPWebshellNormal(
-    #     method=session_conn.method,
-    #     url=session_conn.url,
-    #     password=session_conn.password,
-    # )
+
 
 
 def session_info_to_session(session_info: SessionInfo) -> sessions.Session:
@@ -83,13 +80,9 @@ def get_session_by_id(session_id: t.Union[str, UUID]) -> t.Union[None, sessions.
     """
     if isinstance(session_id, str):
         session_id = UUID(session_id)
-    if session_id not in sessions_obj:
-        session_info = get_session_info_by_id(session_id)
-        if session_info is None:
-            return None
-        sessions_obj[session_id] = session_info_to_session(session_info)
+    session_info = get_session_info_by_id(session_id)
+    return session_info_to_session(session_info)
 
-    return sessions_obj[session_id]
 
 
 def list_sessions_readable() -> t.List[SessionInfo]:

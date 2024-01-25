@@ -5,6 +5,7 @@ import string
 import httpx
 import base64
 from dataclasses import dataclass
+from ..utils import random_english_words
 from .base import Session
 
 logger = logging.getLogger("sessions.php")
@@ -110,6 +111,7 @@ class PHPWebshellOneliner(PHPWebshellMixin, Session):
         password: str,
         params: t.Union[t.Dict, None] = None,
         data: t.Union[t.Dict, None] = None,
+        http_params_obfs: bool = False,
         options: t.Union[PHPWebshellOptions, None] = None,
     ) -> None:
         PHPWebshellMixin.__init__(self, options)
@@ -118,14 +120,23 @@ class PHPWebshellOneliner(PHPWebshellMixin, Session):
         self.password = password
         self.params = {} if params is None else params
         self.data = {} if data is None else data
+        self.http_params_obfs = http_params_obfs
 
     async def submit_raw(self, payload: str):
         params = self.params.copy()
         data = self.data.copy()
+        obfs_data = {}
+        if self.http_params_obfs:
+            obfs_data = {
+                random_english_words(): random_english_words()
+                for _ in range(20)
+            }
         if self.method in ["GET", "HEAD"]:
             params[self.password] = payload
+            params.update(obfs_data)
         else:
             data[self.password] = payload
+            data.update(obfs_data)
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.request(

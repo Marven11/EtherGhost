@@ -69,13 +69,12 @@ function onClickHomeAddWebshellButton(event) {
 }
 
 function onClickEditorDiscardButton(event) {
-    window.close();
+    window.close(); // TODO: fix me
 }
 
 function onClickEditorTestButton(event) {
     const form = document.querySelector(".main-form");
     let sessionInfo = getEditorInput(form);
-    console.log(sessionInfo);
     fetchJson("/test_webshell", "POST", params = {}, data = sessionInfo).then(success => {
         if (success) {
             showPopup("green", "测试成功", "这个webshell可以正常使用")
@@ -86,7 +85,6 @@ function onClickEditorTestButton(event) {
 }
 
 function onClickEditorDeleteButton(event) {
-    console.log(event)
     let session_id = document.querySelector("[name='session_id']").value
     if (!session_id) {
         alert("No session id!");
@@ -133,11 +131,10 @@ function useTemplateHome(template_id) {
 function getEditorInput(form) {
     const formData = new FormData(form);
     let data = {};
-
     for (const [key, value] of formData.entries()) {
         data[key] = value;
     }
-
+    data.http_params_obfs = data.http_params_obfs == "on"
     let sessionInfo = {
         session_type: data.session_type,
         name: data.name,
@@ -145,7 +142,7 @@ function getEditorInput(form) {
             url: data.url,
             password: data.password,
             method: data.method,
-            http_params_obfs: data.http_obfs,
+            http_params_obfs: data.http_params_obfs,
             encoder: data.encoder
         },
         note: data.note,
@@ -173,7 +170,7 @@ function fillEditorInput(session_info) {
         document.querySelector("[name='url']").value = session_info["connection"]["url"]
         document.querySelector("[name='password']").value = session_info["connection"]["password"]
         document.querySelector("[name='method']").value = session_info["connection"]["method"]
-        document.querySelector("[name='http_params_obfs']").value = session_info["connection"]["http_params_obfs"]
+        document.querySelector("[name='http_params_obfs']").checked = session_info["connection"]["http_params_obfs"]
         setOptionByIndex(document.querySelector("[name='method']"), session_info["connection"]["method"])
         setOptionByIndex(document.querySelector("[name='encoder']"), session_info["connection"]["encoder"])
     }
@@ -302,7 +299,6 @@ function traverseParents(element) {
 
 function getHashParameters() {
     if (window.location.hash == "") {
-        console.log(window.location)
         return {};
     }
     const hash = window.location.hash.slice(1); // 获取URL中的井号后面的部分
