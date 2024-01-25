@@ -1,6 +1,7 @@
 body,
 html {
     background-color: #2a303c;
+    margin: 0;
 }
 
 /* UI设计参考metacubexd */
@@ -14,6 +15,7 @@ html {
     align-items: center;
     font-family: 'Courier New', Courier, monospace;
     min-width: 1000px;
+    min-height: 100vh;
 }
 
 header {
@@ -24,7 +26,7 @@ header {
     justify-content: space-between;
     align-items: center;
     color: #091307;
-    margin: 20px;
+    margin: 30px;
 }
 
 .navbar {
@@ -86,6 +88,7 @@ main {
     width: 90%;
     display: flex;
     flex-direction: column;
+    flex-grow: 1;
 }
 
 /* 第一行的action栏 */
