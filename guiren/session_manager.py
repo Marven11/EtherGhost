@@ -30,7 +30,11 @@ def php_normal(session_conn: SessionConnOnelinePHP):
     return sessions.PHPWebshellOneliner(
         method=session_conn.method,
         url=session_conn.url,
-        password=session_conn.password
+        password=session_conn.password,
+        options=sessions.php.PHPWebshellOptions(
+            encoder=session_conn.encoder,
+            http_params_obfs=session_conn.http_params_obfs
+        )
     )
     # return session.PHPWebshellNormal(
     #     method=session_conn.method,

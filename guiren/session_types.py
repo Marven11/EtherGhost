@@ -29,7 +29,8 @@ class SessionConnOnelinePHP(SessionConnectionInfoBase):
     url: str
     password: str
     method: str = "POST"
-
+    http_params_obfs: bool = False
+    encoder: str = "raw"
 
 SessionConnectionInfo = t.Union[SessionConnOnelinePHP,]
 

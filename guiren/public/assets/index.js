@@ -145,6 +145,8 @@ function getEditorInput(form) {
             url: data.url,
             password: data.password,
             method: data.method,
+            http_params_obfs: data.http_obfs,
+            encoder: data.encoder
         },
         note: data.note,
         location: "",
@@ -158,12 +160,12 @@ function getEditorInput(form) {
 }
 
 function fillEditorInput(session_info) {
-    let sessionTypeElement = document.querySelector("[name='session_type']");
-    sessionTypeElement.selectedIndex = (
-        Array.from(sessionTypeElement.getElementsByTagName("option"))
+    let setOptionByIndex = (element, option) => {
+        element.selectedIndex = Array.from(element.getElementsByTagName("option"))
             .map(it => it.value)
-            .indexOf(session_info["session_type"])
-    )
+            .indexOf(option)
+    }
+    setOptionByIndex(document.querySelector("[name='session_type']"), session_info["session_type"])
     document.querySelector("[name='name']").value = session_info["name"]
     document.querySelector("[name='note']").value = session_info["note"]
     document.querySelector("[name='session_id']").value = session_info["session_id"]
@@ -171,12 +173,9 @@ function fillEditorInput(session_info) {
         document.querySelector("[name='url']").value = session_info["connection"]["url"]
         document.querySelector("[name='password']").value = session_info["connection"]["password"]
         document.querySelector("[name='method']").value = session_info["connection"]["method"]
-        let sessionMethodElement = document.querySelector("[name='method']");
-        sessionMethodElement.selectedIndex = (
-            Array.from(sessionMethodElement.getElementsByTagName("option"))
-                .map(it => it.value)
-                .indexOf(session_info["connection"]["method"])
-        );
+        document.querySelector("[name='http_params_obfs']").value = session_info["connection"]["http_params_obfs"]
+        setOptionByIndex(document.querySelector("[name='method']"), session_info["connection"]["method"])
+        setOptionByIndex(document.querySelector("[name='encoder']"), session_info["connection"]["encoder"])
     }
 }
 
