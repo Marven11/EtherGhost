@@ -6,7 +6,6 @@ let siteUrl = `${window.location.protocol}//${window.location.host}`
 let currentPage = null;
 let lastPopupTime = Date.now() - 10000;
 
-// TODO: change snake naming to small camel
 // event functions
 
 function onClickRoot(event) {
@@ -86,11 +85,11 @@ function onClickEditorTestButton(event) {
 }
 
 function onClickEditorDeleteButton(event) {
-    let session_id = document.querySelector("[name='session_id']").value
-    if (!session_id) {
+    let sessionId = document.querySelector("[name='session_id']").value
+    if (!sessionId) {
         alert("No session id!");
     }
-    fetchJson(`/session/${session_id}`, "DELETE").then(success => {
+    fetchJson(`/session/${sessionId}`, "DELETE").then(success => {
         if (success) {
             window.location = "/"
         }
@@ -121,19 +120,19 @@ function onSubmitWebshellEditor(event) {
 
 // template functions
 
-function useTemplateHome(template_id) {
+function useTemplateHome(templateId) {
     let mainElement = document.querySelector('main');
     while (mainElement.firstChild) {
         mainElement.firstChild.remove();
     }
-    let template = document.getElementById(template_id);
+    let template = document.getElementById(templateId);
     let clone = template.content.cloneNode(true);
     mainElement.appendChild(clone);
 }
 
 // session files functions
 
-function filesChangeDir(target_dir) {
+function filesChangeDir(targetDir) {
 
 }
 
@@ -253,23 +252,23 @@ function getEditorInput(form) {
     return sessionInfo;
 }
 
-function fillEditorInput(session_info) {
+function fillEditorInput(sessionInfo) {
     let setOptionByIndex = (element, option) => {
         element.selectedIndex = Array.from(element.getElementsByTagName("option"))
             .map(it => it.value)
             .indexOf(option)
     }
-    setOptionByIndex(document.querySelector("[name='session_type']"), session_info["session_type"])
-    document.querySelector("[name='name']").value = session_info["name"]
-    document.querySelector("[name='note']").value = session_info["note"]
-    document.querySelector("[name='session_id']").value = session_info["session_id"]
-    if (session_info["session_type"] == "ONELINE_PHP") {
-        document.querySelector("[name='url']").value = session_info["connection"]["url"]
-        document.querySelector("[name='password']").value = session_info["connection"]["password"]
-        document.querySelector("[name='method']").value = session_info["connection"]["method"]
-        document.querySelector("[name='http_params_obfs']").checked = session_info["connection"]["http_params_obfs"]
-        setOptionByIndex(document.querySelector("[name='method']"), session_info["connection"]["method"])
-        setOptionByIndex(document.querySelector("[name='encoder']"), session_info["connection"]["encoder"])
+    setOptionByIndex(document.querySelector("[name='session_type']"), sessionInfo["session_type"])
+    document.querySelector("[name='name']").value = sessionInfo["name"]
+    document.querySelector("[name='note']").value = sessionInfo["note"]
+    document.querySelector("[name='session_id']").value = sessionInfo["session_id"]
+    if (sessionInfo["session_type"] == "ONELINE_PHP") {
+        document.querySelector("[name='url']").value = sessionInfo["connection"]["url"]
+        document.querySelector("[name='password']").value = sessionInfo["connection"]["password"]
+        document.querySelector("[name='method']").value = sessionInfo["connection"]["method"]
+        document.querySelector("[name='http_params_obfs']").checked = sessionInfo["connection"]["http_params_obfs"]
+        setOptionByIndex(document.querySelector("[name='method']"), sessionInfo["connection"]["method"])
+        setOptionByIndex(document.querySelector("[name='encoder']"), sessionInfo["connection"]["encoder"])
     }
 }
 
@@ -366,12 +365,12 @@ function homeFillSessions(sessions) {
 async function fetchJson(path, method, param, data) {
     let fetchOptions;
     let url = new URL(siteUrl + path);
-    const param_obj = new URLSearchParams();
+    const paramObj = new URLSearchParams();
     if (param) {
         for (k of Object.keys(param)) {
-            param_obj.append(k, param[k]);
+            paramObj.append(k, param[k]);
         }
-        url.search = param_obj;
+        url.search = paramObj;
     }
     if (!data) {
         data = {};
@@ -389,12 +388,12 @@ async function fetchJson(path, method, param, data) {
             body: JSON.stringify(data)
         }
     }
-    let response = await fetch(url, fetchOptions);
-    let response_json = await response.json();
-    if (response_json.code != 0) {
-        showPopup("red", "请求失败", `${response_json.code}: ${response_json.msg}`);
+    let responseJson = await fetch(url, fetchOptions);
+    let response = await responseJson.json();
+    if (response.code != 0) {
+        showPopup("red", "请求失败", `${response.code}: ${response.msg}`);
     }
-    return response_json.data;
+    return response.data;
 }
 
 // entry functions
