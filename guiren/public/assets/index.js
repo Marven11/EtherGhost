@@ -6,6 +6,7 @@ let siteUrl = `${window.location.protocol}//${window.location.host}`
 let currentPage = null;
 let lastPopupTime = Date.now() - 10000;
 
+// TODO: change snake naming to small camel
 // event functions
 
 function onClickRoot(event) {
@@ -46,10 +47,6 @@ function onClickActionList(event) {
     let clickedSession = traverseParents(lastClickSession).filter(it => it.classList.contains("session"))[0];
     let clickedSessionId = clickedSession.getAttribute("session-id")
     window.location = `/#session=${clickedSessionId}&action=${targetActions}`
-}
-
-function onClickFilesChangeDir(event) {
-
 }
 
 function onClickTerminalExecute(event) {
@@ -107,7 +104,7 @@ function onKeydownTerminal(event) {
 }
 
 function onKeydownFiles(event) {
-    
+
 }
 
 function onSubmitWebshellEditor(event) {
@@ -138,6 +135,21 @@ function useTemplateHome(template_id) {
 
 function filesChangeDir(target_dir) {
 
+}
+
+function filesAddPwdItem(fileType, fileName, filePermission) {
+    let pwdListElement = document.querySelector('.files-pwd-list');
+    let template = document.getElementById("template-files-pwd-item");
+    let clone = template.content.cloneNode(true);
+    let icons = Array.from(clone.querySelectorAll(".files-pwd-item-icon"));
+    icons.forEach(element => {
+            console.log(element)
+            if (!element.classList.contains(`icon-${fileType}`)) {
+            element.remove();
+        }
+    })
+    clone.querySelector(".files-pwd-item-name").textContent = fileName
+    pwdListElement.appendChild(clone);
 }
 
 // terminal functions
@@ -399,7 +411,18 @@ function sessionMain(hashParams) {
     if (action == "terminal") {
         useTemplateHome("template-terminal");
         terminalInit();
-        currentPage = "edit-webshell";
+        currentPage = "terminal";
+        return;
+    }
+    if (action == "files") {
+        useTemplateHome("template-files");
+
+        // TODO remove this test
+        filesAddPwdItem("folder", "bin", "40755");
+        filesAddPwdItem("folder", "etc", "40755");
+        filesAddPwdItem("folder", "home", "40755");
+        filesAddPwdItem("folder", "root", "40755");
+        currentPage = "files";
     }
 }
 
