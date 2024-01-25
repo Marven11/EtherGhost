@@ -8,3 +8,5 @@ class Session:
     async def test_usablility(self) -> bool:
         raise NotImplementedError()
 
+class SessionException(Exception):
+    pass
