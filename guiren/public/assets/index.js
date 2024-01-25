@@ -8,115 +8,109 @@ let lastPopupTime = Date.now() - 10000;
 
 // event functions
 
-function onClickRoot(event) {
-    let isSessionClicked = traverseParents(event.target).map(it => it.classList.contains("session")).includes(true);
-    if (isSessionClicked) {
-        lastClickSession = event.target;
-        showActionList(event.clientY, event.clientX)
-    } else {
-        hideActionList()
-    }
-}
-
-function onClickActionList(event) {
-
-    let clickedAction = traverseParents(event.target).filter(
-        element => element.classList.contains("session-action-item")
-    )[0]
-
-    let targetActions = {
-        "session-action-terminal": "terminal",
-        "session-action-files": "files",
-        "session-action-proxy": "proxy",
-        "session-action-machine-info": "machine-info",
-        "session-action-edit-webshell": "edit-webshell",
-    }[clickedAction.id];
-    if (!elementActionList || !lastClickSession) {
-        return
-    }
-    if (!clickedAction) {
-        console.log("Click Nothing!")
-        return;
-    } else if (!targetActions) {
-        console.log("Action not found!");
-        return
-    } else {
-        console.log(`Click on: ${clickedAction}`)
-    }
-    let clickedSession = traverseParents(lastClickSession).filter(it => it.classList.contains("session"))[0];
-    let clickedSessionId = clickedSession.getAttribute("session-id")
-    window.location = `/#session=${clickedSessionId}&action=${targetActions}`
-}
-
-function onClickTerminalExecute(event) {
-    terminalExecuteCommand();
-}
-
-function onClickNavbarButton(event) {
-    let icon = traverseParents(event.target).filter(it => it.classList.contains("navbar-icon"))[0]
-    if (icon == undefined) {
-        throw new Error(`No button was clicked for target ${event.target}.`);
-    }
-    if (icon.id == "navbar-icon-home") {
-        window.location = "/"
-    } else if (icon.id == "navbar-icon-terminal") {
-        alert("请点击对应webshell打开终端")
-    }
-}
-
-function onClickHomeAddWebshellButton(event) {
-    window.location = "/#action=add-webshell"
-}
-
-function onClickEditorDiscardButton(event) {
-    window.history.back();
-}
-
-function onClickEditorTestButton(event) {
-    const form = document.querySelector(".main-form");
-    let sessionInfo = getEditorInput(form);
-    fetchJson("/test_webshell", "POST", params = {}, data = sessionInfo).then(success => {
-        if (success) {
-            showPopup("green", "测试成功", "这个webshell可以正常使用")
+let eventFuncs = {
+    root: function (event) {
+        console.log("Here!")
+        let isSessionClicked = traverseParents(event.target).map(it => it.classList.contains("session")).includes(true);
+        if (isSessionClicked) {
+            lastClickSession = event.target;
+            showActionList(event.clientY, event.clientX)
         } else {
-            showPopup("yellow", "测试失败", "这个webshell不可以正常使用")
+            hideActionList()
         }
-    });
-}
+    },
+    actionList: function (event) {
 
-function onClickEditorDeleteButton(event) {
-    let sessionId = document.querySelector("[name='session_id']").value
-    if (!sessionId) {
-        alert("No session id!");
-    }
-    fetchJson(`/session/${sessionId}`, "DELETE").then(success => {
-        if (success) {
-            window.location = "/"
+        let clickedAction = traverseParents(event.target).filter(
+            element => element.classList.contains("session-action-item")
+        )[0]
+
+        let targetActions = {
+            "session-action-terminal": "terminal",
+            "session-action-files": "files",
+            "session-action-proxy": "proxy",
+            "session-action-machine-info": "machine-info",
+            "session-action-edit-webshell": "edit-webshell",
+        }[clickedAction.id];
+        if (!elementActionList || !lastClickSession) {
+            return
         }
-    })
-}
-
-function onKeydownTerminal(event) {
-    if (event.key === "Enter") {
+        if (!clickedAction) {
+            console.log("Click Nothing!")
+            return;
+        } else if (!targetActions) {
+            console.log("Action not found!");
+            return
+        } else {
+            console.log(`Click on: ${clickedAction}`)
+        }
+        let clickedSession = traverseParents(lastClickSession).filter(it => it.classList.contains("session"))[0];
+        let clickedSessionId = clickedSession.getAttribute("session-id")
+        window.location = `/#session=${clickedSessionId}&action=${targetActions}`
+    },
+    terminalExecute: function (event) {
         terminalExecuteCommand();
-    }
+    },
+    navbarButton: function (event) {
+        let icon = traverseParents(event.target).filter(it => it.classList.contains("navbar-icon"))[0]
+        if (icon == undefined) {
+            throw new Error(`No button was clicked for target ${event.target}.`);
+        }
+        if (icon.id == "navbar-icon-home") {
+            window.location = "/"
+        } else if (icon.id == "navbar-icon-terminal") {
+            alert("请点击对应webshell打开终端")
+        }
+    },
+    homeAddWebshell: function (event) {
+        window.location = "/#action=add-webshell"
+
+    },
+    webshellEditorDiscard: function (event) {
+        window.history.back();
+    },
+    webshellEditorTest: function (event) {
+        const form = document.querySelector(".main-form");
+        let sessionInfo = getEditorInput(form);
+        fetchJson("/test_webshell", "POST", params = {}, data = sessionInfo).then(success => {
+            if (success) {
+                showPopup("green", "测试成功", "这个webshell可以正常使用")
+            } else {
+                showPopup("yellow", "测试失败", "这个webshell不可以正常使用")
+            }
+        });
+    },
+    webshellEditorDelete: function (event) {
+        let sessionId = document.querySelector("[name='session_id']").value
+        if (!sessionId) {
+            alert("No session id!");
+        }
+        fetchJson(`/session/${sessionId}`, "DELETE").then(success => {
+            if (success) {
+                window.location = "/"
+            }
+        })
+    },
+    webshellEditorSubmit: function (event) {
+        event.preventDefault();
+        const form = event.target;
+        let sessionInfo = getEditorInput(form);
+        fetchJson("/update_webshell", "POST", params = {}, data = sessionInfo).then(_ => {
+            showPopup("green", "保存成功", "webshell已成功保存到本地数据库中");
+            setTimeout(() => {
+                window.history.back();
+            }, 800);
+        });
+    },
+    terminalKeydown: function (event) {
+        if (event.key === "Enter") {
+            terminalExecuteCommand();
+        }
+    },
+    filesKeydown: function (event) {
+    },
 }
 
-function onKeydownFiles(event) {
-
-}
-
-function onSubmitWebshellEditor(event) {
-    event.preventDefault();
-    const form = event.target;
-    let sessionInfo = getEditorInput(form);
-    fetchJson("/update_webshell", "POST", params = {}, data = sessionInfo).then(_ => {
-        showPopup("green", "保存成功", "webshell已成功保存到本地数据库中");
-        setTimeout(() => {
-            window.history.back();
-        }, 800);
-    });
-}
 
 // template functions
 
@@ -142,8 +136,8 @@ function filesAddPwdItem(fileType, fileName, filePermission) {
     let clone = template.content.cloneNode(true);
     let icons = Array.from(clone.querySelectorAll(".files-pwd-item-icon"));
     icons.forEach(element => {
-            console.log(element)
-            if (!element.classList.contains(`icon-${fileType}`)) {
+        console.log(element)
+        if (!element.classList.contains(`icon-${fileType}`)) {
             element.remove();
         }
     })
@@ -317,13 +311,13 @@ function parseFilePermission(filePermission) {
     return Array.from(filePermission).map(dig => {
         let n = Number(dig)
         result = ["-", "-", "-"];
-        if(n & 4) {
+        if (n & 4) {
             result[0] = "r";
         }
-        if(n & 2) {
+        if (n & 2) {
             result[1] = "w";
         }
-        if(n & 1) {
+        if (n & 1) {
             result[2] = "x";
         }
         return result.join("")
