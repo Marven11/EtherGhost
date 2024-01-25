@@ -148,6 +148,7 @@ function filesAddPwdItem(fileType, fileName, filePermission) {
         }
     })
     clone.querySelector(".files-pwd-item-name").textContent = fileName
+    clone.querySelector(".files-pwd-item-permission").textContent = parseFilePermission(filePermission)
     pwdListElement.appendChild(clone);
 }
 
@@ -312,6 +313,23 @@ function showPopup(color, title, text) {
 
 // helper functions
 
+function parseFilePermission(filePermission) {
+    return Array.from(filePermission).map(dig => {
+        let n = Number(dig)
+        result = ["-", "-", "-"];
+        if(n & 4) {
+            result[0] = "r";
+        }
+        if(n & 2) {
+            result[1] = "w";
+        }
+        if(n & 1) {
+            result[2] = "x";
+        }
+        return result.join("")
+    }).join("")
+}
+
 
 function traverseParents(element) {
     let parents = [element,];
@@ -417,10 +435,11 @@ function sessionMain(hashParams) {
         useTemplateHome("template-files");
 
         // TODO remove this test
-        filesAddPwdItem("folder", "bin", "40755");
-        filesAddPwdItem("folder", "etc", "40755");
-        filesAddPwdItem("folder", "home", "40755");
-        filesAddPwdItem("folder", "root", "40755");
+        filesAddPwdItem("folder", "bin", "755");
+        filesAddPwdItem("folder", "etc", "755");
+        filesAddPwdItem("folder", "home", "755");
+        filesAddPwdItem("folder", "root", "755");
+        console.log(parseFilePermission("755"))
         currentPage = "files";
     }
 }

