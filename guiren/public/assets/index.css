@@ -552,8 +552,10 @@ input:checked+.slider:before {
     padding: 20px 0px;
 }
 
-.files-content {
+.files-editor {
     width: 69.5%;
+    display: flex;
+    flex-direction: column;
 }
 
 .files-pwd-item {
@@ -600,4 +602,28 @@ input:checked+.slider:before {
 
 .files-pwd-item:hover {
     background-color: #ffffff15;
+}
+
+.files-title {
+    font-size: 32px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.files-content {
+    flex-grow: 1;
+    padding: 20px 0px;
+}
+
+.files-editor textarea {
+    background-color: rgba(0, 0, 0, 0);
+    border: #00000000;
+    outline: none;
+    color: #b1cbd5;
+    font-size: 22px;
+    width: 100%;
+    height: 100%;
+    resize: none;
+    padding: 0px 20px;
+    box-sizing: border-box;
 }
