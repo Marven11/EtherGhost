@@ -72,9 +72,39 @@ async def session_execute_cmd(session_id: UUID, cmd: str):
         return {"code": -500, "msg": "未知错误: " + str(exc)}
 
 
+@app.get("/session/{session_id}/get_pwd")
+async def session_get_pwd(session_id: UUID):
+    """获取session的pwd"""
+    session: t.Union[Session, None] = session_manager.get_session_by_id(session_id)
+    if session is None:
+        return {"code": -400, "msg": "没有这个session"}
+    try:
+        result = await session.get_pwd()
+        return {"code": 0, "data": result}
+    except sessions.NetworkError as exc:
+        return {"code": -500, "msg": "网络错误: " + str(exc)}
+    except sessions.UnexpectedError as exc:
+        return {"code": -500, "msg": "未知错误: " + str(exc)}
+
+
+@app.get("/session/{session_id}/list_dir")
+async def session_list_dir(session_id: UUID, current_dir: str):
+    """使用session列出某个目录"""
+    session: t.Union[Session, None] = session_manager.get_session_by_id(session_id)
+    if session is None:
+        return {"code": -400, "msg": "没有这个session"}
+    try:
+        result = await session.list_dir(current_dir)
+        return {"code": 0, "data": result}
+    except sessions.NetworkError as exc:
+        return {"code": -500, "msg": "网络错误: " + str(exc)}
+    except sessions.UnexpectedError as exc:
+        return {"code": -500, "msg": "未知错误: " + str(exc)}
+
+
 @app.delete("/session/{session_id}")
 async def delete_session(session_id: UUID):
-    """使用session执行shell命令"""
+    """删除session"""
     session: t.Union[
         session_types.SessionInfo, None
     ] = session_manager.get_session_info_by_id(session_id)

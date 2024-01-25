@@ -10,7 +10,6 @@ let lastPopupTime = Date.now() - 10000;
 
 let eventFuncs = {
     root: function (event) {
-        console.log("Here!")
         let isSessionClicked = traverseParents(event.target).map(it => it.classList.contains("session")).includes(true);
         if (isSessionClicked) {
             lastClickSession = event.target;
@@ -107,6 +106,15 @@ let eventFuncs = {
             terminalExecuteCommand();
         }
     },
+    filesEntry: function (event) {
+        let entryElement = traverseParents(event.target).filter(it => it.classList.contains("files-pwd-item"))[0]
+        if (!entryElement) {
+            showPopup("red", "未知错误", "找不到点击的文件/文件夹")
+            return;
+        }
+        let entryName = entryElement.querySelector(".files-pwd-item-name").textContent
+        console.log(entryName)
+    },
     filesKeydown: function (event) {
     },
 }
@@ -144,6 +152,17 @@ function filesAddPwdItem(fileType, fileName, filePermission) {
     clone.querySelector(".files-pwd-item-name").textContent = fileName
     clone.querySelector(".files-pwd-item-permission").textContent = parseFilePermission(filePermission)
     pwdListElement.appendChild(clone);
+}
+
+async function filesFillBasicData(session) {
+    let pwd = await fetchJson(`/session/${session}/get_pwd`, "GET")
+    document.querySelector(".action-input").value = pwd;
+    let entries = await fetchJson(`/session/${session}/list_dir`, "GET", {
+        current_dir: pwd
+    })
+    entries.forEach(entry => {
+        filesAddPwdItem(entry.entry_type, entry.name, entry.permission);
+    })
 }
 
 // terminal functions
@@ -400,12 +419,12 @@ async function fetchJson(path, method, param, data) {
             body: JSON.stringify(data)
         }
     }
-    let responseJson = await fetch(url, fetchOptions);
-    let response = await responseJson.json();
-    if (response.code != 0) {
+    let response = await fetch(url, fetchOptions);
+    let responseData = await response.json();
+    if (responseData.code != 0) {
         showPopup("red", "请求失败", `${response.code}: ${response.msg}`);
     }
-    return response.data;
+    return responseData.data;
 }
 
 // entry functions
@@ -429,11 +448,7 @@ function sessionMain(hashParams) {
         useTemplateHome("template-files");
 
         // TODO remove this test
-        filesAddPwdItem("folder", "bin", "755");
-        filesAddPwdItem("folder", "etc", "755");
-        filesAddPwdItem("folder", "home", "755");
-        filesAddPwdItem("folder", "root", "755");
-        console.log(parseFilePermission("755"))
+        filesFillBasicData(session);
         currentPage = "files";
     }
 }
