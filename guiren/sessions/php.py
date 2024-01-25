@@ -2,10 +2,10 @@ import typing as t
 import logging
 import random
 import string
-import httpx
 import base64
 import json
 from dataclasses import dataclass
+import httpx
 from ..utils import random_english_words
 from .base import Session
 from .exceptions import *
@@ -127,7 +127,7 @@ class PHPWebshellMixin:
             return False
         return (first_string + second_string) in result
 
-    async def submit(self, payload: str) -> t.Union[str, None]:
+    async def submit(self, payload: str) -> str:
         """将payload通过encoder编码后提交"""
         start, stop = (
             "".join(random.choices(string.ascii_lowercase, k=6)),
@@ -156,7 +156,7 @@ class PHPWebshellMixin:
         idx_stop = idx_stop_r + idx_start
         return text[idx_start + len(start) : idx_stop]
 
-    async def submit_raw(self, payload: str) -> t.Union[t.Tuple[int, str], None]:
+    async def submit_raw(self, payload: str) -> t.Tuple[int, str]:
         """提交原始php payload
 
         Args:
@@ -189,7 +189,7 @@ class PHPWebshellOneliner(PHPWebshellMixin, Session):
         self.data = {} if data is None else data
         self.http_params_obfs = http_params_obfs
 
-    async def submit_raw(self, payload: str):
+    async def submit_raw(self, payload: str) -> t.Tuple[int, str]:
         params = self.params.copy()
         data = self.data.copy()
         obfs_data = {}

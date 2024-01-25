@@ -1,3 +1,4 @@
+"""webui的后台部分"""
 import typing as t
 from uuid import UUID
 from pathlib import Path
@@ -14,7 +15,8 @@ app.mount("/public", StaticFiles(directory=DIR / "public"), name="public")
 
 
 @app.middleware("http")
-async def set_no_cache(request, call_next):
+async def set_no_cache(request, call_next) -> Response:
+    """让浏览器不要缓存文件"""
     response: Response = await call_next(request)
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     response.headers["Pragma"] = "no-cache"
@@ -24,10 +26,14 @@ async def set_no_cache(request, call_next):
 
 @app.get("/session")
 async def get_sessions(session_id: t.Union[UUID, None] = None):
-    """列出所有的session"""
+    """列出所有的session或者查找session"""
     if session_id is None:
         return {"code": 0, "data": session_manager.list_sessions_readable()}
-    session: Session = session_manager.get_session_info_by_id(session_id)
+    session: t.Union[
+        session_types.SessionInfo, None
+    ] = session_manager.get_session_info_by_id(session_id)
+    if not session:
+        return {"code": -400, "msg": "没有这个session"}
     return {"code": 0, "data": session}
 
 
@@ -54,7 +60,7 @@ async def update_webshell(session_info: session_types.SessionInfo):
 @app.get("/session/{session_id}/execute_cmd")
 async def session_execute_cmd(session_id: UUID, cmd: str):
     """使用session执行shell命令"""
-    session: Session = session_manager.get_session_by_id(session_id)
+    session: t.Union[Session, None] = session_manager.get_session_by_id(session_id)
     if session is None:
         return {"code": -400, "msg": "没有这个session"}
     try:
@@ -69,8 +75,10 @@ async def session_execute_cmd(session_id: UUID, cmd: str):
 @app.delete("/session/{session_id}")
 async def delete_session(session_id: UUID):
     """使用session执行shell命令"""
-    session: Session = session_manager.get_session_info_by_id(session_id)
-    if not session:
+    session: t.Union[
+        session_types.SessionInfo, None
+    ] = session_manager.get_session_info_by_id(session_id)
+    if session is None:
         return {"code": -400, "msg": "没有这个session"}
     session_manager.delete_session_info_by_id(session_id)
     return {"code": 0, "data": True}

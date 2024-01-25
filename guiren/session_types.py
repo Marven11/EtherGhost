@@ -30,7 +30,7 @@ class SessionConnOnelinePHP(SessionConnectionInfoBase):
     password: str
     method: str = "POST"
     http_params_obfs: bool = False
-    encoder: str = "raw"
+    encoder: t.Literal["raw", "base64"] = "raw"
 
 SessionConnectionInfo = t.Union[SessionConnOnelinePHP,]
 

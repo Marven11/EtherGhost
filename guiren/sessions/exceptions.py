@@ -1,9 +1,9 @@
 class SessionException(Exception):
-    pass
+    """使用sessions时产生的错误"""
 
 
 class NetworkError(Exception):
-    pass
+    """网络错误"""
 
 
 class UnexpectedError(SessionException):

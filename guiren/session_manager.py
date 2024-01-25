@@ -10,7 +10,6 @@ from .session_types import (
 
 session_type_readable = {SessionType.ONELINE_PHP: "PHP一句话"}
 location_readable = {"US": "🇺🇸"}
-sessions_obj = {}
 session_con_converters = {}
 
 
@@ -80,11 +79,13 @@ def get_session_by_id(session_id: t.Union[str, UUID]) -> t.Union[None, sessions.
     if isinstance(session_id, str):
         session_id = UUID(session_id)
     session_info = get_session_info_by_id(session_id)
+    if session_info is None:
+        return None
     return session_info_to_session(session_info)
 
 
 
-def list_sessions_readable() -> t.List[SessionInfo]:
+def list_sessions_readable() -> t.List[t.Dict[str, t.Any]]:
     """列出所有的session info
 
     Returns:
@@ -108,5 +109,4 @@ def add_session_info(info: SessionInfo):
 
 def delete_session_info_by_id(session_id: UUID):
     db.delete_session_info_by_id(session_id)
-    if session_id in sessions_obj:
-        del sessions_obj[session_id]
+
