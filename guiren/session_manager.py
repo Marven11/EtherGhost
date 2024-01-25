@@ -27,7 +27,6 @@ def session_conn_converter(session_type):
 @session_conn_converter(SessionType.ONELINE_PHP)
 def php_normal(session_conn: SessionConnOnelinePHP):
     """将PHP一句话的info转换成对象"""
-    print(session_conn)
     return sessions.PHPWebshellOneliner(
         method=session_conn.method,
         url=session_conn.url,
