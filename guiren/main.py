@@ -1,7 +1,7 @@
 import typing as t
 from uuid import UUID
 from pathlib import Path
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 
@@ -39,7 +39,7 @@ async def update_webshell(session_info: session_types.SessionInfo):
     return {"code": 0, "data": True}
 
 
-@app.post("/session/{session_id}/execute_cmd")
+@app.get("/session/{session_id}/execute_cmd")
 async def session_execute_cmd(session_id: UUID, cmd: str):
     """使用session执行shell命令"""
     session: Session = session_manager.get_session_by_id(session_id)

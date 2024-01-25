@@ -202,7 +202,7 @@ function terminalAddCommand(command, result) {
 function terminalExecuteCommand() {
     let cmd = document.querySelector(".action-input").value;
     let sessionId = getHashParameters().session;
-    fetchJson(`/session/${sessionId}/execute_cmd`, "POST", params = {
+    fetchJson(`/session/${sessionId}/execute_cmd`, "GET", params = {
         "cmd": cmd,
     }).then(result => terminalAddCommand(cmd, result))
 }
