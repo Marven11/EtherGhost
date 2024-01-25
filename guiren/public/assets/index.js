@@ -69,7 +69,7 @@ function onClickHomeAddWebshellButton(event) {
 }
 
 function onClickEditorDiscardButton(event) {
-    window.close(); // TODO: fix me
+    window.history.back();
 }
 
 function onClickEditorTestButton(event) {
