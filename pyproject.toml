@@ -18,6 +18,7 @@ httpx = "*"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.0"
+mypy = "^1.8.0"
 
 [build-system]
 requires = ["poetry-core"]
