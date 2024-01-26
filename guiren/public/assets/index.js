@@ -21,15 +21,15 @@ let eventFuncs = {
     actionList: function (event) {
 
         let clickedAction = traverseParents(event.target).filter(
-            element => element.classList.contains("session-action-item")
+            element => element.classList.contains("menu-action-item")
         )[0]
 
         let targetActions = {
-            "session-action-terminal": "terminal",
-            "session-action-files": "files",
-            "session-action-proxy": "proxy",
-            "session-action-machine-info": "machine-info",
-            "session-action-edit-webshell": "edit-webshell",
+            "menu-action-terminal": "terminal",
+            "menu-action-files": "files",
+            "menu-action-proxy": "proxy",
+            "menu-action-machine-info": "machine-info",
+            "menu-action-edit-webshell": "edit-webshell",
         }[clickedAction.id];
         if (!elementActionList || !lastClickSession) {
             return
@@ -225,7 +225,7 @@ function showActionList(top, left) {
         let clone = template.content.cloneNode(true);
         const mainElement = document.querySelector('main');
         mainElement.appendChild(clone);
-        elementActionList = document.querySelector(".session-action-list")
+        elementActionList = document.querySelector(".menu-action-list")
     }
 
     elementActionListTop = top;

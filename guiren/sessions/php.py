@@ -25,7 +25,7 @@ class PHPWebshellOptions:
     """除了submit_raw之外的函数需要的各类选项"""
 
     encoder: t.Literal["raw", "base64"] = "raw"
-    http_params_obfs: bool = False
+    http_params_obfs: bool = False # TODO: remove me
 
 
 
@@ -69,7 +69,6 @@ class PHPWebshellMixin:
             "DIR_PATH", repr(dir_path)
         )
         json_result = await self.submit(php_code)
-        print(repr(dir_path), json_result)
         try:
             result = json.loads(json_result)
         except json.JSONDecodeError as exc:
@@ -82,6 +81,8 @@ class PHPWebshellMixin:
             )
             for item in result
         ]
+        if not any(entry.name == ".." for entry in result):
+            result.insert(0, DirectoryEntry(name="..", permission="000", entry_type="directory"))
         return result
 
     async def get_file_contents(self, filepath: str) -> bytes:
