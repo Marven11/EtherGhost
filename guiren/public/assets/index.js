@@ -1,51 +1,151 @@
 let elementActionList = null;
 let elementActionListTop = 0;
 let elementActionListLeft = 0;
-let lastClickSession = null;
+let elementClicked = null;
 let siteUrl = `${window.location.protocol}//${window.location.host}`
 let currentPage = null;
 let lastPopupTime = Date.now() - 10000;
 
+let actionListConfig = {
+    home: {
+        clickClass: ["session",],
+        buttons: [
+            "terminal",
+            "files",
+            // TODO: add support
+            // "proxy",
+            // "machine-info",
+            "edit-webshell"
+        ]
+    },
+    files: {
+        clickClass: ["files-pwd-item",],
+        buttons: [
+            "open-file",
+            "rename",
+            "delete"
+        ]
+    }
+}
+
+// action list functions
+
+function actionListGetConfig() {
+    let config = actionListConfig[currentPage];
+    if (config == undefined) {
+        throw new Error(`找不到页面${currentPage}点击菜单需要的按钮`);
+    }
+    return config;
+}
+
+let actionList = {
+
+    hide: function () {
+        if (!elementActionList) {
+            return;
+        }
+        elementActionList.style = `
+            opacity: 0;
+            position: absolute;
+            top: ${elementActionListTop}px;
+            left: ${elementActionListLeft}px;`
+        setTimeout(function () {
+            elementActionList.remove();
+            elementActionList = null;
+        }, 300);
+    },
+    show: function (top, left) {
+        let template = document.getElementById("template-action-list");
+        let style = `
+            opacity: 1; 
+            position: absolute;
+            top: ${top}px; 
+            left: ${left}px;`;
+        if (!elementActionList) {
+            let clone = template.content.cloneNode(true);
+            const mainElement = document.querySelector('main');
+            mainElement.appendChild(clone);
+            elementActionList = document.querySelector(".menu-action-list")
+        }
+        while (elementActionList.firstChild) {
+            elementActionList.firstChild.remove();
+        }
+
+        this.fillButtons[currentPage]();
+
+        elementActionListTop = top;
+        elementActionListLeft = left;
+        setTimeout(() => {
+            elementActionList.style = style;
+        }, 0)
+    },
+    fillButtons: {
+        home: function () {
+            let config = actionListGetConfig();
+            for (let button of config.buttons) {
+                let template = document.getElementById(`template-action-list-item-${button}`);
+                let clone = template.content.cloneNode(true);
+                elementActionList.appendChild(clone);
+            }
+        },
+        files: function () {
+            let config = actionListGetConfig();
+            for (let button of config.buttons) {
+                let template = document.getElementById(`template-action-list-item-${button}`);
+                let clone = template.content.cloneNode(true);
+                elementActionList.appendChild(clone);
+            }
+        }
+    },
+    clicked: {
+        home: function (clickedAction) {
+            let targetActions = {
+                "menu-action-terminal": "terminal",
+                "menu-action-files": "files",
+                "menu-action-proxy": "proxy",
+                "menu-action-machine-info": "machine-info",
+                "menu-action-edit-webshell": "edit-webshell",
+            }[clickedAction.id];
+            if (!elementActionList || !elementClicked) {
+                return
+            }
+            let clickedSessionId = elementClicked.getAttribute("session-id")
+            window.location = `/#session=${clickedSessionId}&action=${targetActions}`
+        },
+        files: function (clickedAction) {
+            console.log(clickedAction)
+        }
+    },
+}
+
+
 // event functions
 
 let eventFuncs = {
-    root: function (event) {
-        let isSessionClicked = traverseParents(event.target).map(it => it.classList.contains("session")).includes(true);
-        if (isSessionClicked) {
-            lastClickSession = event.target;
-            showActionList(event.clientY, event.clientX)
+    triggerActionList: function (event) {
+        let config = actionListGetConfig();
+        elementClicked = traverseParents(event.target)
+            .filter(it => {
+                let classFound = config.clickClass
+                    .filter(clazz => it.classList.contains(clazz))
+                return classFound.length > 0;
+            })[0];
+        if (elementClicked) {
+            actionList.show(event.clientY, event.clientX)
         } else {
-            hideActionList()
+            actionList.hide()
         }
     },
     actionList: function (event) {
 
         let clickedAction = traverseParents(event.target).filter(
             element => element.classList.contains("menu-action-item")
-        )[0]
-
-        let targetActions = {
-            "menu-action-terminal": "terminal",
-            "menu-action-files": "files",
-            "menu-action-proxy": "proxy",
-            "menu-action-machine-info": "machine-info",
-            "menu-action-edit-webshell": "edit-webshell",
-        }[clickedAction.id];
-        if (!elementActionList || !lastClickSession) {
-            return
-        }
+        )[0];
         if (!clickedAction) {
-            console.log("Click Nothing!")
-            return;
-        } else if (!targetActions) {
-            console.log("Action not found!");
-            return
-        } else {
-            console.log(`Click on: ${clickedAction}`)
+            throw new Error("找不到点击的菜单项");
         }
-        let clickedSession = traverseParents(lastClickSession).filter(it => it.classList.contains("session"))[0];
-        let clickedSessionId = clickedSession.getAttribute("session-id")
-        window.location = `/#session=${clickedSessionId}&action=${targetActions}`
+        actionList.clicked[currentPage](clickedAction);
+
     },
     terminalExecute: function (event) {
         terminalExecuteCommand();
@@ -195,44 +295,6 @@ function terminalExecuteCommand() {
 
 function terminalInit() {
     terminalPaint()
-}
-
-// action list functions
-
-function hideActionList() {
-    if (!elementActionList) {
-        return;
-    }
-    elementActionList.style = `
-        opacity: 0;
-        position: absolute;
-        top: ${elementActionListTop}px;
-        left: ${elementActionListLeft}px;`
-    setTimeout(function () {
-        elementActionList.remove();
-        elementActionList = null;
-    }, 300);
-}
-
-function showActionList(top, left) {
-    let template = document.getElementById("template-action-list");
-    let style = `
-        opacity: 1; 
-        position: absolute;
-        top: ${top}px; 
-        left: ${left}px;`
-    if (!elementActionList) {
-        let clone = template.content.cloneNode(true);
-        const mainElement = document.querySelector('main');
-        mainElement.appendChild(clone);
-        elementActionList = document.querySelector(".menu-action-list")
-    }
-
-    elementActionListTop = top;
-    elementActionListLeft = left;
-    setTimeout(() => {
-        elementActionList.style = style;
-    }, 0)
 }
 
 
@@ -422,7 +484,8 @@ async function fetchJson(path, method, param, data) {
     let response = await fetch(url, fetchOptions);
     let responseData = await response.json();
     if (responseData.code != 0) {
-        showPopup("red", "请求失败", `${response.code}: ${response.msg}`);
+        showPopup("red", "请求失败", `${responseData.code}: ${responseData.msg}`);
+        throw new Error(`请求失败：${responseData.code}: ${responseData.msg}`)
     }
     return responseData.data;
 }
