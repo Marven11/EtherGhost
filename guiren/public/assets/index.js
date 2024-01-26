@@ -1,6 +1,4 @@
 let elementActionList = null;
-let elementActionListTop = 0;
-let elementActionListLeft = 0;
 let elementClicked = null;
 let siteUrl = `${window.location.protocol}//${window.location.host}`
 let currentPage = null;
@@ -20,11 +18,18 @@ let actionListConfig = {
     },
     files: {
         clickClass: ["files-pwd-item",],
-        buttons: [
-            "open-file",
-            "rename",
-            "delete"
-        ]
+        buttons: {
+            file: [
+                "open-file",
+                "rename",
+                "delete"
+            ],
+            dir: [
+                "open-folder",
+                "rename",
+                "delete"
+            ]
+        }
     }
 }
 
@@ -39,16 +44,18 @@ function actionListGetConfig() {
 }
 
 let actionList = {
-
+    top: 0,
+    left: 0,
     hide: function () {
+
         if (!elementActionList) {
             return;
         }
         elementActionList.style = `
             opacity: 0;
             position: absolute;
-            top: ${elementActionListTop}px;
-            left: ${elementActionListLeft}px;`
+            top: ${this.top}px;
+            left: ${this.left}px;`
         setTimeout(function () {
             elementActionList.remove();
             elementActionList = null;
@@ -73,8 +80,8 @@ let actionList = {
 
         this.fillButtons[currentPage]();
 
-        elementActionListTop = top;
-        elementActionListLeft = left;
+        this.top = top;
+        this.left = left;
         setTimeout(() => {
             elementActionList.style = style;
         }, 0)
@@ -90,7 +97,8 @@ let actionList = {
         },
         files: function () {
             let config = actionListGetConfig();
-            for (let button of config.buttons) {
+            let fileType = elementClicked.dataset.fileType;
+            for (let button of config.buttons[fileType]) {
                 let template = document.getElementById(`template-action-list-item-${button}`);
                 let clone = template.content.cloneNode(true);
                 elementActionList.appendChild(clone);
@@ -124,16 +132,19 @@ let actionList = {
 let eventFuncs = {
     triggerActionList: function (event) {
         let config = actionListGetConfig();
-        elementClicked = traverseParents(event.target)
+        let element = traverseParents(event.target)
             .filter(it => {
                 let classFound = config.clickClass
                     .filter(clazz => it.classList.contains(clazz))
                 return classFound.length > 0;
             })[0];
-        if (elementClicked) {
-            actionList.show(event.clientY, event.clientX)
-        } else {
-            actionList.hide()
+        if (element != undefined) {
+            elementClicked = element
+            actionList.show(event.clientY, event.clientX);
+        }
+        else {
+            elementClicked = null;
+            actionList.hide();
         }
     },
     actionList: function (event) {
@@ -206,15 +217,6 @@ let eventFuncs = {
             terminalExecuteCommand();
         }
     },
-    filesEntry: function (event) {
-        let entryElement = traverseParents(event.target).filter(it => it.classList.contains("files-pwd-item"))[0]
-        if (!entryElement) {
-            showPopup("red", "未知错误", "找不到点击的文件/文件夹")
-            return;
-        }
-        let entryName = entryElement.querySelector(".files-pwd-item-name").textContent
-        console.log(entryName)
-    },
     filesKeydown: function (event) {
     },
 }
@@ -244,11 +246,11 @@ function filesAddPwdItem(fileType, fileName, filePermission) {
     let clone = template.content.cloneNode(true);
     let icons = Array.from(clone.querySelectorAll(".files-pwd-item-icon"));
     icons.forEach(element => {
-        console.log(element)
         if (!element.classList.contains(`icon-${fileType}`)) {
             element.remove();
         }
     })
+    clone.querySelector(".files-pwd-item").dataset.fileType = fileType
     clone.querySelector(".files-pwd-item-name").textContent = fileName
     clone.querySelector(".files-pwd-item-permission").textContent = parseFilePermission(filePermission)
     pwdListElement.appendChild(clone);
