@@ -4,6 +4,21 @@ html {
     margin: 0;
 }
 
+:root {
+    --red: #ffae9b;
+    --yellow: #efd057;
+    --green: #9fe88d;
+    --blue: #28ebff;
+    --primary-color: #9fe88d;
+    --font-color-black: #091307;
+    --font-color-grey: #64748b;
+    --font-color-white: #b1cbd5;
+    --border-color-grey: #38404c;
+    --background-color-1: #2a303c;
+    --background-color-2: #242933;
+    --background-color-3: #1c212b;
+}
+
 /* UI设计参考metacubexd */
 
 /* 基本框架 */
@@ -21,11 +36,11 @@ html {
 header {
     width: 90%;
     display: flex;
-    background-color: #9fe88d;
+    background-color: var(--primary-color);
     border-radius: 20px;
     justify-content: space-between;
     align-items: center;
-    color: #091307;
+    color: var(--font-color-black);
     margin: 30px;
 }
 
@@ -86,7 +101,7 @@ input[type="text"] {
 }
 
 .navbar-icon svg path {
-    stroke: #091307;
+    stroke: var(--font-color-black);
 }
 
 main {
@@ -108,11 +123,11 @@ main {
 .action {
     font-size: 14px;
     height: 40px;
-    border-color: #9fe88d;
+    border-color: var(--primary-color);
     margin-right: 10px;
     border-width: 0.15rem;
     border-style: solid;
-    background-color: #242933;
+    background-color: var(--background-color-2);
     color: #b1cbd5;
     display: flex;
     align-items: center;
@@ -124,7 +139,7 @@ main {
     width: 50px;
     height: 50px;
     stroke: #b1cbd5;
-    background-color: #242933;
+    background-color: var(--background-color-2);
     border-radius: 12px;
     display: flex;
     border-radius: 10px;
@@ -136,7 +151,7 @@ main {
 }
 
 .action-icon:hover {
-    outline: 2px solid #9fe88d;
+    outline: 2px solid var(--primary-color);
 }
 
 .action-icon svg {
@@ -145,9 +160,9 @@ main {
 }
 
 .action-input {
-    background-color: #242933;
+    background-color: var(--background-color-2);
     margin-right: 10px;
-    border: 2px solid #9fe88d;
+    border: 2px solid var(--primary-color);
     color: #b1cbd5;
     border-radius: 12px;
     height: 40px;
@@ -163,7 +178,7 @@ main {
 }
 
 .action-input:focus {
-    outline: 1px solid #9fe88d;
+    outline: 1px solid var(--primary-color);
 }
 
 .action-text {
@@ -174,7 +189,7 @@ main {
     margin: 4px;
     padding: 2px 6px;
     border-radius: 6px;
-    background-color: #242933;
+    background-color: var(--background-color-2);
     color: #b1cbd5;
 }
 
@@ -202,19 +217,19 @@ main {
 }
 
 .popup-red {
-    background-color: #ffae9b;
+    background-color: var(--red);
 }
 
 .popup-yellow {
-    background-color: #efd057;
+    background-color: var(--yellow);
 }
 
 .popup-green {
-    background-color: #9fe88d;
+    background-color: var(--green);
 }
 
 .popup-blue {
-    background-color: #28ebff;
+    background-color: var(--blue);
 }
 
 @keyframes slide-in {
@@ -265,12 +280,12 @@ main {
 }
 
 .session {
-    background-color: #242933;
+    background-color: var(--background-color-2);
     /* width: 30%; */
     height: 170px;
     border-radius: 20px;
     margin-bottom: 20px;
-    color: #b1cbd5;
+    color: var(--font-color-white);
 }
 
 .session-main {
@@ -299,17 +314,17 @@ main {
     font-size: 14px;
     margin: 5px 25px 20px;
     min-height: 30px;
-    color: #64748b;
+    color: var(--font-color-grey);
 }
 
 .open-menu-button svg {
     width: 35px;
     height: 35px;
-    stroke: #b1cbd5;
+    stroke: var(--font-color-white);
 }
 
 .open-menu-button:hover {
-    background-color: #343b49;
+    background-color: #ffffff20;
 }
 
 .session-meta {
@@ -323,13 +338,13 @@ main {
     font-size: 14px;
     margin: 5px 25px;
 
-    color: #64748b;
+    color: var(--font-color-grey);
 }
 
 .session-meta-location {
     font-size: 18px;
     margin: 0px 30px 10px;
-    color: #64748b;
+    color: var(--font-color-grey);
 }
 
 /* 表格，主要用于webshell编辑界面 */
@@ -338,7 +353,7 @@ main {
     display: flex;
     align-items: center;
     flex-direction: column;
-    color: #b1cbd5;
+    color: var(--font-color-white);
 }
 
 .main-form-divider {
@@ -355,7 +370,7 @@ main {
     content: '';
     height: 2px;
     width: 20%;
-    background-color: #38404c;
+    background-color: var(--border-color-grey);
     top: 50%;
     flex-grow: 10;
     align-items: center;
@@ -371,9 +386,9 @@ main {
 }
 
 .main-form input[type="text"] {
-    background-color: #242933;
-    border: 2px solid #38404c;
-    color: #b1cbd5;
+    background-color: var(--background-color-2);
+    border: 2px solid var(--border-color-grey);
+    color: var(--font-color-white);
     border-radius: 12px;
     height: 40px;
     width: 400px;
@@ -385,14 +400,14 @@ main {
 }
 
 .main-form input[type="text"]:focus {
-    outline: 1px solid #38404c;
+    outline: 1px solid var(--border-color-grey);
 }
 
 .main-form select {
     height: 46px;
-    background-color: #242933;
-    color: #b1cbd5;
-    border: 1px solid #38404c;
+    background-color: var(--background-color-2);
+    color: var(--font-color-white);
+    border: 1px solid var(--border-color-grey);
     border-radius: 12px;
     text-indent: 2px;
 }
@@ -402,12 +417,12 @@ main {
     height: 50px;
     min-width: 100px;
     margin: 20px;
-    border-color: #9fe88d;
+    border-color: var(--primary-color);
     margin-right: 10px;
     border-width: 0.15rem;
     border-style: solid;
-    background-color: #242933;
-    color: #b1cbd5;
+    background-color: var(--background-color-2);
+    color: var(--font-color-white);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -444,8 +459,8 @@ main {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #242933;
-    outline: 2px solid #38404c;
+    background-color: var(--background-color-2);
+    outline: 2px solid var(--border-color-grey);
     transition: .4s;
     border-radius: 34px;
 }
@@ -463,11 +478,11 @@ main {
 }
 
 input:checked+.slider {
-    background-color: #9fe88d;
+    background-color: var(--primary-color);
 }
 
 input:focus+.slider {
-    box-shadow: 0 0 1px #9fe88d;
+    box-shadow: 0 0 1px var(--primary-color);
 }
 
 input:checked+.slider:before {
@@ -480,9 +495,9 @@ input:checked+.slider:before {
     opacity: 0;
     position: absolute;
     border-radius: 20px;
-    background-color: #1c212b;
-    color: #b1cbd5;
-    stroke: #b1cbd5;
+    background-color: var(--background-color-2);
+    color: var(--font-color-white);
+    stroke: var(--font-color-white);
     padding: 15px 0px 15px 0px;
     transition: opacity 0.3s ease, top 0.2s, left 0.2s ease;
 }
@@ -509,8 +524,8 @@ input:checked+.slider:before {
 }
 
 .menu-action-item-dangerous {
-    color: #ffae9b;
-    stroke: #ffae9b;
+    color: var(--red);
+    stroke: var(--red);
 }
 
 .menu-action-icon {
@@ -523,11 +538,11 @@ input:checked+.slider:before {
 
 .terminal {
     resize: none;
-    background-color: #242933;
+    background-color: var(--background-color-2);
     font-family: 'Fira Code', monospace;
     font-variant-ligatures: normal;
     font-size: 20px;
-    color: #b1cbd5;
+    color: var(--font-color-white);
     border-radius: 12px;
     border: none;
     outline: none;
@@ -545,10 +560,10 @@ input:checked+.slider:before {
 }
 
 .files-panel {
-    background-color: #1c212b;
+    background-color: var(--background-color-2);
     border-radius: 20px;
-    color: #b1cbd5;
-    stroke: #b1cbd5;
+    color: var(--font-color-white);
+    stroke: var(--font-color-white);
 }
 
 .files-pwd-list {
@@ -621,7 +636,7 @@ input:checked+.slider:before {
     border: none;
     border-radius: 8px;
     outline: none;
-    color: #b1cbd5;
+    color: var(--font-color-white);
     width: 100%;
 }
 
@@ -635,7 +650,7 @@ input:checked+.slider:before {
     background-color: rgba(0, 0, 0, 0);
     border: #00000000;
     outline: none;
-    color: #b1cbd5;
+    color: var(--font-color-white);
     font-size: 22px;
     width: 100%;
     height: 100%;
@@ -648,15 +663,15 @@ input:checked+.slider:before {
     flex-direction: row;
     align-items: center;
     padding: 0px 20px;
-    color: #63666d;
+    color: var(--font-color-grey);
 }
-
+/* #242933 */
 .files-property input[type="text"] {
     height: 30px;
-    background-color: #2a303c;
+    background-color: var(--background-color-1);
     border: none;
     border-radius: 8px;
     outline: none;
-    color: #b1cbd5;
+    color: var(--font-color-white);
     width: 70px;
 }
