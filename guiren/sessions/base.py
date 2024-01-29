@@ -5,7 +5,7 @@ from dataclasses import dataclass
 class DirectoryEntry:
     name: str
     permission: str
-    entry_type: t.Literal["dir", "file", "unknown"] = "file"
+    entry_type: t.Literal["dir", "file", "link-dir", "link-file", "unknown"] = "file"
 
 
 class Session:

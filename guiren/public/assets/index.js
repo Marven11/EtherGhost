@@ -29,7 +29,17 @@ let actionListConfig = {
                 "open-folder",
                 "rename",
                 "delete"
-            ]
+            ],
+            "link-file": [
+                "open-file",
+                "rename",
+                "delete"
+            ],
+            "link-dir": [
+                "open-folder",
+                "rename",
+                "delete"
+            ],
         }
     }
 }
@@ -99,6 +109,10 @@ let actionList = {
         files: function () {
             let config = actionListGetConfig();
             let fileType = elementClicked.dataset.fileType;
+            if (!config.buttons[fileType]) {
+                showPopup("yellow", "不支持的文件类型", "现在仍不支持操作当前的文件类型");
+                return;
+            }
             for (let button of config.buttons[fileType]) {
                 let template = document.getElementById(`template-action-list-item-${button}`);
                 let clone = template.content.cloneNode(true);
@@ -129,10 +143,13 @@ let actionList = {
                 return
             }
             let fileType = elementClicked.dataset.fileType;
-            if (fileType == "dir" && targetActions == "open-folder") {
+            let isFileDirlike = (fileType == "dir" || fileType == "link-dir");
+            if (targetActions == "open-folder" && isFileDirlike) {
                 let folderName = elementClicked.querySelector(".files-pwd-item-name").textContent
                 let pwd = document.querySelector(".action-input").value;
                 filesFetchNewDir(pwd, folderName)
+            } else{
+                throw new Error(`Unknown action ${clickedAction.id}(${targetActions}) for ${fileType}`)
             }
         }
     },
