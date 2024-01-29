@@ -1,10 +1,10 @@
 """webui的后台部分"""
-import base64
 import typing as t
 import re
 from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
 from uuid import UUID
 
+import chardet
 from fastapi import FastAPI, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
@@ -118,15 +118,27 @@ async def session_get_file_contents(session_id: UUID, current_dir: str, filename
     session: t.Union[Session, None] = session_manager.get_session_by_id(session_id)
     if session is None:
         return {"code": -400, "msg": "没有这个session"}
+    content = None
     try:
-        result = await session.get_file_contents(remote_path(current_dir) / filename)
-        return {"code": 0, "data": base64.b64encode(result)}
+        path = remote_path(current_dir) / filename
+        content = await session.get_file_contents(str(path))
     except sessions.NetworkError as exc:
         return {"code": -500, "msg": "网络错误: " + str(exc)}
     except sessions.FileError as exc:
         return {"code": -500, "msg": "文件读取错误: " + str(exc)}
     except sessions.UnexpectedError as exc:
         return {"code": -500, "msg": "未知错误: " + str(exc)}
+    try:
+        detected_encoding = chardet.detect(content)["encoding"]
+        if detected_encoding is None:
+            detected_encoding = "UTF-8"
+        text = content.decode(detected_encoding)
+        return {"code": 0, "data": {"text": text, "encoding": detected_encoding}}
+    except UnicodeDecodeError as exc:
+        return {
+            "code": -500,
+            "msg": f"编码错误：检测出编码为{detected_encoding}，但是解码失败：" + str(exc),
+        }
 
 
 @app.delete("/session/{session_id}")

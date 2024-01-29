@@ -106,7 +106,6 @@ class PHPWebshellMixin:
     ) -> bytes:
         """获取文件的内容，内容是base64编码的字节序列，不是已经解码的字符串"""
         php_code = """
-        error_reporting(0);
         $filePath = FILE_PATH;
         if(!is_file($filePath)) {
             die("WRONG_NOT_FILE");

@@ -90,6 +90,9 @@
             <div class="actions">
                 <input class="action-input" onkeydown="eventFuncs.filesKeydown(event)" type="text"
                     placeholder="当前路径，如/var/www/html">
+                <div class="action action-chdir">
+                    <p class="action-text">跳转</p>
+                </div>
                 <div class="action action-save">
                     <p class="action-text">保存</p>
                 </div>
@@ -100,10 +103,14 @@
                 </div>
                 <div class="files-editor">
                     <div class="files-panel files-title">
-                        /etc/passwd
+                        <input type="text" name="filename" id="files-title-filename">
                     </div>
                     <div class="files-panel files-content">
-                        <textarea name="files-content-editor" id="files-content-editor" cols="300" rows="10"></textarea>
+                        <textarea spellcheck="false" name="files-content-editor" id="files-content-editor" cols="300" rows="10"></textarea>
+                    </div>
+                    <div class="files-panel files-property">
+                        <p>文件编码: </p>
+                        <input type="text" name="encoding" id="files-property-encoding">
                     </div>
                 </div>
 

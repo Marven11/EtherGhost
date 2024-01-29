@@ -95,7 +95,7 @@ let actionList = {
         while (elementActionList.firstChild) {
             elementActionList.firstChild.remove();
         }
-        if(!this.fillButtons[currentPage]) {
+        if (!this.fillButtons[currentPage]) {
             throw new Error(`Page ${currentPage} doesn't support action list`)
         }
         this.fillButtons[currentPage]();
@@ -147,17 +147,23 @@ let actionList = {
         files: function (clickedAction) {
             let targetActions = {
                 "menu-action-open-folder": "open-folder",
+                "menu-action-open-file": "open-file",
             }[clickedAction.id];
             if (!elementActionList || !elementClicked) {
                 return
             }
             let fileType = elementClicked.dataset.fileType;
-            let isFileDirlike = (fileType == "dir" || fileType == "link-dir");
-            if (targetActions == "open-folder" && isFileDirlike) {
+            let isDirlike = (fileType == "dir" || fileType == "link-dir");
+            let isFilelike = (fileType == "file" || fileType == "link-file");
+            let pwd = document.querySelector(".action-input").value;
+            if (targetActions == "open-folder" && isDirlike) {
                 let folderName = elementClicked.querySelector(".files-pwd-item-name").textContent
-                let pwd = document.querySelector(".action-input").value;
                 filesFetchNewDir(pwd, folderName)
-            } else{
+            } else if (targetActions == "open-file" && isFilelike) {
+                let fileName = elementClicked.querySelector(".files-pwd-item-name").textContent
+                filesOpenFile(pwd, fileName)
+
+            } else {
                 throw new Error(`Unknown action ${clickedAction.id}(${targetActions}) for ${fileType}`)
             }
         }
@@ -311,6 +317,16 @@ async function filesFetchNewDir(pwd, folderName) {
         "entry": folderName
     });
     filesFetchDir(newPwd)
+}
+
+async function filesOpenFile(pwd, fileName) {
+    let data = await fetchJson(`/session/${currentSession}/get_file_contents`, "GET", {
+        current_dir: pwd,
+        filename: fileName
+    })
+    document.querySelector("#files-property-encoding").value = data.encoding
+    document.querySelector("#files-content-editor").value = data.text
+    document.querySelector("#files-title-filename").value = fileName
 }
 
 // terminal functions

@@ -29,6 +29,11 @@ header {
     margin: 30px;
 }
 
+input[type="text"] {
+    font-family: 'Courier New', Courier, monospace;
+
+}
+
 .navbar {
     display: flex;
     flex-direction: row;
@@ -605,14 +610,25 @@ input:checked+.slider:before {
 }
 
 .files-title {
-    font-size: 32px;
-    padding: 20px;
     margin-bottom: 20px;
+}
+
+#files-title-filename {
+    font-size: 32px;
+    height: 70px;
+    padding: 0px 20px;
+    background-color: #00000000;
+    border: none;
+    border-radius: 8px;
+    outline: none;
+    color: #b1cbd5;
+    width: 100%;
 }
 
 .files-content {
     flex-grow: 1;
-    padding: 20px 0px;
+    padding: 20px;
+    margin-bottom: 20px;
 }
 
 .files-editor textarea {
@@ -624,6 +640,23 @@ input:checked+.slider:before {
     width: 100%;
     height: 100%;
     resize: none;
-    padding: 0px 20px;
     box-sizing: border-box;
+}
+
+.files-property {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0px 20px;
+    color: #63666d;
+}
+
+.files-property input[type="text"] {
+    height: 30px;
+    background-color: #2a303c;
+    border: none;
+    border-radius: 8px;
+    outline: none;
+    color: #b1cbd5;
+    width: 70px;
 }
