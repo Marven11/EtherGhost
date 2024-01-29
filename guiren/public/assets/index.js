@@ -301,7 +301,6 @@ async function filesFetchDir(dir) {
         current_dir: dir
     })
     let pwdListElement = document.querySelector('.files-pwd-list');
-    console.log(entries);
     document.querySelector(".action-input").value = dir;
     while (pwdListElement.firstChild) {
         pwdListElement.firstChild.remove();
@@ -544,7 +543,15 @@ async function fetchJson(path, method, param, data) {
             body: JSON.stringify(data)
         }
     }
-    let response = await fetch(url, fetchOptions);
+    let response;
+    try {
+        response = await fetch(url, fetchOptions); 
+    } catch(error) {
+        if(error instanceof TypeError) {
+            showPopup("red", "连接后台失败", `无法连接到后台，后台是否仍在运行？`);
+        }
+        throw error;
+    }
     if (response.status != 200) {
         showPopup("red", "HTTP请求失败", `HTTP：${response.status}`);
         throw new Error(`HTTP请求失败：${response.status}`)
