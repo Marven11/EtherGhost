@@ -121,7 +121,26 @@ let actionList = {
             window.location = `/#session=${clickedSessionId}&action=${targetActions}`
         },
         files: function (clickedAction) {
-            console.log(clickedAction)
+            let targetActions = {
+                "menu-action-open-folder": "open-folder",
+            }[clickedAction.id];
+            if (!elementActionList || !elementClicked) {
+                return
+            }
+            let fileType = elementClicked.dataset.fileType;
+            if (fileType == "dir") {
+                let folderName = elementClicked.querySelector(".files-pwd-item-name").textContent
+                let pwd = document.querySelector(".action-input").value;
+                console.log(pwd)
+                console.log(targetActions, folderName)
+                fetchJson("/utils/changedir", "GET", {
+                    "folder": pwd,
+                    "entry": folderName
+                }).then (data => {
+                    console.log(data)
+                })
+
+            }
         }
     },
 }
@@ -484,6 +503,10 @@ async function fetchJson(path, method, param, data) {
         }
     }
     let response = await fetch(url, fetchOptions);
+    if(response.status != 200) {
+        showPopup("red", "HTTP请求失败", `HTTP：${response.status}`);
+        throw new Error(`HTTP请求失败：${response.status}`)
+    }
     let responseData = await response.json();
     if (responseData.code != 0) {
         showPopup("red", "请求失败", `${responseData.code}: ${responseData.msg}`);

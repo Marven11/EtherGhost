@@ -2,7 +2,7 @@
 import re
 import typing as t
 from uuid import UUID
-from pathlib import Path, PurePosixPath, PureWindowsPath
+from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
 from fastapi import FastAPI, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
@@ -15,11 +15,12 @@ app = FastAPI()
 app.mount("/public", StaticFiles(directory=DIR / "public"), name="public")
 
 
-def remote_path(filepath: str):
+def remote_path(filepath: str) -> PurePath:
+    """自动猜测传入文件路径的类型为unix/windows, 并实例化成PurePath对象"""
     if re.match(r"^[a-zA-Z]:[/\\]", filepath):
         return PureWindowsPath(filepath)
-    else:
-        return PurePosixPath(filepath)
+    return PurePosixPath(filepath)
+
 
 @app.middleware("http")
 async def set_no_cache(request, call_next) -> Response:
@@ -123,11 +124,15 @@ async def delete_session(session_id: UUID):
 
 @app.get("/utils/changedir")
 async def changedir(folder: str, entry: str):
+    result = None
     if entry == "..":
-        return remote_path(folder).parent
-    if entry == ".":
-        return folder
-    return remote_path(folder) / entry
+        result = remote_path(folder).parent
+    elif entry == ".":
+        result = folder
+    else:
+        result = remote_path(folder) / entry
+    return {"code": 0, "data": result}
+
 
 @app.get("/")
 async def hello_world():
