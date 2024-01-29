@@ -2,6 +2,7 @@ let elementActionList = null;
 let elementClicked = null;
 let siteUrl = `${window.location.protocol}//${window.location.host}`
 let currentPage = null;
+let currentSession = null;
 let lastPopupTime = Date.now() - 10000;
 
 let actionListConfig = {
@@ -128,18 +129,10 @@ let actionList = {
                 return
             }
             let fileType = elementClicked.dataset.fileType;
-            if (fileType == "dir") {
+            if (fileType == "dir" && targetActions == "open-folder") {
                 let folderName = elementClicked.querySelector(".files-pwd-item-name").textContent
                 let pwd = document.querySelector(".action-input").value;
-                console.log(pwd)
-                console.log(targetActions, folderName)
-                fetchJson("/utils/changedir", "GET", {
-                    "folder": pwd,
-                    "entry": folderName
-                }).then (data => {
-                    console.log(data)
-                })
-
+                filesFetchNewDir(pwd, folderName)
             }
         }
     },
@@ -255,10 +248,6 @@ function useTemplateHome(templateId) {
 
 // session files functions
 
-function filesChangeDir(targetDir) {
-
-}
-
 function filesAddPwdItem(fileType, fileName, filePermission) {
     let pwdListElement = document.querySelector('.files-pwd-list');
     let template = document.getElementById("template-files-pwd-item");
@@ -275,15 +264,27 @@ function filesAddPwdItem(fileType, fileName, filePermission) {
     pwdListElement.appendChild(clone);
 }
 
-async function filesFillBasicData(session) {
-    let pwd = await fetchJson(`/session/${session}/get_pwd`, "GET")
-    document.querySelector(".action-input").value = pwd;
-    let entries = await fetchJson(`/session/${session}/list_dir`, "GET", {
-        current_dir: pwd
+async function filesFetchDir(dir) {
+    let entries = await fetchJson(`/session/${currentSession}/list_dir`, "GET", {
+        current_dir: dir
     })
+    let pwdListElement = document.querySelector('.files-pwd-list');
+    console.log(entries);
+    document.querySelector(".action-input").value = dir;
+    while (pwdListElement.firstChild) {
+        pwdListElement.firstChild.remove();
+    }
     entries.forEach(entry => {
         filesAddPwdItem(entry.entry_type, entry.name, entry.permission);
     })
+}
+
+async function filesFetchNewDir(pwd, folderName) {
+    let newPwd = await fetchJson("/utils/changedir", "GET", {
+        "folder": pwd,
+        "entry": folderName
+    });
+    filesFetchDir(newPwd)
 }
 
 // terminal functions
@@ -308,8 +309,7 @@ function terminalAddCommand(command, result) {
 
 function terminalExecuteCommand() {
     let cmd = document.querySelector(".action-input").value;
-    let sessionId = getHashParameters().session;
-    fetchJson(`/session/${sessionId}/execute_cmd`, "GET", params = {
+    fetchJson(`/session/${currentSession}/execute_cmd`, "GET", params = {
         "cmd": cmd,
     }).then(result => terminalAddCommand(cmd, result))
 }
@@ -503,7 +503,7 @@ async function fetchJson(path, method, param, data) {
         }
     }
     let response = await fetch(url, fetchOptions);
-    if(response.status != 200) {
+    if (response.status != 200) {
         showPopup("red", "HTTP请求失败", `HTTP：${response.status}`);
         throw new Error(`HTTP请求失败：${response.status}`)
     }
@@ -518,9 +518,8 @@ async function fetchJson(path, method, param, data) {
 // entry functions
 
 function sessionMain(hashParams) {
-    let session = hashParams.session
     let action = "terminal"
-    if (!session) {
+    if (!currentSession) {
         throw new Error("Session should be provided");
     }
     if (hashParams.action) {
@@ -535,8 +534,7 @@ function sessionMain(hashParams) {
     if (action == "files") {
         useTemplateHome("template-files");
 
-        // TODO remove this test
-        filesFillBasicData(session);
+        fetchJson(`/session/${currentSession}/get_pwd`, "GET").then(filesFetchDir)
         currentPage = "files";
     }
 }
@@ -544,7 +542,7 @@ function sessionMain(hashParams) {
 function editWebshellMain(hashParams) {
     useTemplateHome("template-webshell-editor");
     fetchJson("/session", "GET", {
-        "session_id": hashParams.session
+        "session_id": currentSession
     }).then(fillEditorInput)
     currentPage = "edit-webshell";
 }
@@ -563,11 +561,12 @@ function homeMain(hashParams) {
 
 function main() {
     let hashParams = getHashParameters();
+    currentSession = hashParams.session
     if (hashParams.action == "add-webshell") {
         addWebshellMain(hashParams);
-    } else if (hashParams.action == "edit-webshell") {
+    } else if (hashParams.action == "edit-webshell" && currentSession) {
         editWebshellMain(hashParams);
-    } else if (hashParams.session) {
+    } else if (currentSession) {
         sessionMain(hashParams);
     }
     else {
