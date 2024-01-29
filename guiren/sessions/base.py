@@ -18,7 +18,7 @@ class Session:
     async def list_dir(self, dir_path: str) -> t.List[DirectoryEntry]:
         raise NotImplementedError()
 
-    async def get_file_contents(self, filepath: str) -> bytes:
+    async def get_file_contents(self, filepath: str, max_size: int = 1024 * 200) -> bytes:
         raise NotImplementedError()
 
     async def get_pwd(self) -> str:

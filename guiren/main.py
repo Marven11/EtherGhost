@@ -1,8 +1,10 @@
 """webui的后台部分"""
-import re
+import base64
 import typing as t
-from uuid import UUID
+import re
 from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
+from uuid import UUID
+
 from fastapi import FastAPI, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
@@ -110,6 +112,23 @@ async def session_list_dir(session_id: UUID, current_dir: str):
         return {"code": -500, "msg": "未知错误: " + str(exc)}
 
 
+@app.get("/session/{session_id}/get_file_contents")
+async def session_get_file_contents(session_id: UUID, current_dir: str, filename: str):
+    """使用session获取文件内容"""
+    session: t.Union[Session, None] = session_manager.get_session_by_id(session_id)
+    if session is None:
+        return {"code": -400, "msg": "没有这个session"}
+    try:
+        result = await session.get_file_contents(remote_path(current_dir) / filename)
+        return {"code": 0, "data": base64.b64encode(result)}
+    except sessions.NetworkError as exc:
+        return {"code": -500, "msg": "网络错误: " + str(exc)}
+    except sessions.FileError as exc:
+        return {"code": -500, "msg": "文件读取错误: " + str(exc)}
+    except sessions.UnexpectedError as exc:
+        return {"code": -500, "msg": "未知错误: " + str(exc)}
+
+
 @app.delete("/session/{session_id}")
 async def delete_session(session_id: UUID):
     """删除session"""
@@ -124,6 +143,7 @@ async def delete_session(session_id: UUID):
 
 @app.get("/utils/changedir")
 async def changedir(folder: str, entry: str):
+    """改变当前文件夹，为了保证正确实现使用了pathlib"""
     result = None
     if entry == "..":
         result = remote_path(folder).parent
