@@ -62,14 +62,19 @@ let actionList = {
         if (!elementActionList) {
             return;
         }
-        elementActionList.style = `
+        // We need to make this action list invisible to others
+        // so that before we delete it, others will create a new one when
+        // they need to show somethings.
+        let element = elementActionList;
+        elementActionList = null;
+
+        element.style = `
             opacity: 0;
             position: absolute;
             top: ${this.top}px;
             left: ${this.left}px;`
         setTimeout(function () {
-            elementActionList.remove();
-            elementActionList = null;
+            element.remove();
         }, 300);
     },
     show: function (top, left) {
@@ -79,16 +84,20 @@ let actionList = {
             position: absolute;
             top: ${top}px; 
             left: ${left}px;`;
+        // create one when we don't have it, otherwise use the existed one.
         if (!elementActionList) {
             let clone = template.content.cloneNode(true);
             const mainElement = document.querySelector('main');
             mainElement.appendChild(clone);
-            elementActionList = document.querySelector(".menu-action-list")
+            let elementActionLists = document.querySelectorAll(".menu-action-list")
+            elementActionList = elementActionLists[elementActionLists.length - 1]
         }
         while (elementActionList.firstChild) {
             elementActionList.firstChild.remove();
         }
-
+        if(!this.fillButtons[currentPage]) {
+            throw new Error(`Page ${currentPage} doesn't support action list`)
+        }
         this.fillButtons[currentPage]();
 
         this.top = top;
