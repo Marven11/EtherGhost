@@ -16,7 +16,8 @@ html {
     --border-color-grey: #38404c;
     --background-color-1: #2a303c;
     --background-color-2: #242933;
-    --background-color-3: #1c212b;
+    --background-color-3: #20252e;
+    --background-color-4: #1c212b;
 }
 
 /* UI设计参考metacubexd */
@@ -489,13 +490,13 @@ input:checked+.slider:before {
     transform: translateX(26px);
 }
 
-/* 主页点击session弹出的菜单 */
+/* 点击元素时弹出的菜单 */
 
 .menu-action-list {
     opacity: 0;
     position: absolute;
     border-radius: 20px;
-    background-color: var(--background-color-2);
+    background-color: var(--background-color-3);
     color: var(--font-color-white);
     stroke: var(--font-color-white);
     padding: 15px 0px 15px 0px;
@@ -520,7 +521,7 @@ input:checked+.slider:before {
 }
 
 .menu-action-item:hover {
-    background-color: #394458;
+    background-color: #ffffff15;
 }
 
 .menu-action-item-dangerous {
