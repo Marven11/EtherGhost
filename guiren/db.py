@@ -1,15 +1,14 @@
 """数据库管理，管理session info等信息"""
 import os
-from uuid import uuid4, UUID
 import typing as t
-from pathlib import Path
-import sqlalchemy as sa
 from dataclasses import dataclass
+from pathlib import Path
+from uuid import uuid4, UUID
+import sqlalchemy as sa
 from sqlalchemy_utils import ChoiceType, UUIDType  # type: ignore
 from .session_types import (
     SessionType,
     SessionInfo,
-    SessionConnOnelinePHP,
     type_to_class,
 )
 
@@ -51,6 +50,8 @@ class SessionInfoModel(Base):  # type: ignore
 
 @dataclass
 class SessionInfoModelTypeHint():
+    """SessionInfoModel的type hint
+    解决pylint不能正确识别SQLAlchemy属性类型的问题"""
     record_id: int
     session_type: SessionType
     session_id: UUID
@@ -67,6 +68,7 @@ Base.metadata.create_all(engine)
 
 
 def model_to_info(model: SessionInfoModelTypeHint) -> SessionInfo:
+    """将SessionInfoModel(SQLAlchemy的对象)转换成SessionInfo(Pydantic的对象)"""
     if model.session_type not in type_to_class:
         raise TypeError(f"session type not found: {model.session_type}")
     connection = type_to_class[model.session_type](**model.connection)
@@ -82,6 +84,7 @@ def model_to_info(model: SessionInfoModelTypeHint) -> SessionInfo:
 
 
 def info_to_model(info: SessionInfo) -> SessionInfoModel:
+    """将SessionInfo(Pydantic的对象)转换成SessionInfoModel(SQLAlchemy的对象)"""
     info_dict = info.model_dump()
     return SessionInfoModel(**info_dict)
 
@@ -90,10 +93,12 @@ def info_to_model(info: SessionInfo) -> SessionInfoModel:
 
 
 def list_sessions() -> t.List[SessionInfo]:
+    """列出数据库中所有的session"""
     return [model_to_info(model) for model in orm_session.query(SessionInfoModel).all()]
 
 
 def add_session_info(info: SessionInfo):
+    """添加一个session"""
     orm_session.add(info_to_model(info))
     orm_session.commit()
 
@@ -101,6 +106,7 @@ def add_session_info(info: SessionInfo):
 def get_session_info_by_id(
     session_id: t.Union[str, UUID]
 ) -> t.Union[None, SessionInfo]:
+    """根据ID查询session，以sessioninfo的形式输出"""
     if isinstance(session_id, str):
         session_id = UUID(session_id)
     model = (
@@ -116,6 +122,7 @@ def get_session_info_by_id(
 def delete_session_info_by_id(
     session_id: t.Union[str, UUID], ignore_unexist=False
 ) -> bool:
+    """根据ID查询session，并将对应的session info转换成session实例"""
     if isinstance(session_id, str):
         session_id = UUID(session_id)
     model = (
@@ -128,85 +135,3 @@ def delete_session_info_by_id(
     orm_session.delete(model)
     orm_session.commit()
     return True
-
-
-# 测试函数
-
-
-def test_init():
-    sessions_info = [
-        SessionInfo(
-            connection=SessionConnOnelinePHP(
-                method="POST",
-                url="http://127.0.0.1:8081/shell.php",
-                password="data",
-            ),
-            name="本地webshell",
-            session_type=SessionType.ONELINE_PHP,
-            session_id=uuid4(),
-            note="",
-            location="US",
-        ),
-        SessionInfo(
-            connection=SessionConnOnelinePHP(
-                method="POST",
-                url="http://127.0.0.1:8081/shell.php",
-                password="data",
-            ),
-            name="另一个webshell",
-            session_type=SessionType.ONELINE_PHP,
-            session_id=uuid4(),
-            note="",
-            location="US",
-        ),
-        SessionInfo(
-            connection=SessionConnOnelinePHP(
-                method="POST",
-                url="http://127.0.0.1:8081/shell.php",
-                password="data",
-            ),
-            name="又一个webshell",
-            session_type=SessionType.ONELINE_PHP,
-            session_id=uuid4(),
-            note="",
-            location="US",
-        ),
-        SessionInfo(
-            connection=SessionConnOnelinePHP(
-                method="POST",
-                url="http://127.0.0.1:8081/shell.php",
-                password="data",
-            ),
-            name="还是一个webshell",
-            session_type=SessionType.ONELINE_PHP,
-            session_id=uuid4(),
-            note="",
-            location="US",
-        ),
-    ]
-    for sessinfo in sessions_info:
-        add_session_info(sessinfo)
-
-
-def test():
-    info_uuid = uuid4()
-    info = SessionInfo(
-        connection=SessionConnOnelinePHP(
-            method="POST",
-            url="http://127.0.0.1:8081/shell.php",
-            password="data",
-        ),
-        name="本地webshell",
-        session_type=SessionType.ONELINE_PHP,
-        session_id=info_uuid,
-        note="",
-        location="US",
-    )
-    print(list_sessions())
-    add_session_info(info)
-    model = get_session_info_by_id(info_uuid)
-    print(model)
-
-
-if __name__ == "__main__":
-    test()

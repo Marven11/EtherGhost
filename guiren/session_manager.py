@@ -1,3 +1,4 @@
+"""管理session相关的函数，实现了session info的CRUD与session的实例化等"""
 import typing as t
 from uuid import UUID
 from . import db, sessions
@@ -105,8 +106,10 @@ def list_sessions_readable() -> t.List[t.Dict[str, t.Any]]:
     return results
 
 def add_session_info(info: SessionInfo):
+    """将session info添加到数据库"""
     db.add_session_info(info)
 
 def delete_session_info_by_id(session_id: UUID):
+    """根据session id删除某个session"""
     db.delete_session_info_by_id(session_id)
 

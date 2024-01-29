@@ -1,3 +1,5 @@
+"""session在执行代码时产生的exceptions"""
+
 class SessionException(Exception):
     """使用sessions时产生的错误"""
 
