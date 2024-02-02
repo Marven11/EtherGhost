@@ -29,7 +29,7 @@ let actionListConfig = {
         ]
     },
     files: {
-        clickClass: ["files-pwd-item",],
+        clickClass: ["files-pwd-item-actionbutton",],
         buttons: {
             file: [
                 "open-file",
@@ -130,7 +130,7 @@ let actionList = {
         },
         files: function (element) {
             let config = actionListGetConfig();
-            let fileType = elementClicked.dataset.fileType;
+            let fileType = elementClicked.parentElement.dataset.fileType;
             if (!config.buttons[fileType]) {
                 showPopup("yellow", "不支持的文件类型", "现在仍不支持操作当前的文件类型");
                 return;
@@ -164,15 +164,16 @@ let actionList = {
         if (!this.element || !elementClicked) {
             return
         }
-        let fileType = elementClicked.dataset.fileType;
+        let folderEntryElement = elementClicked.parentElement;
+        let fileType = folderEntryElement.dataset.fileType;
         let isDirlike = (fileType == "dir" || fileType == "link-dir");
         let isFilelike = (fileType == "file" || fileType == "link-file");
         let pwd = document.querySelector(".action-input").value;
         if (targetActions == "open-folder" && isDirlike) {
-            let folderName = elementClicked.querySelector(".files-pwd-item-name").textContent
+            let folderName = folderEntryElement.querySelector(".files-pwd-item-name").textContent
             filesFetchNewDir(pwd, folderName)
         } else if (targetActions == "open-file" && isFilelike) {
-            let fileName = elementClicked.querySelector(".files-pwd-item-name").textContent
+            let fileName = folderEntryElement.querySelector(".files-pwd-item-name").textContent
             filesOpenFile(pwd, fileName)
 
         } else {
@@ -288,13 +289,12 @@ let eventFuncs = {
             .filter(it => it.classList.contains("files-pwd-item"))[0];
         let fileType = element.dataset.fileType;
         let pwd = document.querySelector(".action-input").value;
+        let entryName = elementClicked.parentElement.querySelector(".files-pwd-item-name").textContent
 
         if (fileType == "dir" || fileType == "link-dir") {
-            let folderName = elementClicked.querySelector(".files-pwd-item-name").textContent
-            filesFetchNewDir(pwd, folderName)
+            filesFetchNewDir(pwd, entryName)
         } else if (fileType == "file" || fileType == "link-file") {
-            let fileName = elementClicked.querySelector(".files-pwd-item-name").textContent
-            filesOpenFile(pwd, fileName)
+            filesOpenFile(pwd, entryName)
         }
         setTimeout(() => actionList.hide(), 0)
         

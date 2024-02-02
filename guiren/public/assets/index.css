@@ -604,6 +604,7 @@ input:checked+.slider:before {
 .files-pwd-item-texts {
     display: flex;
     flex-direction: column;
+    flex-grow: 1;
 }
 
 .files-pwd-item-info {
@@ -628,6 +629,13 @@ input:checked+.slider:before {
 .files-pwd-item:hover {
     background-color: #ffffff15;
 }
+
+.files-pwd-item-actionbutton {
+    width: 30px;
+    height: 30px;
+    stroke: var(--font-color-grey);
+}
+
 
 .files-title {
     margin-bottom: 20px;
