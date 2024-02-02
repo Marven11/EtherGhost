@@ -29859,7 +29859,6 @@
            },
            files: function (element) {
                let config = actionListGetConfig();
-               console.log(elementClicked);
                let fileType = elementClicked.parentElement.dataset.fileType;
                if (!config.buttons[fileType]) {
                    showPopup("yellow", "不支持的文件类型", "现在仍不支持操作当前的文件类型");
@@ -29899,13 +29898,13 @@
            let isDirlike = (fileType == "dir" || fileType == "link-dir");
            let isFilelike = (fileType == "file" || fileType == "link-file");
            let pwd = document.querySelector(".action-input").value;
-           if (targetActions == "open-folder" && isDirlike) {
-               let folderName = folderEntryElement.querySelector(".files-pwd-item-name").textContent;
-               filesFetchNewDir(pwd, folderName);
+           let entryName = folderEntryElement.querySelector(".files-pwd-item-name").textContent;
+               if (targetActions == "open-folder" && isDirlike) {
+               filesFetchNewDir(pwd, entryName);
+               showPopup("blue", "Tips!", "你可以双击打开文件夹！");
            } else if (targetActions == "open-file" && isFilelike) {
-               let fileName = folderEntryElement.querySelector(".files-pwd-item-name").textContent;
-               filesOpenFile(pwd, fileName);
-
+               filesOpenFile(pwd, entryName);
+               showPopup("blue", "Tips!", "你可以双击打开文件！");
            } else {
                throw new Error(`Unknown action ${clickedAction.id}(${targetActions}) for ${fileType}`)
            }
