@@ -29967,7 +29967,7 @@
        webshellEditorTest: function (event) {
            const form = document.querySelector(".main-form");
            let sessionInfo = getEditorInput(form);
-           fetchJson("/test_webshell", "POST", params = {}, data = sessionInfo).then(success => {
+           fetchJson("/test_webshell", "POST", {}, sessionInfo).then(success => {
                if (success) {
                    showPopup("green", "测试成功", "这个webshell可以正常使用");
                } else {
