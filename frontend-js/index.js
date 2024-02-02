@@ -7,6 +7,9 @@ import { shell as codeMirrorModeShell } from "@codemirror/legacy-modes/mode/shel
 import { python as codeMirrorModePython } from "@codemirror/legacy-modes/mode/python"
 
 const siteUrl = `${window.location.protocol}//${window.location.host}`
+const doubleClickInterval = 200; // ms
+let fileEntryClicked = null;
+let fileEntryClickTime = Date.now() - 10000;
 let elementClicked = null;
 let currentPage = null;
 let currentSession = null;
@@ -111,8 +114,9 @@ let actionList = {
 
         this.top = top;
         this.left = left;
+        let element = this.element
         setTimeout(() => {
-            this.element.style = style;
+            element.style = style;
         }, 0)
     },
     fillButtons: {
@@ -274,7 +278,26 @@ let eventFuncs = {
             terminalExecuteCommand();
         }
     },
-    filesKeydown: function (event) {
+    filesClickEntry: function (event) {
+        if (Date.now() - fileEntryClickTime > doubleClickInterval) {
+            fileEntryClickTime = Date.now()
+            fileEntryClicked = event.target
+            return
+        }
+        let element = traverseParents(fileEntryClicked)
+            .filter(it => it.classList.contains("files-pwd-item"))[0];
+        let fileType = element.dataset.fileType;
+        let pwd = document.querySelector(".action-input").value;
+
+        if (fileType == "dir" || fileType == "link-dir") {
+            let folderName = elementClicked.querySelector(".files-pwd-item-name").textContent
+            filesFetchNewDir(pwd, folderName)
+        } else if (fileType == "file" || fileType == "link-file") {
+            let fileName = elementClicked.querySelector(".files-pwd-item-name").textContent
+            filesOpenFile(pwd, fileName)
+        }
+        setTimeout(() => actionList.hide(), 0)
+        
     },
 }
 
@@ -409,21 +432,21 @@ function terminalInit() {
 
 function getEditorInput(form) {
     let data = {};
-    for(let element of Array.from(form.getElementsByTagName("input"))) {
-        if(traverseParents(element).filter(it => it.style.display == "none").length) {
+    for (let element of Array.from(form.getElementsByTagName("input"))) {
+        if (traverseParents(element).filter(it => it.style.display == "none").length) {
             continue
         }
         data[element.name] = element.value
     }
-    for(let element of Array.from(form.getElementsByTagName("select"))) {
-        if(traverseParents(element).filter(it => it.style.display == "none").length) {
+    for (let element of Array.from(form.getElementsByTagName("select"))) {
+        if (traverseParents(element).filter(it => it.style.display == "none").length) {
             continue
         }
         data[element.name] = element.value
     }
     data.http_params_obfs = data.http_params_obfs == "on"
     let sessionInfo
-    if(data.session_type == "ONELINE_PHP") {
+    if (data.session_type == "ONELINE_PHP") {
         sessionInfo = {
             session_type: data.session_type,
             name: data.name,
@@ -438,7 +461,7 @@ function getEditorInput(form) {
             location: "",
             session_id: data.session_id
         }
-    }else if(data.session_type == "BEHINDER_PHP_AES") {
+    } else if (data.session_type == "BEHINDER_PHP_AES") {
         sessionInfo = {
             session_type: data.session_type,
             name: data.name,
@@ -451,7 +474,7 @@ function getEditorInput(form) {
             location: "",
             session_id: data.session_id
         }
-    }else if(data.session_type == "BEHINDER_PHP_XOR") {
+    } else if (data.session_type == "BEHINDER_PHP_XOR") {
         sessionInfo = {
             session_type: data.session_type,
             name: data.name,
@@ -464,7 +487,7 @@ function getEditorInput(form) {
             location: "",
             session_id: data.session_id
         }
-    }else{
+    } else {
         throw new Error(`There's a unsupported type ${data.session_type}`)
     }
     if (!sessionInfo.session_id) {
@@ -484,7 +507,7 @@ function changeEditorSessionType(sessionType) {
 
             }
         })
-        document.querySelectorAll(".main-form-extra-options")
+    document.querySelectorAll(".main-form-extra-options")
         .forEach(element => {
             if (element.dataset.sessionType != sessionType) {
                 element.style.display = "none";
@@ -515,7 +538,7 @@ function fillEditorInput(sessionInfo) {
         document.querySelector("[name='http_params_obfs']").checked = sessionInfo["connection"]["http_params_obfs"]
         setOptionByIndex(document.querySelector("[name='method']"), sessionInfo["connection"]["method"])
         setOptionByIndex(document.querySelector("[name='encoder']"), sessionInfo["connection"]["encoder"])
-    }else if(sessionInfo["session_type"] == "BEHINDER_PHP_AES") {
+    } else if (sessionInfo["session_type"] == "BEHINDER_PHP_AES") {
         document.querySelector("[name='url']").value = sessionInfo["connection"]["url"]
         document.querySelector("[name='password']").value = sessionInfo["connection"]["password"]
         setOptionByIndex(document.querySelector("[name='encoder']"), sessionInfo["connection"]["encoder"])
