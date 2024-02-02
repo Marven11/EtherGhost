@@ -175,6 +175,9 @@ let actionList = {
 
 let eventFuncs = {
     triggerActionList: function (event) {
+        if(!actionListConfig[currentPage]){
+            return;
+        }
         let config = actionListGetConfig();
         let element = traverseParents(event.target)
             .filter(it => {
@@ -249,7 +252,7 @@ let eventFuncs = {
         event.preventDefault();
         const form = event.target;
         let sessionInfo = getEditorInput(form);
-        fetchJson("/update_webshell", "POST", params = {}, data = sessionInfo).then(_ => {
+        fetchJson("/update_webshell", "POST", {}, sessionInfo).then(_ => {
             showPopup("green", "保存成功", "webshell已成功保存到本地数据库中");
             setTimeout(() => {
                 window.history.back();
@@ -350,7 +353,7 @@ function terminalAddCommand(command, result) {
 
 function terminalExecuteCommand() {
     let cmd = document.querySelector(".action-input").value;
-    fetchJson(`/session/${currentSession}/execute_cmd`, "GET", params = {
+    fetchJson(`/session/${currentSession}/execute_cmd`, "GET", {
         "cmd": cmd,
     }).then(result => terminalAddCommand(cmd, result))
 }
@@ -467,7 +470,7 @@ function parseFilesizeHumanReadable(filesize) {
 function parseFilePermission(filePermission) {
     return Array.from(filePermission).map(dig => {
         let n = Number(dig)
-        result = ["-", "-", "-"];
+        let result = ["-", "-", "-"];
         if (n & 4) {
             result[0] = "r";
         }
@@ -536,7 +539,7 @@ async function fetchJson(path, method, param, data) {
     let url = new URL(siteUrl + path);
     const paramObj = new URLSearchParams();
     if (param) {
-        for (k of Object.keys(param)) {
+        for (let k of Object.keys(param)) {
             paramObj.append(k, param[k]);
         }
         url.search = paramObj;
@@ -638,5 +641,4 @@ function main() {
 }
 
 main();
-
-
+window.eventFuncs = eventFuncs;

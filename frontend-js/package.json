@@ -1,0 +1,14 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "bundle": "npx rollup index.js -f iife -o index.bundle.js && mv index.bundle.js ../guiren/public/assets/"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "rollup": "^4.9.6"
+  }
+}
