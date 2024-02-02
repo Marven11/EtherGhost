@@ -26,6 +26,7 @@ Webshell管理器，开发中
 - 对接蚁剑、冰蝎、哥斯拉
   - [done] 导入冰蝎webshell
 - 改进navbar操作逻辑
+- 更换字体
 
 ## DONE
 

@@ -5,7 +5,6 @@ from pydantic import BaseModel, model_validator, Field, validator
 
 __all__ = [
     "SessionType",
-    "SessionConnectionInfo",
     "SessionInfo",
     "SessionConnOnelinePHP",
     "type_to_class",
@@ -21,11 +20,11 @@ class SessionType(Enum):
 
 
 # 各个session的连接信息
-class SessionConnectionInfoBase(BaseModel):
+class SessionConnectionInfo(BaseModel):
     """session的连接信息"""
 
 
-class SessionConnOnelinePHP(SessionConnectionInfoBase):
+class SessionConnOnelinePHP(SessionConnectionInfo):
     """PHP一句话webshell的连接信息"""
 
     url: str
@@ -35,14 +34,14 @@ class SessionConnOnelinePHP(SessionConnectionInfoBase):
     encoder: t.Literal["raw", "base64"] = "raw"
 
 
-class SessionConnBehinderPHPAES(SessionConnectionInfoBase):
+class SessionConnBehinderPHPAES(SessionConnectionInfo):
     """PHP一句话webshell的连接信息"""
 
     url: str
     password: str
     encoder: t.Literal["raw", "base64"] = "raw"
 
-class SessionConnBehinderPHPXor(SessionConnectionInfoBase):
+class SessionConnBehinderPHPXor(SessionConnectionInfo):
     """冰蝎PHP Xor的连接信息"""
 
     url: str
@@ -50,7 +49,11 @@ class SessionConnBehinderPHPXor(SessionConnectionInfoBase):
     encoder: t.Literal["raw", "base64"] = "raw"
 
 
-SessionConnectionInfo = t.Union[SessionConnOnelinePHP, SessionConnBehinderPHPAES, SessionConnBehinderPHPXor]
+type_to_class = {
+    SessionType.ONELINE_PHP: SessionConnOnelinePHP,
+    SessionType.BEHINDER_PHP_AES: SessionConnBehinderPHPAES,
+    SessionType.BEHINDER_PHP_XOR: SessionConnBehinderPHPXor,
+}
 
 
 class SessionInfo(BaseModel):
@@ -87,10 +90,3 @@ class SessionInfo(BaseModel):
 
     class Config:
         from_attributes = True
-
-
-type_to_class = {
-    SessionType.ONELINE_PHP: SessionConnOnelinePHP,
-    SessionType.BEHINDER_PHP_AES: SessionConnBehinderPHPAES,
-    SessionType.BEHINDER_PHP_XOR: SessionConnBehinderPHPXor,
-}
