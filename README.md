@@ -2,7 +2,19 @@
 
 Webshell管理器，开发中
 
-![preview](assets/preview.png)
+## 预览
+
+### 主页
+
+![preview](assets/preview-homepage.png)
+
+### 模拟终端
+
+![preview](assets/preview-terminal.png)
+
+### 文件管理
+
+![preview](assets/preview-files.png)
 
 ## TODO
 
