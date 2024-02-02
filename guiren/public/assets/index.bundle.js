@@ -29844,6 +29844,7 @@
        }
        for (let unit of units) {
            if (filesize <= 1024 || unit == units[units.length - 1]) {
+               filesize = Math.round(filesize * 100) / 100;
                return `${filesize}${unit}`;
            }
            filesize = filesize / 1024;
