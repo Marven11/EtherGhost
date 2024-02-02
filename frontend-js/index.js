@@ -1,3 +1,8 @@
+import { EditorView, basicSetup } from "codemirror"
+import { javascript } from "@codemirror/lang-javascript"
+import { php } from "@codemirror/lang-php"
+import { oneDark } from '@codemirror/theme-one-dark';
+
 let elementActionList = null;
 let elementClicked = null;
 let siteUrl = `${window.location.protocol}//${window.location.host}`
@@ -175,7 +180,7 @@ let actionList = {
 
 let eventFuncs = {
     triggerActionList: function (event) {
-        if(!actionListConfig[currentPage]){
+        if (!actionListConfig[currentPage]) {
             return;
         }
         let config = actionListGetConfig();
@@ -281,7 +286,7 @@ function useTemplateHome(templateId) {
     mainElement.appendChild(clone);
 }
 
-// session files functions
+// files functions
 function filesAddPwdItem(entry) {
     let pwdListElement = document.querySelector('.files-pwd-list');
     let template = document.getElementById("template-files-pwd-item");
@@ -326,9 +331,43 @@ async function filesOpenFile(pwd, fileName) {
         current_dir: pwd,
         filename: fileName
     })
-    document.querySelector("#files-property-encoding").value = data.encoding
-    document.querySelector("#files-content-editor").value = data.text
-    document.querySelector("#files-title-filename").value = fileName
+
+    let filesElement = document.querySelector(".files");
+
+    let template = document.getElementById("template-files-editor");
+    let clone = template.content.cloneNode(true);
+    while (document.querySelector(".files-editor")) {
+        document.querySelector(".files-editor").remove();
+    }
+
+    clone.querySelector("#files-property-encoding").value = data.encoding
+    clone.querySelector("#files-title-filename").value = fileName
+    clone.querySelector("#files-content-editor").remove()
+    let myTheme = EditorView.theme({
+        ".cm-content": {
+            fontFamily: "'Courier New', Courier, monospace",
+            fontSize: "22px",
+            backgroundColor: "var(--background-color-2)"
+        },
+        ".cm-gutters": {
+            fontSize: "16px",
+        }
+    })
+    let extensions = [oneDark, myTheme, basicSetup, ];
+    if(/\.js$/.test(fileName)) {
+        extensions.push(javascript())
+    }else if(/php|php5|php7|phar$/.test(fileName)) {
+        console.log("Here")
+        extensions.push(php())
+    }
+    let editor = new EditorView({
+        extensions: extensions,
+        parent: clone.querySelector(".files-content"),
+        doc: data.text
+    })
+    filesElement.appendChild(clone);
+
+
 }
 
 // terminal functions
@@ -455,11 +494,11 @@ function showPopup(color, title, text) {
 
 function parseFilesizeHumanReadable(filesize) {
     let units = ["B", "KiB", "MiB", "GiB", "TiB"];
-    if(filesize < 0) {
+    if (filesize < 0) {
         return "?B";
     }
-    for(let unit of units) {
-        if(filesize <= 1024 || unit == units[units.length - 1]) {
+    for (let unit of units) {
+        if (filesize <= 1024 || unit == units[units.length - 1]) {
             return `${filesize}${unit}`;
         }
         filesize = filesize / 1024;
@@ -562,9 +601,9 @@ async function fetchJson(path, method, param, data) {
     }
     let response;
     try {
-        response = await fetch(url, fetchOptions); 
-    } catch(error) {
-        if(error instanceof TypeError) {
+        response = await fetch(url, fetchOptions);
+    } catch (error) {
+        if (error instanceof TypeError) {
             showPopup("red", "连接后台失败", `无法连接到后台，后台是否仍在运行？`);
         }
         throw error;

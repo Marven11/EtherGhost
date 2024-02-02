@@ -647,7 +647,8 @@ input:checked+.slider:before {
 
 .files-content {
     flex-grow: 1;
-    padding: 20px;
+    padding-top: 20px;
+    padding-bottom: 20px;
     margin-bottom: 20px;
 }
 
