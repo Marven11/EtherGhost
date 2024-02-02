@@ -453,6 +453,19 @@ function getEditorInput(form) {
             location: "",
             session_id: data.session_id
         }
+    }else if(data.session_type == "BEHINDER_PHP_XOR") {
+        sessionInfo = {
+            session_type: data.session_type,
+            name: data.name,
+            connection: {
+                url: data.url,
+                password: data.password,
+                encoder: data.encoder
+            },
+            note: data.note,
+            location: "",
+            session_id: data.session_id
+        }
     }else{
         throw new Error(`There's a unsupported type ${data.session_type}`)
     }

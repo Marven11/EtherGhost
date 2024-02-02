@@ -30152,7 +30152,6 @@
            }
            data[element.name] = element.value;
        }
-       console.log(data);
        data.http_params_obfs = data.http_params_obfs == "on";
        let sessionInfo;
        if(data.session_type == "ONELINE_PHP") {
@@ -30183,10 +30182,22 @@
                location: "",
                session_id: data.session_id
            };
+       }else if(data.session_type == "BEHINDER_PHP_XOR") {
+           sessionInfo = {
+               session_type: data.session_type,
+               name: data.name,
+               connection: {
+                   url: data.url,
+                   password: data.password,
+                   encoder: data.encoder
+               },
+               note: data.note,
+               location: "",
+               session_id: data.session_id
+           };
        }else {
            throw new Error(`There's a unsupported type ${data.session_type}`)
        }
-       console.log(sessionInfo);
        if (!sessionInfo.session_id) {
            // tell server to insert (not update) the webshell
            delete sessionInfo.session_id;

