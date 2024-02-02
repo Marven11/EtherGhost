@@ -289,7 +289,7 @@ let eventFuncs = {
             .filter(it => it.classList.contains("files-pwd-item"))[0];
         let fileType = element.dataset.fileType;
         let pwd = document.querySelector(".action-input").value;
-        let entryName = elementClicked.parentElement.querySelector(".files-pwd-item-name").textContent
+        let entryName = element.querySelector(".files-pwd-item-name").textContent
 
         if (fileType == "dir" || fileType == "link-dir") {
             filesFetchNewDir(pwd, entryName)
