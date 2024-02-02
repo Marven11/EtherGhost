@@ -2,6 +2,8 @@ import { EditorView, basicSetup } from "codemirror"
 import { javascript } from "@codemirror/lang-javascript"
 import { php } from "@codemirror/lang-php"
 import { oneDark } from '@codemirror/theme-one-dark';
+import {StreamLanguage} from "@codemirror/language"
+import {shell} from "@codemirror/legacy-modes/mode/shell"
 
 let elementActionList = null;
 let elementClicked = null;
@@ -357,8 +359,9 @@ async function filesOpenFile(pwd, fileName) {
     if(/\.js$/.test(fileName)) {
         extensions.push(javascript())
     }else if(/php|php5|php7|phar$/.test(fileName)) {
-        console.log("Here")
         extensions.push(php())
+    }else if(/sh|zsh|bash$/.test(fileName)) {
+        extensions.push(StreamLanguage.define(shell))
     }
     let editor = new EditorView({
         extensions: extensions,
