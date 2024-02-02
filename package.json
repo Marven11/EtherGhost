@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "@codemirror/legacy-modes": "^6.3.3",
-    "codemirror": "^6.0.1"
-  }
-}
