@@ -7,8 +7,8 @@ class DirectoryEntry:
     """文件夹中某一项的信息"""
     name: str
     permission: str
+    filesize: int
     entry_type: t.Literal["dir", "file", "link-dir", "link-file", "unknown"] = "file"
-
 
 class Session:
     """Session接口"""

@@ -279,20 +279,20 @@ function useTemplateHome(templateId) {
 }
 
 // session files functions
-
-function filesAddPwdItem(fileType, fileName, filePermission) {
+function filesAddPwdItem(entry) {
     let pwdListElement = document.querySelector('.files-pwd-list');
     let template = document.getElementById("template-files-pwd-item");
     let clone = template.content.cloneNode(true);
     let icons = Array.from(clone.querySelectorAll(".files-pwd-item-icon"));
     icons.forEach(element => {
-        if (!element.classList.contains(`icon-${fileType}`)) {
+        if (!element.classList.contains(`icon-${entry.entry_type}`)) {
             element.remove();
         }
     })
-    clone.querySelector(".files-pwd-item").dataset.fileType = fileType
-    clone.querySelector(".files-pwd-item-name").textContent = fileName
-    clone.querySelector(".files-pwd-item-permission").textContent = parseFilePermission(filePermission)
+    clone.querySelector(".files-pwd-item").dataset.fileType = entry.entry_type
+    clone.querySelector(".files-pwd-item-name").textContent = entry.name
+    clone.querySelector(".files-pwd-item-permission").textContent = parseFilePermission(entry.permission)
+    clone.querySelector(".files-pwd-item-filesize").textContent = parseFilesizeHumanReadable(entry.filesize)
     pwdListElement.appendChild(clone);
 }
 
@@ -306,7 +306,7 @@ async function filesFetchDir(dir) {
         pwdListElement.firstChild.remove();
     }
     entries.forEach(entry => {
-        filesAddPwdItem(entry.entry_type, entry.name, entry.permission);
+        filesAddPwdItem(entry);
     })
 }
 
@@ -449,6 +449,20 @@ function showPopup(color, title, text) {
 }
 
 // helper functions
+
+function parseFilesizeHumanReadable(filesize) {
+    let units = ["B", "KiB", "MiB", "GiB", "TiB"];
+    if(filesize < 0) {
+        return "?B";
+    }
+    for(let unit of units) {
+        if(filesize <= 1024 || unit == units[units.length - 1]) {
+            return `${filesize}${unit}`;
+        }
+        filesize = filesize / 1024;
+    }
+    throw new Error("This line should not be run");
+}
 
 function parseFilePermission(filePermission) {
     return Array.from(filePermission).map(dig => {

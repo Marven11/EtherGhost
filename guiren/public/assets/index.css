@@ -606,18 +606,22 @@ input:checked+.slider:before {
     flex-direction: column;
 }
 
-.files-pwd-item-permission {
+.files-pwd-item-info {
+    display: flex;
+    flex-direction: row;
+}
+
+.files-pwd-item-info p {
     margin-right: 10px;
     color: #ffffff54;
+    font-size: 16px;
+    margin: 0;
+    margin-top: 5px;
+    margin-right: 5px;
 }
 
 .files-pwd-item-name {
     font-size: 22px;
-    margin: 0;
-}
-
-.files-pwd-item-permission {
-    font-size: 16px;
     margin: 0;
 }
 
@@ -666,7 +670,7 @@ input:checked+.slider:before {
     padding: 0px 20px;
     color: var(--font-color-grey);
 }
-/* #242933 */
+
 .files-property input[type="text"] {
     height: 30px;
     background-color: var(--background-color-1);

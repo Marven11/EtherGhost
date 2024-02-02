@@ -41,7 +41,8 @@ foreach ($files as $file) {
     array_push($result, array(
         "name" => basename($file),
         "type" => $fileType,
-        "permission" => substr(decoct(fileperms($filePath)), -3)
+        "permission" => substr(decoct(fileperms($filePath)), -3),
+        "filesize" => filesize($filePath)
     ));
 }
 echo json_encode($result);
@@ -122,12 +123,13 @@ class PHPWebshell(Session):
                     if item["type"] in ["dir", "file", "link-dir", "link-file"]
                     else "unknown"
                 ),
+                filesize=item["filesize"]
             )
             for item in result
         ]
         if not any(entry.name == ".." for entry in result):
             result.insert(
-                0, DirectoryEntry(name="..", permission="555", entry_type="dir")
+                0, DirectoryEntry(name="..", permission="555", filesize=-1, entry_type="dir")
             )
         return result
 
