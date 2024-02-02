@@ -16,6 +16,7 @@ class SessionType(Enum):
     """session的类型"""
 
     ONELINE_PHP = "ONELINE_PHP"
+    BEHINDER_PHP_AES = "BEHINDER_PHP_AES"
 
 
 # 各个session的连接信息
@@ -28,11 +29,20 @@ class SessionConnOnelinePHP(SessionConnectionInfoBase):
 
     url: str
     password: str
-    method: str = "POST"
-    http_params_obfs: bool = False
+    method: str
+    http_params_obfs: bool
     encoder: t.Literal["raw", "base64"] = "raw"
 
-SessionConnectionInfo = t.Union[SessionConnOnelinePHP,]
+
+class SessionConnBehinderPHPAES(SessionConnectionInfoBase):
+    """PHP一句话webshell的连接信息"""
+
+    url: str
+    password: str
+    encoder: t.Literal["raw", "base64"] = "raw"
+
+
+SessionConnectionInfo = t.Union[SessionConnOnelinePHP, SessionConnBehinderPHPAES]
 
 
 class SessionInfo(BaseModel):
@@ -41,7 +51,7 @@ class SessionInfo(BaseModel):
     session_type: SessionType
     name: str
     connection: SessionConnectionInfo
-    session_id: UUID = uuid4()
+    session_id: UUID = uuid4()  # FIXME: it will use the same UUID during boot
     note: str = ""
     location: str = ""
 
@@ -58,4 +68,6 @@ class SessionInfo(BaseModel):
 
 type_to_class = {
     SessionType.ONELINE_PHP: SessionConnOnelinePHP,
+    SessionType.BEHINDER_PHP_AES: SessionConnBehinderPHPAES,
 }
+

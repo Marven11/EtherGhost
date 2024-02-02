@@ -259,6 +259,7 @@
                 <div class="main-form-row">
                     <select name="session_type" onchange="eventFuncs.webshellEditorChangeSessionType(event)">
                         <option value="ONELINE_PHP">PHP一句话</option>
+                        <option value="BEHINDER_PHP_AES">冰蝎PHP-AES</option>
                         <!-- TODO: 适配 -->
                         <!-- <option value="BehinderPHPBase64">冰蝎 - PHP - Base64</option> -->
                     </select>
@@ -280,6 +281,11 @@
                         <input type="text" name="url" placeholder="http://example.com/shell.php">
                         <input class="input-short" type="text" name="password" placeholder="密码">
                     </div>
+                    <div data-session-type="BEHINDER_PHP_AES" class="main-form-conn-options main-form-row">
+                        <input type="text" name="url" placeholder="http://example.com/shell.php">
+                        <input class="input-short" type="text" name="password" placeholder="密码">
+                    </div>
+                    
                 </div>
 
 
@@ -297,6 +303,17 @@
                             <span class="slider round"></span>
                         </label>
                     </div>
+                    <div class="main-form-item">
+                        <p>Encoder</p>
+                        <select name="encoder" id="">
+                            <option value="base64">base64</option>
+                            <option value="raw">raw</option>
+                            <option value="chr">chr16</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div data-session-type="BEHINDER_PHP_AES" class="main-form-row main-form-extra-options">
                     <div class="main-form-item">
                         <p>Encoder</p>
                         <select name="encoder" id="">

@@ -6,6 +6,7 @@ from .session_types import (
     SessionType,
     SessionInfo,
     SessionConnOnelinePHP,
+    SessionConnBehinderPHPAES
 )
 
 
@@ -37,6 +38,17 @@ def php_normal(session_conn: SessionConnOnelinePHP):
         )
     )
 
+
+@session_conn_converter(SessionType.BEHINDER_PHP_AES)
+def php_behinderaes(session_conn: SessionConnBehinderPHPAES):
+    """将冰蝎PHP AES的info转换成对象"""
+    return sessions.PHPWebshellBehinderAES(
+        url=session_conn.url,
+        password=session_conn.password,
+        options=sessions.php.PHPWebshellOptions(
+            encoder=session_conn.encoder,
+        )
+    )
 
 
 def session_info_to_session(session_info: SessionInfo) -> sessions.Session:

