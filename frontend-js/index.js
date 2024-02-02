@@ -207,7 +207,7 @@ let eventFuncs = {
             element => element.classList.contains("menu-action-item")
         )[0];
         if (!clickedAction) {
-            throw new Error("找不到点击的菜单项");
+            return; // 点击边缘
         }
         actionList[`clicked_${currentPage}`](clickedAction);
 
