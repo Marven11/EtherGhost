@@ -2,14 +2,15 @@ import { EditorView, basicSetup } from "codemirror"
 import { javascript } from "@codemirror/lang-javascript"
 import { php } from "@codemirror/lang-php"
 import { oneDark } from '@codemirror/theme-one-dark';
-import {StreamLanguage} from "@codemirror/language"
-import {shell} from "@codemirror/legacy-modes/mode/shell"
+import { StreamLanguage } from "@codemirror/language"
+import { shell } from "@codemirror/legacy-modes/mode/shell"
 
+const siteUrl = `${window.location.protocol}//${window.location.host}`
 let elementActionList = null;
 let elementClicked = null;
-let siteUrl = `${window.location.protocol}//${window.location.host}`
 let currentPage = null;
 let currentSession = null;
+let fileEditor = null;
 let lastPopupTime = Date.now() - 10000;
 
 let actionListConfig = {
@@ -333,18 +334,7 @@ async function filesOpenFile(pwd, fileName) {
         current_dir: pwd,
         filename: fileName
     })
-
-    let filesElement = document.querySelector(".files");
-
-    let template = document.getElementById("template-files-editor");
-    let clone = template.content.cloneNode(true);
-    while (document.querySelector(".files-editor")) {
-        document.querySelector(".files-editor").remove();
-    }
-
-    clone.querySelector("#files-property-encoding").value = data.encoding
-    clone.querySelector("#files-title-filename").value = fileName
-    clone.querySelector("#files-content-editor").remove()
+    let fileContentDocument = document.querySelector(".files-content")
     let myTheme = EditorView.theme({
         ".cm-content": {
             fontFamily: "'Courier New', Courier, monospace",
@@ -355,22 +345,28 @@ async function filesOpenFile(pwd, fileName) {
             fontSize: "16px",
         }
     })
-    let extensions = [oneDark, myTheme, basicSetup, ];
-    if(/\.js$/.test(fileName)) {
+    let extensions = [oneDark, myTheme, basicSetup];
+    if(fileEditor) {
+        fileEditor.destroy();
+    }
+    while (fileContentDocument.firstChild) {
+        fileContentDocument.firstChild.remove();
+    }
+    document.querySelector("#files-property-encoding").value = data.encoding
+    document.querySelector("#files-title-filename").value = fileName
+    if (/\.js$/.test(fileName)) {
         extensions.push(javascript())
-    }else if(/php|php5|php7|phar$/.test(fileName)) {
+    } else if (/php|php5|php7|phar$/.test(fileName)) {
         extensions.push(php())
-    }else if(/sh|zsh|bash$/.test(fileName)) {
+    } else if (/sh|zsh|bash$/.test(fileName)) {
         extensions.push(StreamLanguage.define(shell))
     }
-    let editor = new EditorView({
+
+    fileEditor = new EditorView({
         extensions: extensions,
-        parent: clone.querySelector(".files-content"),
+        parent: fileContentDocument,
         doc: data.text
     })
-    filesElement.appendChild(clone);
-
-
 }
 
 // terminal functions
