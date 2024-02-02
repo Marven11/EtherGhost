@@ -29736,7 +29736,6 @@
    });
 
    const siteUrl = `${window.location.protocol}//${window.location.host}`;
-   let elementActionList = null;
    let elementClicked = null;
    let currentPage = null;
    let currentSession = null;
@@ -29795,16 +29794,17 @@
    let actionList = {
        top: 0,
        left: 0,
+       element: null,
        hide: function () {
 
-           if (!elementActionList) {
+           if (!this.element) {
                return;
            }
            // We need to make this action list invisible to others
            // so that before we delete it, others will create a new one when
            // they need to show somethings.
-           let element = elementActionList;
-           elementActionList = null;
+           let element = this.element;
+           this.element = null;
 
            element.style = `
             opacity: 0;
@@ -29823,37 +29823,37 @@
             top: ${top}px; 
             left: ${left}px;`;
            // create one when we don't have it, otherwise use the existed one.
-           if (!elementActionList) {
+           if (!this.element) {
                let clone = template.content.cloneNode(true);
                const mainElement = document.querySelector('main');
                mainElement.appendChild(clone);
                let elementActionLists = document.querySelectorAll(".menu-action-list");
-               elementActionList = elementActionLists[elementActionLists.length - 1];
+               this.element = elementActionLists[elementActionLists.length - 1];
            }
-           while (elementActionList.firstChild) {
-               elementActionList.firstChild.remove();
+           while (this.element.firstChild) {
+               this.element.firstChild.remove();
            }
            if (!this.fillButtons[currentPage]) {
                throw new Error(`Page ${currentPage} doesn't support action list`)
            }
-           this.fillButtons[currentPage]();
+           this.fillButtons[currentPage](this.element);
 
            this.top = top;
            this.left = left;
            setTimeout(() => {
-               elementActionList.style = style;
+               this.element.style = style;
            }, 0);
        },
        fillButtons: {
-           home: function () {
+           home: function (element) {
                let config = actionListGetConfig();
                for (let button of config.buttons) {
                    let template = document.getElementById(`template-action-list-item-${button}`);
                    let clone = template.content.cloneNode(true);
-                   elementActionList.appendChild(clone);
+                   element.appendChild(clone);
                }
            },
-           files: function () {
+           files: function (element) {
                let config = actionListGetConfig();
                let fileType = elementClicked.dataset.fileType;
                if (!config.buttons[fileType]) {
@@ -29863,47 +29863,45 @@
                for (let button of config.buttons[fileType]) {
                    let template = document.getElementById(`template-action-list-item-${button}`);
                    let clone = template.content.cloneNode(true);
-                   elementActionList.appendChild(clone);
+                   element.appendChild(clone);
                }
            }
        },
-       clicked: {
-           home: function (clickedAction) {
-               let targetActions = {
-                   "menu-action-terminal": "terminal",
-                   "menu-action-files": "files",
-                   "menu-action-proxy": "proxy",
-                   "menu-action-machine-info": "machine-info",
-                   "menu-action-edit-webshell": "edit-webshell",
-               }[clickedAction.id];
-               if (!elementActionList || !elementClicked) {
-                   return
-               }
-               let clickedSessionId = elementClicked.getAttribute("session-id");
-               window.location = `/#session=${clickedSessionId}&action=${targetActions}`;
-           },
-           files: function (clickedAction) {
-               let targetActions = {
-                   "menu-action-open-folder": "open-folder",
-                   "menu-action-open-file": "open-file",
-               }[clickedAction.id];
-               if (!elementActionList || !elementClicked) {
-                   return
-               }
-               let fileType = elementClicked.dataset.fileType;
-               let isDirlike = (fileType == "dir" || fileType == "link-dir");
-               let isFilelike = (fileType == "file" || fileType == "link-file");
-               let pwd = document.querySelector(".action-input").value;
-               if (targetActions == "open-folder" && isDirlike) {
-                   let folderName = elementClicked.querySelector(".files-pwd-item-name").textContent;
-                   filesFetchNewDir(pwd, folderName);
-               } else if (targetActions == "open-file" && isFilelike) {
-                   let fileName = elementClicked.querySelector(".files-pwd-item-name").textContent;
-                   filesOpenFile(pwd, fileName);
+       clicked_home: function (clickedAction) {
+           let targetActions = {
+               "menu-action-terminal": "terminal",
+               "menu-action-files": "files",
+               "menu-action-proxy": "proxy",
+               "menu-action-machine-info": "machine-info",
+               "menu-action-edit-webshell": "edit-webshell",
+           }[clickedAction.id];
+           if (!this.element || !elementClicked) {
+               return
+           }
+           let clickedSessionId = elementClicked.getAttribute("session-id");
+           window.location = `/#session=${clickedSessionId}&action=${targetActions}`;
+       },
+       clicked_files: function (clickedAction) {
+           let targetActions = {
+               "menu-action-open-folder": "open-folder",
+               "menu-action-open-file": "open-file",
+           }[clickedAction.id];
+           if (!this.element || !elementClicked) {
+               return
+           }
+           let fileType = elementClicked.dataset.fileType;
+           let isDirlike = (fileType == "dir" || fileType == "link-dir");
+           let isFilelike = (fileType == "file" || fileType == "link-file");
+           let pwd = document.querySelector(".action-input").value;
+           if (targetActions == "open-folder" && isDirlike) {
+               let folderName = elementClicked.querySelector(".files-pwd-item-name").textContent;
+               filesFetchNewDir(pwd, folderName);
+           } else if (targetActions == "open-file" && isFilelike) {
+               let fileName = elementClicked.querySelector(".files-pwd-item-name").textContent;
+               filesOpenFile(pwd, fileName);
 
-               } else {
-                   throw new Error(`Unknown action ${clickedAction.id}(${targetActions}) for ${fileType}`)
-               }
+           } else {
+               throw new Error(`Unknown action ${clickedAction.id}(${targetActions}) for ${fileType}`)
            }
        },
    };
@@ -29940,7 +29938,7 @@
            if (!clickedAction) {
                throw new Error("找不到点击的菜单项");
            }
-           actionList.clicked[currentPage](clickedAction);
+           actionList[`clicked_${currentPage}`](clickedAction);
 
        },
        terminalExecute: function (event) {
