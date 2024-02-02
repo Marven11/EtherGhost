@@ -1,7 +1,7 @@
 from enum import Enum
 from uuid import UUID, uuid4
 import typing as t
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, model_validator, Field
 
 __all__ = [
     "SessionType",
@@ -51,7 +51,7 @@ class SessionInfo(BaseModel):
     session_type: SessionType
     name: str
     connection: SessionConnectionInfo
-    session_id: UUID = uuid4()  # FIXME: it will use the same UUID during boot
+    session_id: UUID = Field(default_factory=uuid4)
     note: str = ""
     location: str = ""
 
