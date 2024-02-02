@@ -61,7 +61,6 @@ async def test_webshell(session_info: session_types.SessionInfo):
 @app.post("/update_webshell")
 async def update_webshell(session_info: session_types.SessionInfo):
     """添加或更新webshell"""
-    print(session_info.session_id)
     if session_manager.get_session_info_by_id(session_info.session_id):
         session_manager.delete_session_info_by_id(session_info.session_id)
     session_manager.add_session_info(session_info)

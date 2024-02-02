@@ -1,7 +1,7 @@
 from enum import Enum
 from uuid import UUID, uuid4
 import typing as t
-from pydantic import BaseModel, model_validator, Field
+from pydantic import BaseModel, model_validator, Field, validator
 
 __all__ = [
     "SessionType",
@@ -55,6 +55,21 @@ class SessionInfo(BaseModel):
     note: str = ""
     location: str = ""
 
+    # 使用validator装饰器来实现动态类型
+    @validator("connection", pre=True, always=True)
+    @classmethod
+    def set_dynamic_attr_type(cls, v, values):  # type: ignore
+        print(cls, v)
+        session_type = values.get("session_type")
+        conn_class = type_to_class[SessionType(session_type)]
+        if isinstance(v, dict):
+            return conn_class(**v)
+        elif isinstance(v, conn_class):
+            return v
+        raise NotImplementedError(
+            f"Serialization from type {type(v)} is not supported."
+        )
+
     @model_validator(mode="after")
     def validator(self):
         conn_class = type_to_class[self.session_type]
@@ -70,4 +85,3 @@ type_to_class = {
     SessionType.ONELINE_PHP: SessionConnOnelinePHP,
     SessionType.BEHINDER_PHP_AES: SessionConnBehinderPHPAES,
 }
-

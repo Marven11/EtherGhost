@@ -410,10 +410,18 @@ function terminalInit() {
 // webshell editor functions
 
 function getEditorInput(form) {
-    const formData = new FormData(form);
     let data = {};
-    for (const [key, value] of formData.entries()) {
-        data[key] = value;
+    for(let element of Array.from(form.getElementsByTagName("input"))) {
+        if(traverseParents(element).filter(it => it.style.display == "none").length) {
+            continue
+        }
+        data[element.name] = element.value
+    }
+    for(let element of Array.from(form.getElementsByTagName("select"))) {
+        if(traverseParents(element).filter(it => it.style.display == "none").length) {
+            continue
+        }
+        data[element.name] = element.value
     }
     data.http_params_obfs = data.http_params_obfs == "on"
     let sessionInfo
@@ -445,6 +453,8 @@ function getEditorInput(form) {
             location: "",
             session_id: data.session_id
         }
+    }else{
+        throw new Error(`There's a unsupported type ${data.session_type}`)
     }
     if (!sessionInfo.session_id) {
         // tell server to insert (not update) the webshell
