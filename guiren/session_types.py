@@ -8,6 +8,7 @@ __all__ = [
     "SessionInfo",
     "SessionConnOnelinePHP",
     "type_to_class",
+    "session_type_readable"
 ]
 
 
@@ -55,6 +56,11 @@ type_to_class = {
     SessionType.BEHINDER_PHP_XOR: SessionConnBehinderPHPXor,
 }
 
+session_type_readable = {
+    SessionType.ONELINE_PHP: "PHP一句话",
+    SessionType.BEHINDER_PHP_AES: "冰蝎PHP AES",
+    SessionType.BEHINDER_PHP_XOR: "冰蝎PHP Xor",
+}
 
 class SessionInfo(BaseModel):
     """session的基本信息"""

@@ -9,14 +9,10 @@ from .session_types import (
     SessionConnOnelinePHP,
     SessionConnBehinderPHPAES,
     SessionConnBehinderPHPXor,
+    session_type_readable
 )
 
 
-session_type_readable = {
-    SessionType.ONELINE_PHP: "PHP一句话",
-    SessionType.BEHINDER_PHP_AES: "冰蝎PHP AES",
-    SessionType.BEHINDER_PHP_XOR: "冰蝎PHP Xor",
-}
 location_readable = {"US": "🇺🇸"}
 session_con_converters = {}
 
