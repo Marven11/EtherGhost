@@ -585,6 +585,7 @@ input:checked+.slider:before {
     flex-direction: row;
     align-items: center;
     transition: background 0.3s ease;
+    user-select: none;
 }
 
 .files-pwd-item-icon {
