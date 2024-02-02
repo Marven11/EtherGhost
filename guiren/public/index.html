@@ -253,10 +253,18 @@
 
                 <div class="main-form-divider">
                     <label class="main-form-label" for="session_type">
-                        名称
+                        类型与名称
                     </label>
                 </div>
-                <input type="text" name="name" placeholder="Session">
+                <div class="main-form-row">
+                    <select name="session_type" onchange="eventFuncs.webshellEditorChangeSessionType(event)">
+                        <option value="ONELINE_PHP">PHP一句话</option>
+                        <!-- TODO: 适配 -->
+                        <!-- <option value="BehinderPHPBase64">冰蝎 - PHP - Base64</option> -->
+                    </select>
+                    <input type="text" name="name" placeholder="Session">
+
+                </div>
 
                 <div class="main-form-divider">
                     <label class="main-form-label" for="url">
@@ -264,21 +272,14 @@
                     </label>
                 </div>
                 <div class="main-form-row">
-                    <select name="session_type">
-                        <option value="ONELINE_PHP">PHP一句话</option>
-                        <!-- TODO: 适配 -->
-                        <!-- <option value="BehinderPHPAES128">冰蝎 - PHP - AES128</option> -->
-                        <!-- <option value="BehinderPHPBase64">冰蝎 - PHP - Base64</option> -->
-                    </select>
-                    <select name="method">
-                        <option value="POST">POST</option>
-                        <option value="GET">GET</option>
-                        <!-- TODO: 适配 -->
-                        <!-- <option value="BehinderPHPAES128">冰蝎 - PHP - AES128</option> -->
-                        <!-- <option value="BehinderPHPBase64">冰蝎 - PHP - Base64</option> -->
-                    </select>
-                    <input type="text" name="url" placeholder="http://example.com/shell.php">
-                    <input class="input-short" type="text" name="password" placeholder="密码">
+                    <div data-session-type="ONELINE_PHP" class="main-form-conn-options main-form-row">
+                        <select name="method">
+                            <option value="POST">POST</option>
+                            <option value="GET">GET</option>
+                        </select>
+                        <input type="text" name="url" placeholder="http://example.com/shell.php">
+                        <input class="input-short" type="text" name="password" placeholder="密码">
+                    </div>
                 </div>
 
 
@@ -287,7 +288,8 @@
                         附加配置
                     </p>
                 </div>
-                <div class="main-form-row">
+
+                <div data-session-type="ONELINE_PHP" class="main-form-row main-form-extra-options">
                     <div class="main-form-item">
                         <p>流量混淆</p>
                         <label class="switch">

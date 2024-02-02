@@ -257,6 +257,9 @@ let eventFuncs = {
             }
         })
     },
+    webshellEditorChangeSessionType: function (event) {
+        changeEditorSessionType(event.target.value)
+    },
     webshellEditorSubmit: function (event) {
         event.preventDefault();
         const form = event.target;
@@ -347,7 +350,7 @@ async function filesOpenFile(pwd, fileName) {
         }
     })
     let extensions = [oneDark, myTheme, basicSetup];
-    if(fileEditor) {
+    if (fileEditor) {
         fileEditor.destroy();
     }
     while (fileContentDocument.firstChild) {
@@ -361,7 +364,7 @@ async function filesOpenFile(pwd, fileName) {
         extensions.push(php())
     } else if (/\.(sh|zsh|bashrc|zshrc)$/.test(fileName)) {
         extensions.push(StreamLanguage.define(codeMirrorModeShell))
-    }else if (/\.py$/.test(fileName)) {
+    } else if (/\.py$/.test(fileName)) {
         extensions.push(StreamLanguage.define(codeMirrorModePython))
     }
 
@@ -434,6 +437,26 @@ function getEditorInput(form) {
     return sessionInfo;
 }
 
+function changeEditorSessionType(sessionType) {
+    document.querySelectorAll(".main-form-conn-options")
+        .forEach(element => {
+            if (element.dataset.sessionType != sessionType) {
+                element.style.display = "none";
+            } else {
+                element.style.display = "";
+
+            }
+        })
+        document.querySelectorAll(".main-form-extra-options")
+        .forEach(element => {
+            if (element.dataset.sessionType != sessionType) {
+                element.style.display = "none";
+            } else {
+                element.style.display = "";
+            }
+        })
+}
+
 function fillEditorInput(sessionInfo) {
     let setOptionByIndex = (element, option) => {
         element.selectedIndex = Array.from(element.getElementsByTagName("option"))
@@ -441,9 +464,13 @@ function fillEditorInput(sessionInfo) {
             .indexOf(option)
     }
     setOptionByIndex(document.querySelector("[name='session_type']"), sessionInfo["session_type"])
+    document.querySelector("[name='session_type']").disabled = true;
     document.querySelector("[name='name']").value = sessionInfo["name"]
     document.querySelector("[name='note']").value = sessionInfo["note"]
     document.querySelector("[name='session_id']").value = sessionInfo["session_id"]
+    Array.from(document.querySelectorAll(".main-form-conn-options"))
+        .filter(element => element.dataset.sessionType != sessionInfo["session_type"])
+        .forEach(element => element.remove())
     if (sessionInfo["session_type"] == "ONELINE_PHP") {
         document.querySelector("[name='url']").value = sessionInfo["connection"]["url"]
         document.querySelector("[name='password']").value = sessionInfo["connection"]["password"]
@@ -657,6 +684,7 @@ function editWebshellMain(hashParams) {
 
 function addWebshellMain(hashParams) {
     useTemplateHome("template-webshell-editor");
+    changeEditorSessionType("ONELINE_PHP")
     currentPage = "add-webshell";
 
 }
