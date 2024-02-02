@@ -72,7 +72,6 @@ class PHPWebshellOptions:
     """除了submit_raw之外的函数需要的各类选项"""
 
     encoder: t.Literal["raw", "base64"] = "raw"
-    http_params_obfs: bool = False  # TODO: remove me
 
 
 def compress_php_code(source: str) -> str:
