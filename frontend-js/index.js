@@ -3,7 +3,8 @@ import { javascript } from "@codemirror/lang-javascript"
 import { php } from "@codemirror/lang-php"
 import { oneDark } from '@codemirror/theme-one-dark';
 import { StreamLanguage } from "@codemirror/language"
-import { shell } from "@codemirror/legacy-modes/mode/shell"
+import { shell as codeMirrorModeShell } from "@codemirror/legacy-modes/mode/shell"
+import { python as codeMirrorModePython } from "@codemirror/legacy-modes/mode/python"
 
 const siteUrl = `${window.location.protocol}//${window.location.host}`
 let elementActionList = null;
@@ -356,10 +357,12 @@ async function filesOpenFile(pwd, fileName) {
     document.querySelector("#files-title-filename").value = fileName
     if (/\.js$/.test(fileName)) {
         extensions.push(javascript())
-    } else if (/php|php5|php7|phar$/.test(fileName)) {
+    } else if (/\.(php|php5|php7|phar)$/.test(fileName)) {
         extensions.push(php())
-    } else if (/sh|zsh|bash$/.test(fileName)) {
-        extensions.push(StreamLanguage.define(shell))
+    } else if (/\.(sh|zsh|bashrc|zshrc)$/.test(fileName)) {
+        extensions.push(StreamLanguage.define(codeMirrorModeShell))
+    }else if (/\.py$/.test(fileName)) {
+        extensions.push(StreamLanguage.define(codeMirrorModePython))
     }
 
     fileEditor = new EditorView({
