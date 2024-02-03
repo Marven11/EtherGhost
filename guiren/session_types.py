@@ -28,6 +28,7 @@ class SessionConnOnelinePHP(BaseModel):
     method: str
     http_params_obfs: bool
     encoder: t.Literal["raw", "base64"] = "raw"
+    sessionize_payload: bool = True
 
 
 class SessionConnBehinderPHPAES(BaseModel):
@@ -36,6 +37,7 @@ class SessionConnBehinderPHPAES(BaseModel):
     url: str
     password: str
     encoder: t.Literal["raw", "base64"] = "raw"
+    sessionize_payload: bool = True
 
 class SessionConnBehinderPHPXor(BaseModel):
     """冰蝎PHP Xor的连接信息"""
@@ -43,6 +45,7 @@ class SessionConnBehinderPHPXor(BaseModel):
     url: str
     password: str
     encoder: t.Literal["raw", "base64"] = "raw"
+    sessionize_payload: bool = True
 
 SessionConnectionInfo = t.Union[
     SessionConnOnelinePHP,

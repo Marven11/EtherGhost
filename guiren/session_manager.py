@@ -37,6 +37,7 @@ def php_normal(session_conn: SessionConnOnelinePHP):
         http_params_obfs=session_conn.http_params_obfs,
         options=sessions.php.PHPWebshellOptions(
             encoder=session_conn.encoder,
+            sessionize_payload=session_conn.sessionize_payload
         ),
     )
 
@@ -49,6 +50,7 @@ def php_behinderaes(session_conn: SessionConnBehinderPHPAES):
         password=session_conn.password,
         options=sessions.php.PHPWebshellOptions(
             encoder=session_conn.encoder,
+            sessionize_payload=session_conn.sessionize_payload
         ),
     )
 
@@ -61,6 +63,7 @@ def php_behinderxor(session_conn: SessionConnBehinderPHPXor):
         password=session_conn.password,
         options=sessions.php.PHPWebshellOptions(
             encoder=session_conn.encoder,
+            sessionize_payload=session_conn.sessionize_payload
         ),
     )
 

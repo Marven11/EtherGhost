@@ -436,7 +436,11 @@ function getEditorInput(form) {
         if (traverseParents(element).filter(it => it.style.display == "none").length) {
             continue
         }
-        data[element.name] = element.value
+        if(element.type == "checkbox") {
+            data[element.name] = element.checked
+        }else{
+            data[element.name] = element.value
+        }
     }
     for (let element of Array.from(form.getElementsByTagName("select"))) {
         if (traverseParents(element).filter(it => it.style.display == "none").length) {
@@ -444,7 +448,6 @@ function getEditorInput(form) {
         }
         data[element.name] = element.value
     }
-    data.http_params_obfs = data.http_params_obfs == "on"
     let sessionInfo
     if (data.session_type == "ONELINE_PHP") {
         sessionInfo = {
@@ -455,7 +458,8 @@ function getEditorInput(form) {
                 password: data.password,
                 method: data.method,
                 http_params_obfs: data.http_params_obfs,
-                encoder: data.encoder
+                encoder: data.encoder,
+                sessionize_payload: data.sessionize_payload
             },
             note: data.note,
             location: "",
@@ -468,7 +472,8 @@ function getEditorInput(form) {
             connection: {
                 url: data.url,
                 password: data.password,
-                encoder: data.encoder
+                encoder: data.encoder,
+                sessionize_payload: data.sessionize_payload
             },
             note: data.note,
             location: "",
@@ -481,7 +486,8 @@ function getEditorInput(form) {
             connection: {
                 url: data.url,
                 password: data.password,
-                encoder: data.encoder
+                encoder: data.encoder,
+                sessionize_payload: data.sessionize_payload
             },
             note: data.note,
             location: "",
@@ -541,14 +547,17 @@ function fillEditorInput(sessionInfo) {
         document.querySelector("[name='http_params_obfs']").checked = sessionInfo["connection"]["http_params_obfs"]
         setOptionByIndex(document.querySelector("[name='method']"), sessionInfo["connection"]["method"])
         setOptionByIndex(document.querySelector("[name='encoder']"), sessionInfo["connection"]["encoder"])
+        setOptionByIndex(document.querySelector("[name='sessionize_payload']"), sessionInfo["connection"]["sessionize_payload"])
     } else if (sessionInfo["session_type"] == "BEHINDER_PHP_AES") {
         document.querySelector("[name='url']").value = sessionInfo["connection"]["url"]
         document.querySelector("[name='password']").value = sessionInfo["connection"]["password"]
         setOptionByIndex(document.querySelector("[name='encoder']"), sessionInfo["connection"]["encoder"])
+        setOptionByIndex(document.querySelector("[name='sessionize_payload']"), sessionInfo["connection"]["sessionize_payload"])
     } else if (sessionInfo["session_type"] == "BEHINDER_PHP_XOR") {
         document.querySelector("[name='url']").value = sessionInfo["connection"]["url"]
         document.querySelector("[name='password']").value = sessionInfo["connection"]["password"]
         setOptionByIndex(document.querySelector("[name='encoder']"), sessionInfo["connection"]["encoder"])
+        setOptionByIndex(document.querySelector("[name='sessionize_payload']"), sessionInfo["connection"]["sessionize_payload"])
     }
 }
 
