@@ -197,6 +197,7 @@ main {
 /* 弹出的提示消息，网络错误保存成功之类的 */
 
 .popups {
+    pointer-events: none;
     position: fixed;
     bottom: 20px;
     right: 20px;
@@ -298,13 +299,13 @@ main {
 
 .session .session-name {
     font-size: 24px;
-    margin: 15px 25px 10px;
+    margin: 20px 25px 10px;
 }
 
 .session .open-menu-button {
     width: 40px;
     height: 40px;
-    margin: 15px 25px 10px;
+    margin: 20px 25px 10px;
     border-radius: 20px;
     display: flex;
     align-items: center;
