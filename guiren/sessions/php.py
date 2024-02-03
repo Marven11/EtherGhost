@@ -149,25 +149,14 @@ def to_sessionize_payload(payload: str, chunk: int = PAYLOAD_SESSIONIZE_CHUNK) -
     for i in range(0, len(payload), chunk):
         part = payload[i : i + chunk]
         part = (
-            PAYLOAD_SESSIONIZE
-            .replace("PAYLOAD_ORDER", str(i))
+            PAYLOAD_SESSIONIZE.replace("PAYLOAD_ORDER", str(i))
             .replace("B64_PART", part)
             .replace("PAYLOAD_STORE", payload_store_name)
         )
         payloads.append(part)
-    final = (
-        PAYLOAD_SESSIONIZE_TRIGGER
-        .replace("PAYLOAD_STORE", payload_store_name)
-    )
+    final = PAYLOAD_SESSIONIZE_TRIGGER.replace("PAYLOAD_STORE", payload_store_name)
     payloads.append(final)
     return payloads
-
-@dataclass
-class PHPWebshellOptions:
-    """除了submit_raw之外的函数需要的各类选项"""
-
-    encoder: t.Literal["raw", "base64"] = "raw"
-    sessionize_payload: bool = True
 
 
 def compress_php_code(source: str) -> str:
@@ -180,7 +169,15 @@ def compress_php_code(source: str) -> str:
         str: 去除结果
     """
     source = re.sub("(#|//).+\n", "\n", source)
-    return re.sub(r"(?<=[\{\};])\n? +", "", source)
+    return re.sub(r"(?<=[\{\};])\n? *", "", source)
+
+
+@dataclass
+class PHPWebshellOptions:
+    """除了submit_raw之外的函数需要的各类选项"""
+
+    encoder: t.Literal["raw", "base64"] = "raw"
+    sessionize_payload: bool = True
 
 
 class PHPWebshell(Session):
@@ -188,7 +185,9 @@ class PHPWebshell(Session):
 
     def __init__(self, options: t.Union[None, PHPWebshellOptions]):
         self.options = options if options else PHPWebshellOptions()
-        self.session_id = "".join(random.choices(string.hexdigits, k=16))  # TODO: change length
+        self.session_id = "".join(
+            random.choices(string.hexdigits, k=16)
+        )  # TODO: change length
 
     def encode(self, payload: str) -> str:
         """应用编码器"""
@@ -272,7 +271,7 @@ class PHPWebshell(Session):
             delimiter_start_2=start[3:],
             delimiter_stop=stop,
             payload_raw=payload,
-            session_id=self.session_id
+            session_id=self.session_id,
         )
         payload = compress_php_code(payload)
         print(payload)
