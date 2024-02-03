@@ -185,9 +185,7 @@ class PHPWebshell(Session):
 
     def __init__(self, options: t.Union[None, PHPWebshellOptions]):
         self.options = options if options else PHPWebshellOptions()
-        self.session_id = "".join(
-            random.choices(string.hexdigits, k=16)
-        )  # TODO: change length
+        self.session_id = "".join(random.choices("1234567890abcdef", k=32))
 
     def encode(self, payload: str) -> str:
         """应用编码器"""
@@ -304,6 +302,10 @@ class PHPWebshell(Session):
         result = None
         for payload_part in payloads:
             result = await self._submit(payload_part)
+            if result == "PAYLOAD_SESSIONIZE_UNEXIST":
+                raise exceptions.UnexpectedError(
+                    "Session中不存在payload，是不是不支持Session？"
+                )
         return result
 
     async def submit_raw(self, payload: str) -> t.Tuple[int, str]:
