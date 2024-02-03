@@ -20,12 +20,7 @@ class SessionType(Enum):
     BEHINDER_PHP_XOR = "BEHINDER_PHP_XOR"
 
 
-# 各个session的连接信息
-class SessionConnectionInfo(BaseModel):
-    """session的连接信息"""
-
-
-class SessionConnOnelinePHP(SessionConnectionInfo):
+class SessionConnOnelinePHP(BaseModel):
     """PHP一句话webshell的连接信息"""
 
     url: str
@@ -35,20 +30,25 @@ class SessionConnOnelinePHP(SessionConnectionInfo):
     encoder: t.Literal["raw", "base64"] = "raw"
 
 
-class SessionConnBehinderPHPAES(SessionConnectionInfo):
-    """PHP一句话webshell的连接信息"""
+class SessionConnBehinderPHPAES(BaseModel):
+    """冰蝎PHP AES的连接信息"""
 
     url: str
     password: str
     encoder: t.Literal["raw", "base64"] = "raw"
 
-class SessionConnBehinderPHPXor(SessionConnectionInfo):
+class SessionConnBehinderPHPXor(BaseModel):
     """冰蝎PHP Xor的连接信息"""
 
     url: str
     password: str
     encoder: t.Literal["raw", "base64"] = "raw"
 
+SessionConnectionInfo = t.Union[
+    SessionConnOnelinePHP,
+    SessionConnBehinderPHPAES,
+    SessionConnBehinderPHPXor,
+]
 
 type_to_class = {
     SessionType.ONELINE_PHP: SessionConnOnelinePHP,
