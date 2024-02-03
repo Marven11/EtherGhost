@@ -30260,6 +30260,8 @@
        Array.from(document.querySelectorAll(".main-form-conn-options"))
            .filter(element => element.dataset.sessionType != sessionInfo["session_type"])
            .forEach(element => element.remove());
+       console.log("Filling session info");
+       console.log(sessionInfo);
        if (sessionInfo["session_type"] == "ONELINE_PHP") {
            document.querySelector("[name='url']").value = sessionInfo["connection"]["url"];
            document.querySelector("[name='password']").value = sessionInfo["connection"]["password"];
@@ -30268,6 +30270,10 @@
            setOptionByIndex(document.querySelector("[name='method']"), sessionInfo["connection"]["method"]);
            setOptionByIndex(document.querySelector("[name='encoder']"), sessionInfo["connection"]["encoder"]);
        } else if (sessionInfo["session_type"] == "BEHINDER_PHP_AES") {
+           document.querySelector("[name='url']").value = sessionInfo["connection"]["url"];
+           document.querySelector("[name='password']").value = sessionInfo["connection"]["password"];
+           setOptionByIndex(document.querySelector("[name='encoder']"), sessionInfo["connection"]["encoder"]);
+       } else if (sessionInfo["session_type"] == "BEHINDER_PHP_XOR") {
            document.querySelector("[name='url']").value = sessionInfo["connection"]["url"];
            document.querySelector("[name='password']").value = sessionInfo["connection"]["password"];
            setOptionByIndex(document.querySelector("[name='encoder']"), sessionInfo["connection"]["encoder"]);

@@ -542,6 +542,10 @@ function fillEditorInput(sessionInfo) {
         document.querySelector("[name='url']").value = sessionInfo["connection"]["url"]
         document.querySelector("[name='password']").value = sessionInfo["connection"]["password"]
         setOptionByIndex(document.querySelector("[name='encoder']"), sessionInfo["connection"]["encoder"])
+    } else if (sessionInfo["session_type"] == "BEHINDER_PHP_XOR") {
+        document.querySelector("[name='url']").value = sessionInfo["connection"]["url"]
+        document.querySelector("[name='password']").value = sessionInfo["connection"]["password"]
+        setOptionByIndex(document.querySelector("[name='encoder']"), sessionInfo["connection"]["encoder"])
     }
 }
 
