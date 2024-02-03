@@ -41,5 +41,4 @@ Webshell管理器，开发中
   - [done] 导入冰蝎webshell
   - 导入哥斯拉webshell
   - 以webshell形式对接蚁剑
-- 改进navbar操作逻辑
 - 更换字体

@@ -225,11 +225,21 @@ let eventFuncs = {
         if (icon == undefined) {
             throw new Error(`No button was clicked for target ${event.target}.`);
         }
-        if (icon.id == "navbar-icon-home") {
-            window.location = "/"
-        } else if (icon.id == "navbar-icon-terminal") {
-            alert("请点击对应webshell打开终端")
+        let iconAction = {
+            "navbar-icon-terminal": "terminal",
+            "navbar-icon-files": "files",
         }
+        if (icon.id == "navbar-icon-home") {
+            window.location = "/";
+            return;
+        } else if (!currentSession) {
+            alert("请先选择session");
+            return;
+        }else if(!iconAction[icon.id]) {
+            alert("功能尚未实现");
+            return
+        }
+        window.location = `/#session=${currentSession}&action=${iconAction[icon.id]}`
     },
     homeAddWebshell: function (event) {
         window.location = "/#action=add-webshell"
