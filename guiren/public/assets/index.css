@@ -437,8 +437,21 @@ main {
 }
 
 .main-form-item {
-    width: 100px;
-    height: 100px;
+    width: 120px;
+    height: 150px;
+    margin-right: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-items: center;
+    
+}
+
+.main-form-item p {
+    text-align: left;
+    display: flex;
+    align-items: center;
+    height: 50px;
+    margin: 0;
 }
 
 .switch {
