@@ -531,6 +531,9 @@ function fillEditorInput(sessionInfo) {
     Array.from(document.querySelectorAll(".main-form-conn-options"))
         .filter(element => element.dataset.sessionType != sessionInfo["session_type"])
         .forEach(element => element.remove())
+    Array.from(document.querySelectorAll(".main-form-extra-options"))
+        .filter(element => element.dataset.sessionType != sessionInfo["session_type"])
+        .forEach(element => element.remove())
     if (sessionInfo["session_type"] == "ONELINE_PHP") {
         document.querySelector("[name='url']").value = sessionInfo["connection"]["url"]
         document.querySelector("[name='password']").value = sessionInfo["connection"]["password"]
