@@ -1,3 +1,3 @@
-from .base import Session
+from .base import SessionInterface
 from .php import *
 from .exceptions import *

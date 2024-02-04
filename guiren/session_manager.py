@@ -68,7 +68,7 @@ def php_behinderxor(session_conn: SessionConnBehinderPHPXor):
     )
 
 
-def session_info_to_session(session_info: SessionInfo) -> sessions.Session:
+def session_info_to_session(session_info: SessionInfo) -> sessions.SessionInterface:
     """将session info转成session对象
 
     Args:
@@ -99,7 +99,7 @@ def get_session_info_by_id(
 
 def get_session_by_id(
     session_id: t.Union[str, UUID]
-) -> t.Union[None, sessions.Session]:
+) -> t.Union[None, sessions.SessionInterface]:
     """根据id返回session对象，优先返回缓存的对象
 
     Args:

@@ -16,7 +16,7 @@ from Crypto.Util.Padding import pad
 
 from . import exceptions
 from ..utils import random_english_words
-from .base import Session, DirectoryEntry, BasicInfoEntry
+from .base import PHPSessionInterface, DirectoryEntry, BasicInfoEntry
 
 logger = logging.getLogger("sessions.php")
 
@@ -257,7 +257,7 @@ class PHPWebshellOptions:
     sessionize_payload: bool = True
 
 
-class PHPWebshell(Session):
+class PHPWebshell(PHPSessionInterface):
     """PHP session各类工具函数的实现"""
 
     def __init__(self, options: t.Union[None, PHPWebshellOptions]):

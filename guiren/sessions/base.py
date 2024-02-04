@@ -16,7 +16,7 @@ class BasicInfoEntry:
     key: str
     value: str
 
-class Session:
+class SessionInterface:
     """Session接口"""
     async def execute_cmd(self, cmd: str) -> str:
         """在目标上执行命令"""
@@ -40,4 +40,10 @@ class Session:
 
     async def get_basicinfo(self) -> t.List[BasicInfoEntry]:
         """获取当前的基本信息"""
+        raise NotImplementedError()
+
+class PHPSessionInterface(SessionInterface):
+    """PHP Session接口"""
+    async def download_phpinfo(self) -> bytes:
+        """获取当前的phpinfo文件"""
         raise NotImplementedError()

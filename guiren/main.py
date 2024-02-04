@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 
 from . import session_manager, session_types, sessions
-from .sessions import Session
+from .sessions import SessionInterface
 
 DIR = Path(__file__).parent
 app = FastAPI()
@@ -70,7 +70,7 @@ async def update_webshell(session_info: session_types.SessionInfo):
 @app.get("/session/{session_id}/execute_cmd")
 async def session_execute_cmd(session_id: UUID, cmd: str):
     """使用session执行shell命令"""
-    session: t.Union[Session, None] = session_manager.get_session_by_id(session_id)
+    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(session_id)
     if session is None:
         return {"code": -400, "msg": "没有这个session"}
     try:
@@ -85,7 +85,7 @@ async def session_execute_cmd(session_id: UUID, cmd: str):
 @app.get("/session/{session_id}/get_pwd")
 async def session_get_pwd(session_id: UUID):
     """获取session的pwd"""
-    session: t.Union[Session, None] = session_manager.get_session_by_id(session_id)
+    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(session_id)
     if session is None:
         return {"code": -400, "msg": "没有这个session"}
     try:
@@ -100,7 +100,7 @@ async def session_get_pwd(session_id: UUID):
 @app.get("/session/{session_id}/list_dir")
 async def session_list_dir(session_id: UUID, current_dir: str):
     """使用session列出某个目录"""
-    session: t.Union[Session, None] = session_manager.get_session_by_id(session_id)
+    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(session_id)
     if session is None:
         return {"code": -400, "msg": "没有这个session"}
     try:
@@ -115,7 +115,7 @@ async def session_list_dir(session_id: UUID, current_dir: str):
 @app.get("/session/{session_id}/get_file_contents")
 async def session_get_file_contents(session_id: UUID, current_dir: str, filename: str):
     """使用session获取文件内容"""
-    session: t.Union[Session, None] = session_manager.get_session_by_id(session_id)
+    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(session_id)
     if session is None:
         return {"code": -400, "msg": "没有这个session"}
     content = None
@@ -144,7 +144,7 @@ async def session_get_file_contents(session_id: UUID, current_dir: str, filename
 @app.get("/session/{session_id}/basicinfo")
 async def session_get_basicinfo(session_id: UUID):
     """读取session的相关信息"""
-    session: t.Union[Session, None] = session_manager.get_session_by_id(session_id)
+    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(session_id)
     if session is None:
         return {"code": -400, "msg": "没有这个session"}
     try:
