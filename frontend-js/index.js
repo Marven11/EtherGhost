@@ -22,10 +22,10 @@ let actionListConfig = {
         buttons: [
             "terminal",
             "files",
+            "basicinfo",
+            "edit-webshell",
             // TODO: add support
             // "proxy",
-            // "machine-info",
-            "edit-webshell"
         ]
     },
     files: {
@@ -146,9 +146,9 @@ let actionList = {
         let targetActions = {
             "menu-action-terminal": "terminal",
             "menu-action-files": "files",
-            "menu-action-proxy": "proxy",
-            "menu-action-machine-info": "machine-info",
+            "menu-action-basicinfo": "basicinfo",
             "menu-action-edit-webshell": "edit-webshell",
+            // "menu-action-proxy": "proxy",
         }[clickedAction.id];
         if (!this.element || !elementClicked) {
             return
@@ -228,6 +228,7 @@ let eventFuncs = {
         let iconAction = {
             "navbar-icon-terminal": "terminal",
             "navbar-icon-files": "files",
+            "navbar-icon-basicinfo": "basicinfo",
         }
         if (icon.id == "navbar-icon-home") {
             window.location = "/";
