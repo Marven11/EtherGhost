@@ -310,6 +310,9 @@ let eventFuncs = {
         setTimeout(() => actionList.hide(), 0)
 
     },
+    basicinfoClickDownload: function(event) {
+        window.location = `/session/${currentSession}/download_phpinfo`
+    }
 }
 
 
