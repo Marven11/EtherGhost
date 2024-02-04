@@ -141,6 +141,21 @@ async def session_get_file_contents(session_id: UUID, current_dir: str, filename
         }
 
 
+@app.get("/session/{session_id}/get_basicinfo")
+async def session_get_basicinfo(session_id: UUID):
+    """读取session的相关信息"""
+    session: t.Union[Session, None] = session_manager.get_session_by_id(session_id)
+    if session is None:
+        return {"code": -400, "msg": "没有这个session"}
+    try:
+        result = await session.get_basicinfo()
+        return {"code": 0, "data": result}
+    except sessions.NetworkError as exc:
+        return {"code": -500, "msg": "网络错误: " + str(exc)}
+    except sessions.UnexpectedError as exc:
+        return {"code": -500, "msg": "未知错误: " + str(exc)}
+
+
 @app.delete("/session/{session_id}")
 async def delete_session(session_id: UUID):
     """删除session"""

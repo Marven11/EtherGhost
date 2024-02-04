@@ -87,6 +87,20 @@
         <div class="popups">
         </div>
 
+        <template id="template-basicinfo">
+            <div class="actions">
+                <div class="action action-downloadphpinfo">
+                    <p class="action-text">下载phpinfo</p>
+                </div>
+                <input class="action-input" type="text" placeholder="">
+            </div>
+            <table class="info-table">
+                <tbody>
+                </tbody>
+            </table>
+
+        </template>
+
         <template id="template-files">
             <div class="actions">
                 <input class="action-input" onkeydown="eventFuncs.filesKeydown(event)" type="text"
@@ -166,8 +180,9 @@
 
                 <div class="files-pwd-item-actionbutton">
                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M4 6H20M4 12H20M4 18H20" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
+                        <path d="M4 6H20M4 12H20M4 18H20" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
                 </div>
 
             </div>

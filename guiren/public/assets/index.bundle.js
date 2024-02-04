@@ -29899,7 +29899,7 @@
            let isFilelike = (fileType == "file" || fileType == "link-file");
            let pwd = document.querySelector(".action-input").value;
            let entryName = folderEntryElement.querySelector(".files-pwd-item-name").textContent;
-               if (targetActions == "open-folder" && isDirlike) {
+           if (targetActions == "open-folder" && isDirlike) {
                filesFetchNewDir(pwd, entryName);
                showPopup("blue", "Tips!", "你可以双击打开文件夹！");
            } else if (targetActions == "open-file" && isFilelike) {
@@ -29964,7 +29964,7 @@
            } else if (!currentSession) {
                alert("请先选择session");
                return;
-           }else if(!iconAction[icon.id]) {
+           } else if (!iconAction[icon.id]) {
                alert("功能尚未实现");
                return
            }
@@ -30036,7 +30036,7 @@
                filesOpenFile(pwd, entryName);
            }
            setTimeout(() => actionList.hide(), 0);
-           
+
        },
    };
 
@@ -30052,6 +30052,23 @@
        let clone = template.content.cloneNode(true);
        mainElement.appendChild(clone);
    }
+
+   // basicinfo functions
+
+   function basicinfoFillEntries(entries) {
+       let table = document.querySelector(".info-table");
+       for(let entry of entries) {
+           let tr = document.createElement('tr');
+           let td1 = document.createElement('td');
+           let td2 = document.createElement('td');
+           td1.innerHTML = entry.key;
+           td2.innerHTML = entry.value;
+           tr.appendChild(td1);
+           tr.appendChild(td2);
+           table.appendChild(tr);
+       }
+   }
+
 
    // files functions
    function filesAddPwdItem(entry) {
@@ -30175,9 +30192,9 @@
            if (traverseParents(element).filter(it => it.style.display == "none").length) {
                continue
            }
-           if(element.type == "checkbox") {
+           if (element.type == "checkbox") {
                data[element.name] = element.checked;
-           }else {
+           } else {
                data[element.name] = element.value;
            }
        }
@@ -30487,9 +30504,13 @@
        }
        if (action == "files") {
            useTemplateHome("template-files");
-
            fetchJson(`/session/${currentSession}/get_pwd`, "GET").then(filesFetchDir);
            currentPage = "files";
+       }
+       if (action == "basicinfo") {
+           useTemplateHome("template-basicinfo");
+           fetchJson(`/session/${currentSession}/get_basicinfo`, "GET").then(basicinfoFillEntries);
+           currentPage = "basicinfo";
        }
    }
 

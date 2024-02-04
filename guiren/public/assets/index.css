@@ -694,3 +694,19 @@ input:checked+.slider:before {
     color: var(--font-color-white);
     width: 70px;
 }
+
+.info-table {
+    margin: 0 auto;
+    border-collapse: collapse;
+    color: var(--font-color-grey);
+    font-size: 24px;
+}
+
+.info-table th, .info-table td {
+    border: 1px solid var(--font-color-white);
+    padding: 8px;
+}
+
+.info-table thead {
+    font-weight: bold;
+}

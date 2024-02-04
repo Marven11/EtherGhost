@@ -14,6 +14,7 @@
   "dependencies": {
     "@codemirror/lang-javascript": "^6.2.1",
     "@codemirror/lang-php": "^6.0.1",
+    "@codemirror/legacy-modes": "^6.3.3",
     "@codemirror/theme-one-dark": "^6.1.2",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "codemirror": "^6.0.1"

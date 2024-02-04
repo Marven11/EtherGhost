@@ -10,6 +10,12 @@ class DirectoryEntry:
     filesize: int
     entry_type: t.Literal["dir", "file", "link-dir", "link-file", "unknown"] = "file"
 
+@dataclass
+class BasicInfoEntry:
+    """有关session的一项基本信息"""
+    key: str
+    value: str
+
 class Session:
     """Session接口"""
     async def execute_cmd(self, cmd: str) -> str:
@@ -30,4 +36,8 @@ class Session:
 
     async def get_pwd(self) -> str:
         """获取当前的目录"""
+        raise NotImplementedError()
+
+    async def get_basicinfo(self) -> t.List[BasicInfoEntry]:
+        """获取当前的基本信息"""
         raise NotImplementedError()

