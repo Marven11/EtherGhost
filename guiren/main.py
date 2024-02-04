@@ -141,7 +141,7 @@ async def session_get_file_contents(session_id: UUID, current_dir: str, filename
         }
 
 
-@app.get("/session/{session_id}/get_basicinfo")
+@app.get("/session/{session_id}/basicinfo")
 async def session_get_basicinfo(session_id: UUID):
     """读取session的相关信息"""
     session: t.Union[Session, None] = session_manager.get_session_by_id(session_id)

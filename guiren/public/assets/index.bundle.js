@@ -30509,7 +30509,7 @@
        }
        if (action == "basicinfo") {
            useTemplateHome("template-basicinfo");
-           fetchJson(`/session/${currentSession}/get_basicinfo`, "GET").then(basicinfoFillEntries);
+           fetchJson(`/session/${currentSession}/basicinfo`, "GET").then(basicinfoFillEntries);
            currentPage = "basicinfo";
        }
    }
