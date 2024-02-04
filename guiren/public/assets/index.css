@@ -700,13 +700,13 @@ input:checked+.slider:before {
     border-collapse: collapse;
     color: var(--font-color-grey);
     font-size: 24px;
+    table-layout: fixed; /* 让列宽固定 */
 }
 
 .info-table th, .info-table td {
     border: 1px solid var(--font-color-white);
     padding: 8px;
+    word-wrap: break-word; /* 内容超出自动换行 */
+    overflow: hidden; /* 防止内容溢出单元格 */
 }
 
-.info-table thead {
-    font-weight: bold;
-}

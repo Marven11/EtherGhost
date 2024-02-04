@@ -94,6 +94,42 @@ array_push($infos, [
     "key" => "CURRENT_PHPINI",
     "value" => php_ini_loaded_file()
 ]);
+array_push($infos, [
+    "key" => "HTTP_SOFTWARE",
+    "value" => $_SERVER['SERVER_SOFTWARE']
+]);
+array_push($infos, [
+    "key" => "SERVER_ADDR",
+    "value" => $_SERVER['SERVER_ADDR']
+]);
+array_push($infos, [
+    "key" => "SERVER_PORT",
+    "value" => $_SERVER['SERVER_PORT']
+]);
+try {
+    $user=posix_getpwuid(posix_geteuid());
+    $group = posix_getgrgid($user['gid']);
+    array_push($infos, [
+        "key" => "SERVER_USER",
+        "value" => $user["name"]
+    ]);
+    array_push($infos, [
+        "key" => "SERVER_GROUP",
+        "value" => $group["name"]
+    ]);
+}catch(Exception $e) {}
+array_push($infos, [
+    "key" => "ENV_PATH",
+    "value" => getenv('PATH')
+]);
+array_push($infos, [
+    "key" => "INI_DISABLED_FUNCTIONS",
+    "value" => ini_get('disable_functions')
+]);
+array_push($infos, [
+    "key" => "EXTENSIONS",
+    "value" => implode(", ", get_loaded_extensions())
+]);
 echo json_encode($infos);
 """
 
@@ -141,7 +177,15 @@ basic_info_names = {
     "SYSTEMVERSION": "系统版本",
     "CURRENT_FOLDER": "当前目录",
     "CURRENT_PHP_SCRIPT": "当前PHP脚本",
-    "CURRENT_PHPINI": "当前php.ini位置"
+    "CURRENT_PHPINI": "当前php.ini位置",
+    "HTTP_SOFTWARE": "当前HTTP服务器",
+    "SERVER_ADDR": "服务器地址",
+    "SERVER_PORT": "服务器端口",
+    "SERVER_USER": "服务器用户",
+    "SERVER_GROUP": "用户所在组",
+    "ENV_PATH": "环境变量PATH",
+    "INI_DISABLED_FUNCTIONS": "disabled_functions",
+    "EXTENSIONS": "PHP扩展"
 }
 
 
