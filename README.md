@@ -24,6 +24,8 @@ Webshell管理器，开发中
 - webshell操作
   - 命令执行
   - 文件管理
+  - 查看基本信息
+  - 下载phpinfo
 - webshell编码
   - HTTP参数混淆
   - encoder
@@ -36,7 +38,6 @@ Webshell管理器，开发中
   - 下载文件
   - 上传文件
 - 开启代理
-- 基本信息
 - 对接蚁剑、冰蝎、哥斯拉
   - [done] 导入冰蝎webshell
   - 导入哥斯拉webshell
