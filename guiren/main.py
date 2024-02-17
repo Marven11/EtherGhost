@@ -154,7 +154,7 @@ async def session_get_file_contents(session_id: UUID, current_dir: str, filename
     )
     if session is None:
         return {"code": -400, "msg": "没有这个session"}
-    content = None
+    content, detected_encoding = None, None
     try:
         path = remote_path(current_dir) / filename
         content = await session.get_file_contents(str(path))
@@ -198,7 +198,7 @@ async def session_get_basicinfo(session_id: UUID):
 @app.get("/session/{session_id}/download_phpinfo")
 async def session_download_phpinfo(session_id: UUID):
     """下载phpinfo"""
-    session: t.Union[PHPSessionInterface, None] = session_manager.get_session_by_id(
+    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(
         session_id
     )
     if session is None:
