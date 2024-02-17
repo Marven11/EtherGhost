@@ -1,20 +1,33 @@
 """webui的后台部分"""
 
+import logging
 import typing as t
 import re
+import secrets
+from contextlib import asynccontextmanager
 from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
 from uuid import UUID
 
 import chardet
-from fastapi import FastAPI, Response
+from fastapi import FastAPI, Response, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 
 from . import session_manager, session_types, sessions
 from .sessions import SessionInterface, PHPSessionInterface
 
+token = secrets.token_bytes(16).hex()
+logger = logging.getLogger("main")
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    logger.warning("Your token is %s", token)
+    yield
+
+
 DIR = Path(__file__).parent
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 app.mount("/public", StaticFiles(directory=DIR / "public"), name="public")
 
 
@@ -32,6 +45,20 @@ async def set_no_cache(request, call_next) -> Response:
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
+    return response
+
+
+@app.middleware("http")
+async def check_token(request: Request, call_next):
+    user_token = request.cookies.get("token")
+    if (
+        user_token is None or user_token != token
+    ) and request.url.path != "/public/token.html":
+        logger.warning(
+            "user_token=%s, cookie=%s", repr(user_token), repr(request.cookies)
+        )
+        return RedirectResponse("/public/token.html")
+    response = await call_next(request)
     return response
 
 
@@ -182,8 +209,12 @@ async def session_download_phpinfo(session_id: UUID):
     try:
         content = await session.download_phpinfo()
 
-        headers = {"Content-Disposition": "attachment; filename=phpinfo.html"}  # 设置文件名
-        return Response(content=content, media_type="application/octet-stream", headers=headers)
+        headers = {
+            "Content-Disposition": "attachment; filename=phpinfo.html"
+        }  # 设置文件名
+        return Response(
+            content=content, media_type="application/octet-stream", headers=headers
+        )
     except sessions.NetworkError as exc:
         return {"code": -500, "msg": "网络错误: " + str(exc)}
     except sessions.UnexpectedError as exc:
