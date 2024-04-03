@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="assets/index.css">
+    <link rel="icon" type="image/svg+xml" href="assets/guiren.svg">
+    <title>鬼刃Webshell管理器</title>
+</head>
+
+<body>
+    <!-- modified button from https://www.svgrepo.com/collection/dazzle-line-icons/ -->
+    <div class="root" onclick="eventFuncs.triggerActionList(event)">
+        <header>
+            <div class="header-left">
+                <h1 class="header-product-name">
+                    鬼刃
+                </h1>
+            </div>
+            <div class="navbar">
+                <div onclick="eventFuncs.navbarButton(event)" class="navbar-icon" id="navbar-icon-home" title="主页">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M5 9.77746V16.2C5 17.8802 5 18.7203 5.32698 19.362C5.6146 19.9265 6.07354 20.3854 6.63803 20.673C7.27976 21 8.11984 21 9.8 21H14.2C15.8802 21 16.7202 21 17.362 20.673C17.9265 20.3854 18.3854 19.9265 18.673 19.362C19 18.7203 19 17.8802 19 16.2V5.00002M21 12L15.5668 5.96399C14.3311 4.59122 13.7133 3.90484 12.9856 3.65144C12.3466 3.42888 11.651 3.42893 11.0119 3.65159C10.2843 3.90509 9.66661 4.59157 8.43114 5.96452L3 12"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <div onclick="eventFuncs.navbarButton(event)" class="navbar-icon" id="navbar-icon-terminal" title="终端">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M8 9L11 12L8 15M13 15H16M7.2 20H16.8C17.9201 20 18.4802 20 18.908 19.782C19.2843 19.5903 19.5903 19.2843 19.782 18.908C20 18.4802 20 17.9201 20 16.8V7.2C20 6.0799 20 5.51984 19.782 5.09202C19.5903 4.71569 19.2843 4.40973 18.908 4.21799C18.4802 4 17.9201 4 16.8 4H7.2C6.0799 4 5.51984 4 5.09202 4.21799C4.71569 4.40973 4.40973 4.71569 4.21799 5.09202C4 5.51984 4 6.07989 4 7.2V16.8C4 17.9201 4 18.4802 4.21799 18.908C4.40973 19.2843 4.71569 19.5903 5.09202 19.782C5.51984 20 6.07989 20 7.2 20Z"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <div onclick="eventFuncs.navbarButton(event)" class="navbar-icon" id="navbar-icon-files" title="文件">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M3 8.2C3 7.07989 3 6.51984 3.21799 6.09202C3.40973 5.71569 3.71569 5.40973 4.09202 5.21799C4.51984 5 5.0799 5 6.2 5H9.67452C10.1637 5 10.4083 5 10.6385 5.05526C10.8425 5.10425 11.0376 5.18506 11.2166 5.29472C11.4184 5.4184 11.5914 5.59135 11.9373 5.93726L12.0627 6.06274C12.4086 6.40865 12.5816 6.5816 12.7834 6.70528C12.9624 6.81494 13.1575 6.89575 13.3615 6.94474C13.5917 7 13.8363 7 14.3255 7H17.8C18.9201 7 19.4802 7 19.908 7.21799C20.2843 7.40973 20.5903 7.71569 20.782 8.09202C21 8.51984 21 9.0799 21 10.2V15.8C21 16.9201 21 17.4802 20.782 17.908C20.5903 18.2843 20.2843 18.5903 19.908 18.782C19.4802 19 18.9201 19 17.8 19H6.2C5.07989 19 4.51984 19 4.09202 18.782C3.71569 18.5903 3.40973 18.2843 3.21799 17.908C3 17.4802 3 16.9201 3 15.8V8.2Z"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <div onclick="eventFuncs.navbarButton(event)" class="navbar-icon" id="navbar-icon-basicinfo" title="信息">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M6.89258 17.7897C6.9083 17.7633 6.92441 17.7369 6.9409 17.7107C8.14358 15.7988 8.8398 13.5379 8.8398 11.1034C8.8398 9.14189 10.4299 7.55176 12.3915 7.55176C14.353 7.55176 15.9431 9.14189 15.9431 11.1034C15.9431 12.0065 15.8816 12.8957 15.7626 13.7672M13.8825 19.8437C14.4257 18.7596 14.871 17.6179 15.2069 16.4309M18.6156 17.4359C19.1883 15.4236 19.4949 13.2993 19.4949 11.1033C19.4949 7.18026 16.3147 4 12.3916 4C11.0978 4 9.88477 4.34591 8.83997 4.9503M4.40039 14.9783C4.96924 13.8073 5.28831 12.4926 5.28831 11.1033C5.28831 9.8095 5.63422 8.59646 6.2386 7.55166M12.3915 11.1035C12.3915 14.2265 11.4958 17.1403 9.94727 19.6019"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <div onclick="eventFuncs.navbarButton(event)" class="navbar-icon" id="navbar-icon-proxy" title="代理">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M9 13C9 15.2091 10.7909 17 13 17C14.1046 17 15.1046 16.5523 15.8284 15.8284M9 13H5M9 13C9 11.448 9.88388 10.1025 11.1757 9.43928M5 13C5 13.5523 4.55228 14 4 14C3.44772 14 3 13.5523 3 13C3 12.4477 3.44772 12 4 12C4.55228 12 5 12.4477 5 13ZM19.2929 6.70711C19.1119 6.52614 19 6.27614 19 6C19 5.44772 19.4477 5 20 5C20.5523 5 21 5.44772 21 6C21 6.55228 20.5523 7 20 7C19.7239 7 19.4739 6.88807 19.2929 6.70711ZM19.2929 6.70711L15.8284 10.1716M9.37149 4.92872C9.73983 4.78126 10 4.42101 10 4C10 3.44772 9.55228 3 9 3C8.44772 3 8 3.44772 8 4C8 4.55228 8.44772 5 9 5C9.13127 5 9.25664 4.97471 9.37149 4.92872ZM9.37149 4.92872L11.1757 9.43928M15.8284 15.8284C16.5523 15.1046 17 14.1046 17 13C17 11.8954 16.5523 10.8954 15.8284 10.1716M15.8284 15.8284L19.2929 19.2929M19.2929 19.2929C19.1119 19.4739 19 19.7239 19 20C19 20.5523 19.4477 21 20 21C20.5523 21 21 20.5523 21 20C21 19.4477 20.5523 19 20 19C19.7239 19 19.4739 19.1119 19.2929 19.2929ZM15.8284 10.1716C15.1046 9.44772 14.1046 9 13 9C12.3428 9 11.7227 9.15847 11.1757 9.43928"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <!-- <div class="navbar-icon icon-burst" title="爆破">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M12.3212 10.6852L4 19L6 21M7 16L9 18M20 7.5C20 9.98528 17.9853 12 15.5 12C13.0147 12 11 9.98528 11 7.5C11 5.01472 13.0147 3 15.5 3C17.9853 3 20 5.01472 20 7.5Z"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div> -->
+                <div class="navbar-icon icon-others" title="其他">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 6H20M4 12H20M4 18H20" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="navbar-icon icon-setting" title="设置">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9C13.6569 9 15 10.3431 15 12Z"
+                            stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        <path
+                            d="M12.9046 3.06005C12.6988 3 12.4659 3 12 3C11.5341 3 11.3012 3 11.0954 3.06005C10.7942 3.14794 10.5281 3.32808 10.3346 3.57511C10.2024 3.74388 10.1159 3.96016 9.94291 4.39272C9.69419 5.01452 9.00393 5.33471 8.36857 5.123L7.79779 4.93281C7.3929 4.79785 7.19045 4.73036 6.99196 4.7188C6.70039 4.70181 6.4102 4.77032 6.15701 4.9159C5.98465 5.01501 5.83376 5.16591 5.53197 5.4677C5.21122 5.78845 5.05084 5.94882 4.94896 6.13189C4.79927 6.40084 4.73595 6.70934 4.76759 7.01551C4.78912 7.2239 4.87335 7.43449 5.04182 7.85566C5.30565 8.51523 5.05184 9.26878 4.44272 9.63433L4.16521 9.80087C3.74031 10.0558 3.52786 10.1833 3.37354 10.3588C3.23698 10.5141 3.13401 10.696 3.07109 10.893C3 11.1156 3 11.3658 3 11.8663C3 12.4589 3 12.7551 3.09462 13.0088C3.17823 13.2329 3.31422 13.4337 3.49124 13.5946C3.69158 13.7766 3.96395 13.8856 4.50866 14.1035C5.06534 14.3261 5.35196 14.9441 5.16236 15.5129L4.94721 16.1584C4.79819 16.6054 4.72367 16.829 4.7169 17.0486C4.70875 17.3127 4.77049 17.5742 4.89587 17.8067C5.00015 18.0002 5.16678 18.1668 5.5 18.5C5.83323 18.8332 5.99985 18.9998 6.19325 19.1041C6.4258 19.2295 6.68733 19.2913 6.9514 19.2831C7.17102 19.2763 7.39456 19.2018 7.84164 19.0528L8.36862 18.8771C9.00393 18.6654 9.6942 18.9855 9.94291 19.6073C10.1159 20.0398 10.2024 20.2561 10.3346 20.4249C10.5281 20.6719 10.7942 20.8521 11.0954 20.94C11.3012 21 11.5341 21 12 21C12.4659 21 12.6988 21 12.9046 20.94C13.2058 20.8521 13.4719 20.6719 13.6654 20.4249C13.7976 20.2561 13.8841 20.0398 14.0571 19.6073C14.3058 18.9855 14.9961 18.6654 15.6313 18.8773L16.1579 19.0529C16.605 19.2019 16.8286 19.2764 17.0482 19.2832C17.3123 19.2913 17.5738 19.2296 17.8063 19.1042C17.9997 18.9999 18.1664 18.8333 18.4996 18.5001C18.8328 18.1669 18.9994 18.0002 19.1037 17.8068C19.2291 17.5743 19.2908 17.3127 19.2827 17.0487C19.2759 16.8291 19.2014 16.6055 19.0524 16.1584L18.8374 15.5134C18.6477 14.9444 18.9344 14.3262 19.4913 14.1035C20.036 13.8856 20.3084 13.7766 20.5088 13.5946C20.6858 13.4337 20.8218 13.2329 20.9054 13.0088C21 12.7551 21 12.4589 21 11.8663C21 11.3658 21 11.1156 20.9289 10.893C20.866 10.696 20.763 10.5141 20.6265 10.3588C20.4721 10.1833 20.2597 10.0558 19.8348 9.80087L19.5569 9.63416C18.9478 9.26867 18.6939 8.51514 18.9578 7.85558C19.1262 7.43443 19.2105 7.22383 19.232 7.01543C19.2636 6.70926 19.2003 6.40077 19.0506 6.13181C18.9487 5.94875 18.7884 5.78837 18.4676 5.46762C18.1658 5.16584 18.0149 5.01494 17.8426 4.91583C17.5894 4.77024 17.2992 4.70174 17.0076 4.71872C16.8091 4.73029 16.6067 4.79777 16.2018 4.93273L15.6314 5.12287C14.9961 5.33464 14.3058 5.0145 14.0571 4.39272C13.8841 3.96016 13.7976 3.74388 13.6654 3.57511C13.4719 3.32808 13.2058 3.14794 12.9046 3.06005Z"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+            </div>
+        </header>
+
+        <main id="main">
+        </main>
+        <div class="popups">
+        </div>
+
+        <template id="template-basicinfo">
+            <div class="actions">
+                <div class="action action-downloadphpinfo" onclick="eventFuncs.basicinfoClickDownload(event)">
+                    <p class="action-text">下载phpinfo</p>
+                </div>
+                <input class="action-input" type="text" placeholder="">
+            </div>
+            <table class="info-table">
+                <tbody>
+                </tbody>
+            </table>
+
+        </template>
+
+        <template id="template-files">
+            <div class="actions">
+                <input class="action-input" onkeydown="eventFuncs.filesKeydown(event)" type="text"
+                    placeholder="当前路径，如/var/www/html">
+                <div class="action action-chdir">
+                    <p class="action-text">跳转</p>
+                </div>
+                <div class="action action-save">
+                    <p class="action-text">保存</p>
+                </div>
+            </div>
+            <div class="files">
+                <div class="files-panel files-pwd-list">
+
+                </div>
+                <div class="files-editor">
+                    <div class="files-panel files-title">
+                        <input type="text" name="filename" id="files-title-filename">
+                    </div>
+                    <div class="files-panel files-content">
+                        <!-- code mirror will live here -->
+                    </div>
+                    <div class="files-panel files-property">
+                        <p>文件编码: </p>
+                        <input type="text" name="encoding" id="files-property-encoding">
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template id="template-files-pwd-item">
+            <div class="files-pwd-item" onclick="eventFuncs.filesClickEntry(event)">
+                <div class="files-pwd-item-icons">
+                    <div class="files-pwd-item-icon icon-dir" title="文件夹">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M3 8.2C3 7.07989 3 6.51984 3.21799 6.09202C3.40973 5.71569 3.71569 5.40973 4.09202 5.21799C4.51984 5 5.0799 5 6.2 5H9.67452C10.1637 5 10.4083 5 10.6385 5.05526C10.8425 5.10425 11.0376 5.18506 11.2166 5.29472C11.4184 5.4184 11.5914 5.59135 11.9373 5.93726L12.0627 6.06274C12.4086 6.40865 12.5816 6.5816 12.7834 6.70528C12.9624 6.81494 13.1575 6.89575 13.3615 6.94474C13.5917 7 13.8363 7 14.3255 7H17.8C18.9201 7 19.4802 7 19.908 7.21799C20.2843 7.40973 20.5903 7.71569 20.782 8.09202C21 8.51984 21 9.0799 21 10.2V15.8C21 16.9201 21 17.4802 20.782 17.908C20.5903 18.2843 20.2843 18.5903 19.908 18.782C19.4802 19 18.9201 19 17.8 19H6.2C5.07989 19 4.51984 19 4.09202 18.782C3.71569 18.5903 3.40973 18.2843 3.21799 17.908C3 17.4802 3 16.9201 3 15.8V8.2Z"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <div class="files-pwd-item-icon icon-file" title="文件">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M9 17H15M9 13H15M9 9H10M13 3H8.2C7.0799 3 6.51984 3 6.09202 3.21799C5.71569 3.40973 5.40973 3.71569 5.21799 4.09202C5 4.51984 5 5.0799 5 6.2V17.8C5 18.9201 5 19.4802 5.21799 19.908C5.40973 20.2843 5.71569 20.5903 6.09202 20.782C6.51984 21 7.0799 21 8.2 21H15.8C16.9201 21 17.4802 21 17.908 20.782C18.2843 20.5903 18.5903 20.2843 18.782 19.908C19 19.4802 19 18.9201 19 17.8V9M13 3L19 9M13 3V7.4C13 7.96005 13 8.24008 13.109 8.45399C13.2049 8.64215 13.3578 8.79513 13.546 8.89101C13.7599 9 14.0399 9 14.6 9H19"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <div class="files-pwd-item-icon icon-link-file" title="文件软链接">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M13 3H8.2C7.0799 3 6.51984 3 6.09202 3.21799C5.71569 3.40973 5.40973 3.71569 5.21799 4.09202C5 4.51984 5 5.0799 5 6.2V17.8C5 18.9201 5 19.4802 5.21799 19.908C5.40973 20.2843 5.71569 20.5903 6.09202 20.782C6.51984 21 7.0799 21 8.2 21H13M13 3L19 9M13 3V7.4C13 7.96005 13 8.24008 13.109 8.45399C13.2049 8.64215 13.3578 8.79513 13.546 8.89101C13.7599 9 14.0399 9 14.6 9H19M19 9V11.0228M21 17H15M15 17L17 19M15 17L17 15"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <div class="files-pwd-item-icon icon-link-dir" title="文件夹软链接">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M9 13H15M9 13L11 15M9 13L11 11M12.0627 6.06274L11.9373 5.93726C11.5914 5.59135 11.4184 5.4184 11.2166 5.29472C11.0376 5.18506 10.8425 5.10425 10.6385 5.05526C10.4083 5 10.1637 5 9.67452 5H6.2C5.0799 5 4.51984 5 4.09202 5.21799C3.71569 5.40973 3.40973 5.71569 3.21799 6.09202C3 6.51984 3 7.07989 3 8.2V15.8C3 16.9201 3 17.4802 3.21799 17.908C3.40973 18.2843 3.71569 18.5903 4.09202 18.782C4.51984 19 5.07989 19 6.2 19H17.8C18.9201 19 19.4802 19 19.908 18.782C20.2843 18.5903 20.5903 18.2843 20.782 17.908C21 17.4802 21 16.9201 21 15.8V10.2C21 9.0799 21 8.51984 20.782 8.09202C20.5903 7.71569 20.2843 7.40973 19.908 7.21799C19.4802 7 18.9201 7 17.8 7H14.3255C13.8363 7 13.5917 7 13.3615 6.94474C13.1575 6.89575 12.9624 6.81494 12.7834 6.70528C12.5816 6.5816 12.4086 6.40865 12.0627 6.06274Z"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <div class="files-pwd-item-icon icon-unknown" title="未知">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M12.0098 14L12.0098 11M12.0098 17H11.9998M13 3H8.2C7.0799 3 6.51984 3 6.09202 3.21799C5.71569 3.40973 5.40973 3.71569 5.21799 4.09202C5 4.51984 5 5.0799 5 6.2V17.8C5 18.9201 5 19.4802 5.21799 19.908C5.40973 20.2843 5.71569 20.5903 6.09202 20.782C6.51984 21 7.0799 21 8.2 21H15.8C16.9201 21 17.4802 21 17.908 20.782C18.2843 20.5903 18.5903 20.2843 18.782 19.908C19 19.4802 19 18.9201 19 17.8V9M13 3L19 9M13 3V7.4C13 7.96005 13 8.24008 13.109 8.45399C13.2049 8.64215 13.3578 8.79513 13.546 8.89101C13.7599 9 14.0399 9 14.6 9H19"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="files-pwd-item-texts">
+                    <p class="files-pwd-item-name">assets</p>
+                    <div class="files-pwd-item-info">
+                        <p class="files-pwd-item-permission">rwxrwxrwx</p>
+                        <p class="files-pwd-item-filesize">5GiB</p>
+                    </div>
+                </div>
+
+                <div class="files-pwd-item-actionbutton">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 6H20M4 12H20M4 18H20" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </div>
+
+            </div>
+        </template>
+
+        <template id="template-terminal">
+            <div class="actions">
+                <input class="action-input" onkeydown="eventFuncs.terminalKeydown(event)" type="text"
+                    placeholder="cat /etc/passwd">
+                <div class="action-icon action-end" onclick="eventFuncs.terminalExecute(event)">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M16.6582 9.28638C18.098 10.1862 18.8178 10.6361 19.0647 11.2122C19.2803 11.7152 19.2803 12.2847 19.0647 12.7878C18.8178 13.3638 18.098 13.8137 16.6582 14.7136L9.896 18.94C8.29805 19.9387 7.49907 20.4381 6.83973 20.385C6.26501 20.3388 5.73818 20.0469 5.3944 19.584C5 19.053 5 18.1108 5 16.2264V7.77357C5 5.88919 5 4.94701 5.3944 4.41598C5.73818 3.9531 6.26501 3.66111 6.83973 3.6149C7.49907 3.5619 8.29805 4.06126 9.896 5.05998L16.6582 9.28638Z"
+                            stroke-width="2" stroke-linejoin="round" />
+                    </svg>
+                </div>
+            </div>
+            <textarea class="terminal" cols="50" rows="30" readonly>
+            </textarea>
+        </template>
+
+        <template id="template-action-list-item-open-folder">
+            <div class="menu-action-item" id="menu-action-open-folder">
+                <div class="menu-action-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M3 8.2C3 7.07989 3 6.51984 3.21799 6.09202C3.40973 5.71569 3.71569 5.40973 4.09202 5.21799C4.51984 5 5.0799 5 6.2 5H9.67452C10.1637 5 10.4083 5 10.6385 5.05526C10.8425 5.10425 11.0376 5.18506 11.2166 5.29472C11.4184 5.4184 11.5914 5.59135 11.9373 5.93726L12.0627 6.06274C12.4086 6.40865 12.5816 6.5816 12.7834 6.70528C12.9624 6.81494 13.1575 6.89575 13.3615 6.94474C13.5917 7 13.8363 7 14.3255 7H17.8C18.9201 7 19.4802 7 19.908 7.21799C20.2843 7.40973 20.5903 7.71569 20.782 8.09202C21 8.51984 21 9.0799 21 10.2V15.8C21 16.9201 21 17.4802 20.782 17.908C20.5903 18.2843 20.2843 18.5903 19.908 18.782C19.4802 19 18.9201 19 17.8 19H6.2C5.07989 19 4.51984 19 4.09202 18.782C3.71569 18.5903 3.40973 18.2843 3.21799 17.908C3 17.4802 3 16.9201 3 15.8V8.2Z"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <p>打开文件夹</p>
+            </div>
+        </template>
+
+        <template id="template-home">
+
+            <div class="actions">
+                <div class="action action-add" onclick="eventFuncs.homeAddWebshell(event)">
+                    <p class="action-text">Add Webshell</p>
+                    <p class="action-number">1</p>
+                </div>
+                <input class="action-input" type="text" placeholder="搜索">
+            </div>
+            <div class="sessions">
+            </div>
+        </template>
+
+        <template id="template-home-session">
+            <div class="session">
+                <div class="session-main">
+                    <h3 class="session-name">一个名字</h3>
+                    <div class="open-menu-button">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M4 12H20M4 8H20M4 16H12" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                </div>
+                <p class="session-note">
+                    介绍这个session是什么东西
+                </p>
+                <div class="session-meta">
+                    <div class="session-meta-type">
+                        PHP - AntSword
+                    </div>
+                    <div class="session-meta-location">
+                        🇺🇸
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template id="template-webshell-editor">
+            <div class="actions">
+                <div class="action action-discard" onclick="eventFuncs.webshellEditorDiscard(event)">
+                    <p class="action-text">丢弃</p>
+                </div>
+                <div class="action action-test-session" onclick="eventFuncs.webshellEditorTest(event)">
+                    <p class="action-text">测试可用性</p>
+                </div>
+                <div class="action action-delete" onclick="eventFuncs.webshellEditorDelete(event)">
+                    <p class="action-text">删除</p>
+                </div>
+            </div>
+            <form class="main-form" onsubmit="eventFuncs.webshellEditorSubmit(event)">
+
+                <div class="main-form-divider">
+                    <label class="main-form-label" for="session_type">
+                        类型与名称
+                    </label>
+                </div>
+                <div class="main-form-row">
+                    <select name="session_type" onchange="eventFuncs.webshellEditorChangeSessionType(event)">
+                        <option value="ONELINE_PHP">PHP一句话</option>
+                        <option value="BEHINDER_PHP_AES">冰蝎PHP-AES</option>
+                        <option value="BEHINDER_PHP_XOR">冰蝎PHP-XOR</option>
+                    </select>
+                    <input type="text" name="name" placeholder="Session">
+
+                </div>
+
+                <div class="main-form-divider">
+                    <label class="main-form-label" for="url">
+                        连接配置
+                    </label>
+                </div>
+                <div class="main-form-row">
+                    <div data-session-type="ONELINE_PHP" class="main-form-conn-options main-form-row">
+                        <select name="method">
+                            <option value="POST">POST</option>
+                            <option value="GET">GET</option>
+                        </select>
+                        <input type="text" name="url" placeholder="http://example.com/shell.php">
+                        <input class="input-short" type="text" name="password" placeholder="密码">
+                    </div>
+                    <div data-session-type="BEHINDER_PHP_AES" class="main-form-conn-options main-form-row">
+                        <input type="text" name="url" placeholder="http://example.com/shell.php">
+                        <input class="input-short" type="text" name="password" placeholder="密码">
+                    </div>
+                    <div data-session-type="BEHINDER_PHP_XOR" class="main-form-conn-options main-form-row">
+                        <input type="text" name="url" placeholder="http://example.com/shell.php">
+                        <input class="input-short" type="text" name="password" placeholder="密码">
+                    </div>
+                </div>
+
+
+                <div class="main-form-divider">
+                    <p class="main-form-label">
+                        附加配置
+                    </p>
+                </div>
+
+                <div data-session-type="ONELINE_PHP" class="main-form-row main-form-extra-options">
+                    <div class="main-form-item">
+                        <p>流量混淆</p>
+                        <label class="switch">
+                            <input name="http_params_obfs" type="checkbox" checked>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="main-form-item">
+                        <p>session暂存payload</p>
+                        <label class="switch">
+                            <input name="sessionize_payload" type="checkbox" checked>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="main-form-item">
+                        <p>Encoder</p>
+                        <select name="encoder" id="">
+                            <option value="base64">base64</option>
+                            <option value="raw">raw</option>
+                            <option value="chr">chr16</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div data-session-type="BEHINDER_PHP_AES" class="main-form-row main-form-extra-options">
+                    <div class="main-form-item">
+                        <p>session暂存payload</p>
+                        <label class="switch">
+                            <input name="sessionize_payload" type="checkbox" checked>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="main-form-item">
+                        <p>Encoder</p>
+                        <select name="encoder" id="">
+                            <option value="base64">base64</option>
+                            <option value="raw">raw</option>
+                            <option value="chr">chr16</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div data-session-type="BEHINDER_PHP_XOR" class="main-form-row main-form-extra-options">
+                    <div class="main-form-item">
+                        <p>session暂存payload</p>
+                        <label class="switch">
+                            <input name="sessionize_payload" type="checkbox" checked>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="main-form-item">
+                        <p>Encoder</p>
+                        <select name="encoder" id="">
+                            <option value="base64">base64</option>
+                            <option value="raw">raw</option>
+                            <option value="chr">chr16</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="main-form-divider">
+                    <label class="main-form-label" for="note">
+                        备注
+                    </label>
+                </div>
+                <input type="text" name="note" placeholder="...">
+
+                <input type="hidden" name="session_id">
+                <input type="submit" class="main-form-button" value="保存">
+
+            </form>
+        </template>
+
+        <template id="template-action-list-item-terminal">
+            <div class="menu-action-item" id="menu-action-terminal">
+                <div class="menu-action-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M8 9L11 12L8 15M13 15H16M7.2 20H16.8C17.9201 20 18.4802 20 18.908 19.782C19.2843 19.5903 19.5903 19.2843 19.782 18.908C20 18.4802 20 17.9201 20 16.8V7.2C20 6.0799 20 5.51984 19.782 5.09202C19.5903 4.71569 19.2843 4.40973 18.908 4.21799C18.4802 4 17.9201 4 16.8 4H7.2C6.0799 4 5.51984 4 5.09202 4.21799C4.71569 4.40973 4.40973 4.71569 4.21799 5.09202C4 5.51984 4 6.07989 4 7.2V16.8C4 17.9201 4 18.4802 4.21799 18.908C4.40973 19.2843 4.71569 19.5903 5.09202 19.782C5.51984 20 6.07989 20 7.2 20Z"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <p>打开终端</p>
+            </div>
+        </template>
+
+        <template id="template-action-list-item-files">
+            <div class="menu-action-item" id="menu-action-files">
+                <div class="menu-action-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M3 8.2C3 7.07989 3 6.51984 3.21799 6.09202C3.40973 5.71569 3.71569 5.40973 4.09202 5.21799C4.51984 5 5.0799 5 6.2 5H9.67452C10.1637 5 10.4083 5 10.6385 5.05526C10.8425 5.10425 11.0376 5.18506 11.2166 5.29472C11.4184 5.4184 11.5914 5.59135 11.9373 5.93726L12.0627 6.06274C12.4086 6.40865 12.5816 6.5816 12.7834 6.70528C12.9624 6.81494 13.1575 6.89575 13.3615 6.94474C13.5917 7 13.8363 7 14.3255 7H17.8C18.9201 7 19.4802 7 19.908 7.21799C20.2843 7.40973 20.5903 7.71569 20.782 8.09202C21 8.51984 21 9.0799 21 10.2V15.8C21 16.9201 21 17.4802 20.782 17.908C20.5903 18.2843 20.2843 18.5903 19.908 18.782C19.4802 19 18.9201 19 17.8 19H6.2C5.07989 19 4.51984 19 4.09202 18.782C3.71569 18.5903 3.40973 18.2843 3.21799 17.908C3 17.4802 3 16.9201 3 15.8V8.2Z"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <p>浏览文件</p>
+            </div>
+        </template>
+
+        <template id="template-action-list-item-proxy">
+            <div class="menu-action-item" id="menu-action-proxy">
+                <div class="menu-action-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M9 13C9 15.2091 10.7909 17 13 17C14.1046 17 15.1046 16.5523 15.8284 15.8284M9 13H5M9 13C9 11.448 9.88388 10.1025 11.1757 9.43928M5 13C5 13.5523 4.55228 14 4 14C3.44772 14 3 13.5523 3 13C3 12.4477 3.44772 12 4 12C4.55228 12 5 12.4477 5 13ZM19.2929 6.70711C19.1119 6.52614 19 6.27614 19 6C19 5.44772 19.4477 5 20 5C20.5523 5 21 5.44772 21 6C21 6.55228 20.5523 7 20 7C19.7239 7 19.4739 6.88807 19.2929 6.70711ZM19.2929 6.70711L15.8284 10.1716M9.37149 4.92872C9.73983 4.78126 10 4.42101 10 4C10 3.44772 9.55228 3 9 3C8.44772 3 8 3.44772 8 4C8 4.55228 8.44772 5 9 5C9.13127 5 9.25664 4.97471 9.37149 4.92872ZM9.37149 4.92872L11.1757 9.43928M15.8284 15.8284C16.5523 15.1046 17 14.1046 17 13C17 11.8954 16.5523 10.8954 15.8284 10.1716M15.8284 15.8284L19.2929 19.2929M19.2929 19.2929C19.1119 19.4739 19 19.7239 19 20C19 20.5523 19.4477 21 20 21C20.5523 21 21 20.5523 21 20C21 19.4477 20.5523 19 20 19C19.7239 19 19.4739 19.1119 19.2929 19.2929ZM15.8284 10.1716C15.1046 9.44772 14.1046 9 13 9C12.3428 9 11.7227 9.15847 11.1757 9.43928"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <p>打开代理</p>
+            </div>
+        </template>
+
+        <template id="template-action-list-item-basicinfo">
+            <div class="menu-action-item" id="menu-action-basicinfo">
+                <div class="menu-action-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M6.89258 17.7897C6.9083 17.7633 6.92441 17.7369 6.9409 17.7107C8.14358 15.7988 8.8398 13.5379 8.8398 11.1034C8.8398 9.14189 10.4299 7.55176 12.3915 7.55176C14.353 7.55176 15.9431 9.14189 15.9431 11.1034C15.9431 12.0065 15.8816 12.8957 15.7626 13.7672M13.8825 19.8437C14.4257 18.7596 14.871 17.6179 15.2069 16.4309M18.6156 17.4359C19.1883 15.4236 19.4949 13.2993 19.4949 11.1033C19.4949 7.18026 16.3147 4 12.3916 4C11.0978 4 9.88477 4.34591 8.83997 4.9503M4.40039 14.9783C4.96924 13.8073 5.28831 12.4926 5.28831 11.1033C5.28831 9.8095 5.63422 8.59646 6.2386 7.55166M12.3915 11.1035C12.3915 14.2265 11.4958 17.1403 9.94727 19.6019"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <p>基本信息</p>
+            </div>
+        </template>
+
+        <template id="template-action-list-item-edit-webshell">
+            <div class="menu-action-item" id="menu-action-edit-webshell">
+                <div class="menu-action-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M7.2 21C6.07989 21 5.51984 21 5.09202 20.782C4.71569 20.5903 4.40973 20.2843 4.21799 19.908C4 19.4802 4 18.9201 4 17.8V6.2C4 5.07989 4 4.51984 4.21799 4.09202C4.40973 3.71569 4.71569 3.40973 5.09202 3.21799C5.51984 3 6.0799 3 7.2 3H16.8C17.9201 3 18.4802 3 18.908 3.21799C19.2843 3.40973 19.5903 3.71569 19.782 4.09202C20 4.51984 20 5.0799 20 6.2V7M8 7H14M8 15H9M8 11H12M11.1954 20.8945L12.5102 20.6347C13.2197 20.4945 13.5744 20.4244 13.9052 20.2952C14.1988 20.1806 14.4778 20.0317 14.7365 19.8516C15.0279 19.6486 15.2836 19.393 15.7949 18.8816L20.9434 13.7332C21.6306 13.0459 21.6306 11.9316 20.9434 11.2444C20.2561 10.5571 19.1418 10.5571 18.4546 11.2444L13.2182 16.4808C12.739 16.96 12.4994 17.1996 12.3059 17.4712C12.1341 17.7123 11.9896 17.9717 11.8751 18.2447C11.7461 18.5522 11.6686 18.882 11.5135 19.5417L11.1954 20.8945Z"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <p>修改webshell</p>
+            </div>
+        </template>
+
+        <template id="template-action-list-item-open-file">
+            <div class="menu-action-item" id="menu-action-open-file">
+                <div class="menu-action-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M13 3H8.2C7.0799 3 6.51984 3 6.09202 3.21799C5.71569 3.40973 5.40973 3.71569 5.21799 4.09202C5 4.51984 5 5.0799 5 6.2V17.8C5 18.9201 5 19.4802 5.21799 19.908C5.40973 20.2843 5.71569 20.5903 6.09202 20.782C6.51984 21 7.0799 21 8.2 21H10M13 3L19 9M13 3V7.4C13 7.96005 13 8.24008 13.109 8.45399C13.2049 8.64215 13.3578 8.79513 13.546 8.89101C13.7599 9 14.0399 9 14.6 9H19M19 9V10M9 17H11.5M9 13H14M9 9H10M14 21L16.025 20.595C16.2015 20.5597 16.2898 20.542 16.3721 20.5097C16.4452 20.4811 16.5147 20.4439 16.579 20.399C16.6516 20.3484 16.7152 20.2848 16.8426 20.1574L21 16C21.5523 15.4477 21.5523 14.5523 21 14C20.4477 13.4477 19.5523 13.4477 19 14L14.8426 18.1574C14.7152 18.2848 14.6516 18.3484 14.601 18.421C14.5561 18.4853 14.5189 18.5548 14.4903 18.6279C14.458 18.7102 14.4403 18.7985 14.405 18.975L14 21Z"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <p>打开文件</p>
+            </div>
+        </template>
+
+        <template id="template-action-list-item-rename">
+            <div class="menu-action-item" id="menu-action-rename">
+                <div class="menu-action-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M8 9.00006H6.2C5.0799 9.00006 4.51984 9.00006 4.09202 9.21805C3.71569 9.40979 3.40973 9.71575 3.21799 10.0921C3 10.5199 3 11.08 3 12.2001V17.8001C3 18.9202 3 19.4802 3.21799 19.908C3.40973 20.2844 3.71569 20.5903 4.09202 20.7821C4.51984 21.0001 5.07989 21.0001 6.2 21.0001H17.787C18.9071 21.0001 19.4671 21.0001 19.895 20.7821C20.2713 20.5903 20.5772 20.2844 20.769 19.908C20.987 19.4802 20.987 18.9202 20.987 17.8001V12.0001M6 15.0001H6.01M10 15H10.01M11.5189 12.8946L12.8337 12.6347C13.5432 12.4945 13.8979 12.4244 14.2287 12.2953C14.5223 12.1807 14.8013 12.0318 15.06 11.8516C15.3514 11.6487 15.607 11.393 16.1184 10.8816L21.2668 5.73321C21.9541 5.04596 21.9541 3.9317 21.2668 3.24444C20.5796 2.55719 19.4653 2.55719 18.7781 3.24445L13.5416 8.48088C13.0625 8.96004 12.8229 9.19963 12.6294 9.47121C12.4576 9.71232 12.3131 9.97174 12.1986 10.2447C12.0696 10.5522 11.9921 10.8821 11.837 11.5417L11.5189 12.8946Z"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <p>重命名</p>
+            </div>
+        </template>
+
+        <template id="template-action-list-item-delete">
+            <div class="menu-action-item menu-action-item-dangerous" id="menu-action-delete">
+                <div class="menu-action-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6M18 6V16.2C18 17.8802 18 18.7202 17.673 19.362C17.3854 19.9265 16.9265 20.3854 16.362 20.673C15.7202 21 14.8802 21 13.2 21H10.8C9.11984 21 8.27976 21 7.63803 20.673C7.07354 20.3854 6.6146 19.9265 6.32698 19.362C6 18.7202 6 17.8802 6 16.2V6M14 10V17M10 10V17"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <p>删除</p>
+            </div>
+        </template>
+
+        <template id="template-action-list">
+
+            <div class="menu-action-list" onclick="eventFuncs.actionList(event)">
+
+            </div>
+        </template>
+
+        <template id="template-popup">
+            <div class="popup">
+                <div class="popup-title-line">
+                    <div class="popup-icon">
+                        <div class="pop-icon-red">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M6 6L18 18M18 6L6 18" stroke="#000000" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <div class="pop-icon-yellow">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M12 8V13M12 16H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+                                    stroke="#000000" stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                        </div>
+                        <div class="pop-icon-green">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4 12.6111L8.92308 17.5L20 6.5" stroke-width="2" stroke-linecap="round"
+                                    stroke="#000000" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <div class="pop-icon-blue">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M6 12H18M12 6V18" stroke="#000000" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                        </div>
+
+                    </div>
+                    <h3 class="popup-title">测试测试</h3>
+                </div>
+
+                <p class="popup-text">这是一条测试文本，用来测试popup的正文部分</p>
+            </div>
+        </template>
+    </div>
+
+    <script src="assets/index.bundle.js"></script>
+</body>
+
+</html>

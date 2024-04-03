@@ -1,0 +1,32 @@
+<script setup>
+import Header from './components/Header.vue'
+import HomeMain from './components/HomeMain.vue'
+</script>
+
+<template>
+  <div id="root">
+    <Header />
+    <main>
+      <HomeMain />
+
+    </main>
+
+  </div>
+</template>
+
+<style scoped>
+#root {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  height: 100vh;
+}
+
+
+main {
+  height: 50vh;
+  width: 90%;
+  flex-grow: 1;
+  margin-top: 50px;
+}
+</style>

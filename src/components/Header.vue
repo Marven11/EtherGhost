@@ -1,0 +1,102 @@
+<script setup>
+import IconHome from "./icons/iconHome.vue"
+import IconTerminal from "./icons/iconTerminal.vue"
+import IconFile from "./icons/iconFile.vue"
+import IconInfo from "./icons/iconInfo.vue"
+import IconProxy from "./icons/iconProxy.vue"
+import IconOthers from "./icons/iconOthers.vue"
+import IconSetting from "./icons/iconSetting.vue"
+</script>
+
+<template>
+  <header>
+    <div class="header-title">
+      <p>
+        鬼刃
+      </p>
+    </div>
+    <nav>
+      <div class="icon icon-home">
+        <IconHome />
+      </div>
+      <div class="icon icon-terminal">
+        <IconTerminal />
+      </div>
+      <div class="icon icon-file">
+        <IconFile />
+      </div>
+      <div class="icon icon-info">
+        <IconInfo />
+      </div>
+      <div class="icon icon-proxy">
+        <IconProxy />
+      </div>
+      <div class="icon icon-others">
+        <IconOthers />
+      </div>
+    </nav>
+    <div class="header-setting">
+      <div class="icon">
+        <IconSetting />
+      </div>
+
+    </div>
+  </header>
+
+</template>
+
+<style scoped>
+header {
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+  margin-top: 30px;
+  border-radius: 20px;
+  background-color: var(--primary-color);
+  width: 90%;
+  height: 12vh;
+  min-height: 130px;
+}
+
+.header-title {
+  width: 30%;
+  display: flex;
+  align-items: center;
+  padding-left: 50px;
+}
+
+.header-title p {
+  font-size: 40px;
+  font-weight: bolder;
+}
+
+nav {
+  display: flex;
+  justify-content: space-around;
+  width: 40%;
+}
+
+
+.icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width:fit-content;
+}
+
+svg {
+  width: 35px;
+  color: var(--font-color-black);
+  stroke: var(--font-color-black);
+}
+
+
+.header-setting {
+  width: 30%;
+  display: flex;
+  flex-direction: row-reverse;
+  padding-right: 50px;
+}
+
+
+</style>
