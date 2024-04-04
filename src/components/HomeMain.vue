@@ -1,28 +1,43 @@
 <script setup>
 import IconOthers from "./icons/iconOthers.vue"
+import { ref } from "vue";
+
+const cards = ref([
+  {
+    title: "测试webshell",
+    note: "测试测试"
+  }
+])
+
 </script>
 
 <template>
-  <div class="card">
-    <div class="card-top">
-      <div class="card-name">
-        <p>
-          测试webshell
-        </p>
+  <div class="cards" v-for="card in cards">
+    <div class="card">
+      <div class="card-top">
+        <div class="card-name">
+          <p>
+            {{ card.title }}
+          </p>
+        </div>
+        <div>
+          <IconOthers />
+        </div>
       </div>
-      <div>
-        <IconOthers />
-      </div>
-    </div>
-    <div class="card-bottom">
-      <div class="card-note">
-        测试测试
+      <div class="card-bottom">
+        <div class="card-note">
+          {{ card.note }}
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
+.cards {
+  display: flex;
+}
+
 .card {
   height: 160px;
   width: 30%;
@@ -42,7 +57,8 @@ import IconOthers from "./icons/iconOthers.vue"
   height: 40%;
 }
 
-.card-top p, .card-top svg {
+.card-top p,
+.card-top svg {
   margin: 0px;
   margin-top: 20px;
 }
