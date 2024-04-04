@@ -1,5 +1,6 @@
 <script setup>
 import IconOthers from "./icons/iconOthers.vue"
+import IconPlus from "./icons/iconPlus.vue"
 import ClickMenu from "./ClickMenu.vue"
 import { ref } from "vue";
 
@@ -7,7 +8,23 @@ const cards = ref([
   {
     title: "测试webshell",
     note: "测试测试"
-  }
+  },
+  {
+    title: "测试webshell",
+    note: "测试测试"
+  },
+  {
+    title: "测试webshell",
+    note: "测试测试"
+  },
+  {
+    title: "测试webshell",
+    note: "测试测试"
+  },
+  {
+    title: "测试webshell",
+    note: "测试测试"
+  },
 ])
 
 const showClickMenu = ref(false)
@@ -24,8 +41,8 @@ function onClickIconOthers(event) {
 </script>
 
 <template>
-  <div class="cards" v-for="card in cards">
-    <div class="card">
+  <div class="cards">
+    <div class="card" v-for="card in cards">
       <div class="card-top">
         <div class="card-name">
           <p>
@@ -46,21 +63,26 @@ function onClickIconOthers(event) {
     </div>
   </div>
   <div v-if="showClickMenu">
-    <ClickMenu :top="ClickMenuTop" :left="ClickMenuLeft" @remove="(_) => showClickMenu = false"/>
+    <ClickMenu :top="ClickMenuTop" :left="ClickMenuLeft" @remove="(_) => showClickMenu = false" />
+  </div>
+  <div class="add-webshell-button">
+    <IconPlus />
   </div>
 </template>
 
 <style scoped>
-
 .cards {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  column-gap: 2%;
+  justify-content: space-between;
 }
 
 .card {
   height: 160px;
-  width: 30%;
   background-color: var(--background-color-2);
   color: var(--font-color-white);
+  margin-bottom: 40px;
   padding-left: 20px;
   padding-right: 20px;
   border-radius: 20px;
@@ -87,6 +109,21 @@ function onClickIconOthers(event) {
 
 .card-bottom {
   color: var(--font-color-grey);
+}
+
+.add-webshell-button {
+  width: 70px;
+  height: 70px;
+  background-color: #00000030;
+  border-radius: 1000px;
+  position: fixed;
+  top: 90vh;
+}
+
+.add-webshell-button svg {
+  width: 50px;
+  stroke: var(--font-color-white);
+  margin: 10px;
 }
 
 svg {
