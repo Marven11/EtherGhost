@@ -1,13 +1,14 @@
 <script setup>
 import Header from './components/Header.vue'
 import HomeMain from './components/HomeMain.vue'
+import TerminalMain from './components/TerminalMain.vue'
 </script>
 
 <template>
   <div id="root">
     <Header />
     <main>
-      <HomeMain />
+      <TerminalMain />
     </main>
   </div>
 </template>
