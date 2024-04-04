@@ -6,6 +6,8 @@ html {
 
 * {
     box-sizing: border-box;
+    font-family: 'Courier New', Courier, monospace;
+    transition: background 0.3s ease;
 }
 
 :root {
@@ -13,6 +15,7 @@ html {
     --yellow: #efd057;
     --green: #9fe88d;
     --blue: #28ebff;
+    --white: #b1cbd5;
     --primary-color: #28ebff;
     --font-color-black: #091307;
     --font-color-grey: #64748b;

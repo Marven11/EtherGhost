@@ -8,9 +8,7 @@ import HomeMain from './components/HomeMain.vue'
     <Header />
     <main>
       <HomeMain />
-
     </main>
-
   </div>
 </template>
 

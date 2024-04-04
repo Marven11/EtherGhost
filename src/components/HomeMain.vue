@@ -1,5 +1,6 @@
 <script setup>
 import IconOthers from "./icons/iconOthers.vue"
+import ClickMenu from "./ClickMenu.vue"
 import { ref } from "vue";
 
 const cards = ref([
@@ -8,6 +9,17 @@ const cards = ref([
     note: "测试测试"
   }
 ])
+
+const showClickMenu = ref(false)
+const ClickMenuLeft = ref(0)
+const ClickMenuTop = ref(0)
+function onClickIconOthers(event) {
+  console.log(event)
+  showClickMenu.value = true
+  ClickMenuLeft.value = event.clientX;
+  ClickMenuTop.value = event.clientY;
+}
+
 
 </script>
 
@@ -21,7 +33,9 @@ const cards = ref([
           </p>
         </div>
         <div>
-          <IconOthers />
+          <div class="card-icon-others" @click="onClickIconOthers">
+            <IconOthers />
+          </div>
         </div>
       </div>
       <div class="card-bottom">
@@ -31,9 +45,13 @@ const cards = ref([
       </div>
     </div>
   </div>
+  <div v-if="showClickMenu">
+    <ClickMenu :top="ClickMenuTop" :left="ClickMenuLeft" @remove="(_) => showClickMenu = false"/>
+  </div>
 </template>
 
 <style scoped>
+
 .cards {
   display: flex;
 }
@@ -46,7 +64,6 @@ const cards = ref([
   padding-left: 20px;
   padding-right: 20px;
   border-radius: 20px;
-  font-family: 'Courier New', Courier, monospace;
 }
 
 .card-top {
