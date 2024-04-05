@@ -2,13 +2,14 @@
 import Header from './components/Header.vue'
 import HomeMain from './components/HomeMain.vue'
 import TerminalMain from './components/TerminalMain.vue'
+import FileBrowserMain from './components/FileBrowserMain.vue'
 </script>
 
 <template>
   <div id="root">
     <Header />
     <main>
-      <TerminalMain />
+      <FileBrowserMain />
     </main>
   </div>
 </template>

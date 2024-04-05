@@ -1,7 +1,7 @@
 <script setup>
 import { ref, shallowRef, defineEmits } from "vue"
 import IconTerminal from "./icons/iconTerminal.vue"
-import IconFile from "./icons/iconFile.vue"
+import IconFileBrowser from "./icons/iconFileBrowser.vue"
 import IconProxy from "./icons/iconProxy.vue"
 import IconInfo from "./icons/iconInfo.vue"
 import IconEdit from "./icons/iconEdit.vue"
@@ -24,7 +24,7 @@ const menu_items = shallowRef([
   {
     "name": "browse_files",
     "text": "浏览文件",
-    "icon": IconFile,
+    "icon": IconFileBrowser,
     "color": "white",
   },
   {

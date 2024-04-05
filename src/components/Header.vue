@@ -1,7 +1,7 @@
 <script setup>
 import IconHome from "./icons/iconHome.vue"
 import IconTerminal from "./icons/iconTerminal.vue"
-import IconFile from "./icons/iconFile.vue"
+import IconFileBrowser from "./icons/iconFileBrowser.vue"
 import IconInfo from "./icons/iconInfo.vue"
 import IconProxy from "./icons/iconProxy.vue"
 import IconOthers from "./icons/iconOthers.vue"
@@ -23,7 +23,7 @@ import IconSetting from "./icons/iconSetting.vue"
         <IconTerminal />
       </div>
       <div class="icon icon-file">
-        <IconFile />
+        <IconFileBrowser />
       </div>
       <div class="icon icon-info">
         <IconInfo />
