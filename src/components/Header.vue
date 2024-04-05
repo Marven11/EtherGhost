@@ -1,4 +1,5 @@
 <script setup>
+import { ref } from "vue"
 import IconHome from "./icons/iconHome.vue"
 import IconTerminal from "./icons/iconTerminal.vue"
 import IconFileBrowser from "./icons/iconFileBrowser.vue"
@@ -6,6 +7,44 @@ import IconInfo from "./icons/iconInfo.vue"
 import IconProxy from "./icons/iconProxy.vue"
 import IconOthers from "./icons/iconOthers.vue"
 import IconSetting from "./icons/iconSetting.vue"
+
+const icons = ref([
+  {
+    type: "home",
+    component: IconHome,
+    uri: "/"
+  },
+  {
+    type: "terminal",
+    component: IconTerminal,
+    uri: "/"
+  },
+  {
+    type: "file-browser",
+    component: IconFileBrowser,
+    uri: "/"
+  },
+  {
+    type: "info",
+    component: IconInfo,
+    uri: "/"
+  },
+  {
+    type: "proxy",
+    component: IconProxy,
+    uri: "/"
+  },
+  {
+    type: "others",
+    component: IconOthers,
+    uri: "/"
+  },
+])
+
+function clickIcon(icon) {
+  window.location = icon.uri
+}
+
 </script>
 
 <template>
@@ -16,23 +55,8 @@ import IconSetting from "./icons/iconSetting.vue"
       </p>
     </div>
     <nav>
-      <div class="icon icon-home">
-        <IconHome />
-      </div>
-      <div class="icon icon-terminal">
-        <IconTerminal />
-      </div>
-      <div class="icon icon-file">
-        <IconFileBrowser />
-      </div>
-      <div class="icon icon-info">
-        <IconInfo />
-      </div>
-      <div class="icon icon-proxy">
-        <IconProxy />
-      </div>
-      <div class="icon icon-others">
-        <IconOthers />
+      <div v-for="icon in icons" @click="clickIcon(icon)" class="icon">
+        <component :is="icon.component"></component>
       </div>
     </nav>
     <div class="header-setting">
