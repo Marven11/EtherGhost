@@ -73,6 +73,7 @@ header {
 nav {
   display: flex;
   justify-content: space-around;
+  align-items: center;
   width: 40%;
 }
 
@@ -81,7 +82,13 @@ nav {
   display: flex;
   justify-content: center;
   align-items: center;
-  width:fit-content;
+  width: 50px;
+  height: 50px;
+  border-radius: 200px;
+}
+
+.icon:hover {
+  background-color: #00000015;
 }
 
 svg {
@@ -96,7 +103,6 @@ svg {
   display: flex;
   flex-direction: row-reverse;
   padding-right: 50px;
+  align-items: center;
 }
-
-
 </style>
