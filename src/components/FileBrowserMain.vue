@@ -112,7 +112,9 @@ input[type="text"] {
 }
 
 .folder-panel {
-  width: 49%;
+  min-width: max-content;
+  flex-grow: 1;
+  margin-right: 30px;
   height: 100%;
   border-radius: 20px;
   background-color: var(--background-color-2);
@@ -152,7 +154,8 @@ input[type="text"] {
 }
 
 .file-content-panel {
-  width: 49%;
+  min-width: 350px;
+  flex-grow: 3;
   display: flex;
   flex-direction: column;
 }
