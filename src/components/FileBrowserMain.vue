@@ -51,7 +51,16 @@ const entries = shallowRef([
       </div>
     </div>
     <div class="file-content-panel">
-
+      <div class="files-title">
+        <input type="text" name="filename" id="files-title-filename" placeholder="passwd">
+      </div>
+      <div class="files-content">
+        <!-- code mirror will live here -->
+      </div>
+      <div class="files-property">
+        <p>文件编码: </p>
+        <input type="text" name="encoding" id="files-property-encoding">
+      </div>
     </div>
   </div>
 </template>
@@ -62,16 +71,19 @@ const entries = shallowRef([
   height: 60px;
 }
 
-.filepath-input input {
-  background-color: var(--background-color-2);
-  color: var(--font-color-white);
-  border: none;
-  border-radius: 20px;
-  margin-right: 20px;
-  outline: none;
-  flex-grow: 1;
+input[type="text"] {
   font-size: 30px;
   text-indent: 10px;
+  color: var(--font-color-white);
+  border: none;
+  outline: none;
+  border-radius: 20px;
+}
+
+.filepath-input input {
+  background-color: var(--background-color-2);
+  margin-right: 20px;
+  flex-grow: 1;
 }
 
 .icon-run {
@@ -96,13 +108,12 @@ const entries = shallowRef([
   height: 85%;
   flex-grow: 1;
   justify-content: space-between;
+  margin-top: 20px;
 }
 
 .folder-panel {
-  margin-top: 20px;
   width: 49%;
   height: 100%;
-  flex-grow: 1;
   border-radius: 20px;
   background-color: var(--background-color-2);
   padding-top: 20px;
@@ -113,6 +124,7 @@ const entries = shallowRef([
   height: 80px;
   align-items: center;
   flex-direction: row;
+  user-select: none;
 }
 
 .folder-entry:hover {
@@ -139,11 +151,51 @@ const entries = shallowRef([
 
 }
 
-
 .file-content-panel {
   width: 49%;
-  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
 
+.files-title {
+  height: 70px;
+  width: 100%;
+}
+
+.files-title input {
+  border: none;
+  outline: none;
+  height: 100%;
+  width: 100%;
+  background-color: var(--background-color-2);
+  font-size: 30px;
+}
+
+.files-content {
+  flex-grow: 1;
+  margin-top: 20px;
+  border-radius: 20px;
+  padding: 20px;
+  background-color: var(--background-color-2);
+}
+
+.files-property {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background-color: var(--background-color-2);
+  margin-top: 20px;
+  border-radius: 20px;
+  padding-left: 20px;
+  color: var(--font-color-white);
+
+}
+
+.files-property input {
+  width: 100px;
+  height: 40px;
+  background-color: var(--background-color-3);
+  font-size: 16px;
 }
 
 svg {
