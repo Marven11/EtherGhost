@@ -1,5 +1,6 @@
 <script setup>
 import Header from './components/Header.vue'
+import WebshellEditorMain from './components/WebshellEditorMain.vue'
 import HomeMain from './components/HomeMain.vue'
 import TerminalMain from './components/TerminalMain.vue'
 import FileBrowserMain from './components/FileBrowserMain.vue'
@@ -9,7 +10,7 @@ import FileBrowserMain from './components/FileBrowserMain.vue'
   <div id="root">
     <Header />
     <main>
-      <FileBrowserMain />
+      <WebshellEditorMain />
     </main>
   </div>
 </template>
