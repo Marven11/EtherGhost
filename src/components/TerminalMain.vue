@@ -1,8 +1,10 @@
 <script setup>
 import IconRun from "./icons/iconRun.vue"
-import { ref } from "vue";
+import { ref, defineProps } from "vue";
 
-const terminalOutput = ref("");
+const props = defineProps({
+  session: String,
+})
 
 function addOutput(command, output) {
   let leading = ""

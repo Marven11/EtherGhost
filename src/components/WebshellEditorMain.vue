@@ -1,5 +1,10 @@
 <script setup>
-import { ref, shallowRef } from "vue";
+
+import { ref, shallowRef, defineProps } from "vue";
+
+const props = defineProps({
+  session: String,
+})
 
 const optionsGroups = shallowRef([
   {
@@ -83,6 +88,8 @@ function getOption(id) {
   }
   return optionFound[0]
 }
+
+console.log(props.session)
 
 </script>
 
