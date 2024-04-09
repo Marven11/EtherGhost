@@ -2,9 +2,10 @@
 
 import { reactive, ref, shallowRef } from "vue";
 import axios from "axios"
-import { getCurrentApiUrl, doAssert } from "../assets/utils"
+import { getCurrentApiUrl, doAssert } from "@/assets/utils"
 import IconCross from './icons/iconCross.vue'
 import IconCheck from './icons/iconCheck.vue'
+import Popups from './Popups.vue'
 
 const props = defineProps({
   session: String,
@@ -136,6 +137,7 @@ const options = reactive([
 
 ])
 
+const popupsRef = ref(null)
 
 function updateOption(webshellType) {
   currentWebshellType.value = webshellType
@@ -152,7 +154,6 @@ function getOption(id) {
   }
   return optionFound[0]
 }
-
 
 function changeClickboxOption(optionId) {
   getOption(optionId).value = !getOption(optionId).value
@@ -188,6 +189,10 @@ async function fetchCurrentSession() {
 
 setTimeout(fetchCurrentSession, 0)
 
+setInterval(() => {
+  popupsRef.value.addPopup("green", "测试父元素调用", "父元素正在调用")
+}, 2000)
+
 </script>
 
 <template>
@@ -216,6 +221,7 @@ setTimeout(fetchCurrentSession, 0)
       <p v-else>内部错误：未知选项类型 {{ option.type }}</p>
     </div>
   </div>
+  <Popups ref="popupsRef"/>
 </template>
 
 <style scoped>
