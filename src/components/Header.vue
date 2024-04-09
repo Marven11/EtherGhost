@@ -8,7 +8,7 @@ import IconProxy from "./icons/iconProxy.vue"
 import IconOthers from "./icons/iconOthers.vue"
 import IconSetting from "./icons/iconSetting.vue"
 
-const icons = ref([
+const icons = [
   {
     type: "home",
     component: IconHome,
@@ -39,7 +39,7 @@ const icons = ref([
     component: IconOthers,
     uri: "/"
   },
-])
+]
 
 function clickIcon(icon) {
   window.location = icon.uri

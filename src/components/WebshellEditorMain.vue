@@ -1,55 +1,88 @@
 <script setup>
 
-import { ref, shallowRef } from "vue";
+import { reactive, ref, shallowRef } from "vue";
+import axios from "axios"
+import { getCurrentApiUrl, doAssert } from "../assets/utils"
+import IconCross from './icons/iconCross.vue'
+import IconCheck from './icons/iconCheck.vue'
 
 const props = defineProps({
   session: String,
 })
 
-const optionsGroups = shallowRef([
-  {
-    id: "basic_options",
-    name: "基本设置",
-    options: [
-      "name",
-      "url",
-      "type"
-    ]
-  },
-  {
-    id: "php_webshell_options",
-    name: "PHP Webshell 配置",
-    options: [
-      "method",
-      "password"
-    ]
-  }
-])
 
-const options = shallowRef([
+const webshellTypes = [
+  "ONELINE_PHP"
+]
+
+const webshellOptionGroups = {
+  ONELINE_PHP: [
+    {
+      id: "basic_options",
+      name: "基本设置",
+      options: [
+        "name",
+        "session_type",
+        "note"
+      ]
+    },
+    {
+      id: "php_webshell_basic_options",
+      name: "PHP Webshell 基本配置",
+      options: [
+        "url",
+        "method",
+        "password",
+      ]
+    },
+    {
+      id: "php_webshell_advanced_options",
+      name: "PHP Webshell 高级配置",
+      options: [
+        "encoder",
+        "http_params_obfs",
+        "sessionize_payload"
+      ]
+    },
+  ]
+}
+
+const currentWebshellType = ref(null)
+
+
+const optionsGroups = shallowRef([])
+
+const options = reactive([
   {
     id: "name",
-    name: "Webshell名称",
+    name: "名称",
     type: "text",
     placeholder: "xxx",
-    value: ""
+    value: undefined
   },
   {
     id: "url",
-    name: "Webshell地址",
+    name: "地址",
     type: "text",
     placeholder: "http://xxx.com",
-    value: ""
+    value: undefined
   },
   {
-    id: "type",
-    name: "Webshell类型",
+    id: "note",
+    name: "备注",
+    type: "text",
+    placeholder: "xxx...",
+    value: undefined
+  },
+  {
+    id: "session_type",
+    name: "类型",
     type: "select",
-    value: "",
+    value: undefined,
     alternatives: [
       {
         name: "PHP一句话",
-        value: "PHP_ONELINE"
+        value: "ONELINE_PHP"
       }
     ]
   },
@@ -57,7 +90,7 @@ const options = shallowRef([
     id: "method",
     name: "Webshell请求方式",
     type: "select",
-    value: "POST",
+    value: undefined,
     alternatives: [
       {
         name: "POST",
@@ -74,12 +107,43 @@ const options = shallowRef([
     name: "Webshell密码",
     type: "text",
     placeholder: "data",
-    value: ""
+    value: undefined
   },
+  {
+    id: "encoder",
+    name: "类型",
+    type: "select",
+    value: undefined,
+    alternatives: [
+      {
+        name: "base64",
+        value: "base64"
+      }
+    ]
+  },
+  {
+    id: "http_params_obfs",
+    name: "HTTP参数混淆",
+    type: "checkbox",
+    value: true,
+  },
+  {
+    id: "sessionize_payload",
+    name: "Session暂存payload",
+    type: "checkbox",
+    value: false,
+  },
+
 ])
 
+
+function updateOption(webshellType) {
+  currentWebshellType.value = webshellType
+  optionsGroups.value = webshellOptionGroups[webshellType]
+}
+
 function getOption(id) {
-  let optionFound = options.value.filter(option => option.id == id)
+  let optionFound = options.filter(option => option.id == id)
   if (optionFound.length == 0) {
     throw Error(`Option ${id} not found`)
   }
@@ -89,7 +153,40 @@ function getOption(id) {
   return optionFound[0]
 }
 
-console.log(props.session)
+
+function changeClickboxOption(optionId) {
+  getOption(optionId).value = !getOption(optionId).value
+}
+
+async function fetchCurrentSession() {
+  const url = getCurrentApiUrl()
+  const resp = await axios.get(`${url}/session/${props.session}`)
+  doAssert(resp.data.code == 0, `Response code is not zero: ${resp.data.code}`)
+  const session = resp.data.data
+  console.log("updating from session", session)
+  updateOption(session.session_type)
+  for (const key of ["name", "session_type", "note"]) {
+    const option = getOption(key)
+    if (["text", "checkbox"].includes(option.type)) {
+      option.value = session[key]
+    } else if (option.type == "select") {
+      option.value = session[key]
+      console.log(option)
+    }
+  }
+  for (const key of Object.keys(session.connection)) {
+    const option = getOption(key)
+    if (["text", "checkbox"].includes(option.type)) {
+      option.value = session.connection[key]
+    } else if (option.type == "select") {
+      option.value = session.connection[key]
+      console.log(option)
+    }
+  }
+  console.log(options)
+}
+
+setTimeout(fetchCurrentSession, 0)
 
 </script>
 
@@ -98,18 +195,25 @@ console.log(props.session)
     <p class="group-title">
       {{ group.name }}
     </p>
-    <div class="option" v-for="optionId in group.options">
+    <div class="option" v-for="option in group.options.map(getOption)">
       <div class="option-name">
-        {{ getOption(optionId).name }}
+        {{ option.name }}
       </div>
-      <input :type="getOption(optionId).type" :placeholder="getOption(optionId).placeholder"
-        v-if="getOption(optionId).type == 'text'">
-      <select v-else-if="getOption(optionId).type == 'select'" name="optionId" id="'option-'+optionId">
-        <option v-for="alternative in getOption(optionId).alternatives" :value="alternative.value">
+      <input v-if="option.type == 'text'" :type="option.type" :name="option.id" v-model="option.value"
+        :placeholder="option.placeholder" :id="'option-' + option.id">
+      <select v-else-if="option.type == 'select'" :name="option.id" :id="'option-' + option.id" v-model="option.value">
+        <option disabled value="">选择一个</option>
+        <option v-for="alternative in option.alternatives" :value="alternative.value">
           {{ alternative.name }}
         </option>
       </select>
-      <p v-else>Not Supported</p>
+      <div v-else-if="option.type == 'checkbox'" class="input-checkbox" :id="'option-' + option.id"
+        :checked="option.value" @click="changeClickboxOption(option.id)">
+        <input type="hidden" :name="option.id" :id="'option-' + option.id" v-model="option.value">
+        <IconCheck v-if="option.value" />
+        <IconCross v-else />
+      </div>
+      <p v-else>内部错误：未知选项类型 {{ option.type }}</p>
     </div>
   </div>
 </template>
@@ -119,6 +223,9 @@ console.log(props.session)
   display: flex;
   flex-direction: column;
   margin-bottom: 30px;
+  width: 60%;
+  margin-left: 20%;
+  margin-right: 20%;
 }
 
 .group-title {
@@ -150,12 +257,13 @@ console.log(props.session)
   margin-right: 20px;
 }
 
-.option input {
+.option input[type="text"] {
   height: 40px;
   min-width: 200px;
   border-radius: 8px;
   flex-grow: 1;
   font-size: 20px;
+  text-indent: 10px;
 }
 
 .option select {
@@ -167,7 +275,7 @@ console.log(props.session)
   height: 40px;
   min-width: 100px;
   font-size: 16px;
-
+  padding-left: 10px;
 }
 
 
@@ -176,6 +284,27 @@ input {
   border: none;
   outline: none;
   color: var(--font-color-white);
+}
 
+.input-checkbox {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background-color: #00000015;
+  outline: 2px dashed var(--font-color-grey);
+  stroke: var(--font-color-grey);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.input-checkbox[checked=true] {
+  background-color: var(--font-color-white);
+  stroke: var(--font-color-grey);
+}
+
+.input-checkbox svg {
+  width: 20px;
+  height: 20px;
 }
 </style>

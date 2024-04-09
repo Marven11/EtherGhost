@@ -8,10 +8,11 @@ import FileBrowserMain from './components/FileBrowserMain.vue'
 
 <template>
   <div id="root">
+    <!-- modified button from https://www.svgrepo.com/collection/dazzle-line-icons/ -->
     <Header />
     <main>
-      <!-- <WebshellEditorMain session="114514" /> -->
-      <HomeMain/>
+      <WebshellEditorMain session="42127cd3-6226-4472-abe6-4568d53fe50a" />
+      <!-- <HomeMain/> -->
     </main>
   </div>
 </template>
