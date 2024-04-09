@@ -10,7 +10,8 @@ import FileBrowserMain from './components/FileBrowserMain.vue'
   <div id="root">
     <Header />
     <main>
-      <WebshellEditorMain session="114514" />
+      <!-- <WebshellEditorMain session="114514" /> -->
+      <HomeMain/>
     </main>
   </div>
 </template>

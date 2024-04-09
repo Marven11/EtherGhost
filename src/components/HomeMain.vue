@@ -2,7 +2,7 @@
 import IconOthers from "./icons/iconOthers.vue"
 import IconPlus from "./icons/iconPlus.vue"
 import ClickMenu from "./ClickMenu.vue"
-import { ref, defineProps } from "vue";
+import { ref } from "vue";
 
 const cards = ref([
   {

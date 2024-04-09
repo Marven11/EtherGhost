@@ -5,7 +5,7 @@ import IconFile from "./icons/iconFile.vue"
 import IconSymlinkFile from "./icons/iconSymlinkFile.vue"
 import IconSymlinkDirectory from "./icons/iconSymlinkDirectory.vue"
 import IconUnknownFile from "./icons/iconUnknownFile.vue"
-import { ref, shallowRef, defineProps } from "vue";
+import { ref, shallowRef } from "vue";
 
 const props = defineProps({
   session: String,

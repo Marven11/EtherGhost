@@ -1,6 +1,6 @@
 <script setup>
 
-import { ref, shallowRef, defineProps } from "vue";
+import { ref, shallowRef } from "vue";
 
 const props = defineProps({
   session: String,

@@ -1,6 +1,6 @@
 <script setup>
 import IconRun from "./icons/iconRun.vue"
-import { ref, defineProps } from "vue";
+import { ref } from "vue";
 
 const props = defineProps({
   session: String,
