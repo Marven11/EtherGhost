@@ -1,9 +1,10 @@
 <script setup>
-import Header from './components/Header.vue'
-import WebshellEditorMain from './components/WebshellEditorMain.vue'
-import HomeMain from './components/HomeMain.vue'
-import TerminalMain from './components/TerminalMain.vue'
-import FileBrowserMain from './components/FileBrowserMain.vue'
+import Header from "./components/Header.vue"
+import WebshellEditorMain from "./components/WebshellEditorMain.vue"
+import HomeMain from "./components/HomeMain.vue"
+import TerminalMain from "./components/TerminalMain.vue"
+import FileBrowserMain from "./components/FileBrowserMain.vue"
+
 </script>
 
 <template>
@@ -11,8 +12,8 @@ import FileBrowserMain from './components/FileBrowserMain.vue'
     <!-- modified button from https://www.svgrepo.com/collection/dazzle-line-icons/ -->
     <Header />
     <main>
+      <router-view></router-view>
       <!-- <WebshellEditorMain session="b9ffbeaa-2906-4865-ad7f-1818896dfe8c" /> -->
-      <HomeMain/>
     </main>
   </div>
 </template>
