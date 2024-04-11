@@ -79,7 +79,7 @@ defineExpose({ addPopup })
   bottom: 0;
   right: 5%;
   width: 20%;
-  min-width: 300px;
+  min-width: 400px;
 }
 
 .popup {
