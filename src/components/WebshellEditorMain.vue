@@ -160,9 +160,7 @@ function changeClickboxOption(optionId) {
 }
 
 async function fetchCurrentSession() {
-  const url = getCurrentApiUrl()
-  const resp = await axios.get(`${url}/session/${props.session}`)
-  const session = getDataOrPopupError(resp.data, popupsRef)
+  const session = await getDataOrPopupError(`/session/${props.session}`, popupsRef)
 
   updateOption(session.session_type)
   for (const key of ["name", "session_type", "note"]) {

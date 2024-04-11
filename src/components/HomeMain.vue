@@ -30,9 +30,7 @@ function onClickIconOthers(event) {
 }
 
 async function fetchWebshell() {
-  const url = getCurrentApiUrl()
-  const resp = await axios.get(`${url}/session`)
-  const sessions = getDataOrPopupError(resp.data, popupsRef)
+  const sessions = await getDataOrPopupError("/session", popupsRef)
   sessions.value = sessions
 }
 

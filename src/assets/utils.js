@@ -1,3 +1,4 @@
+import axios from "axios"
 
 
 export function hello() {
@@ -20,18 +21,26 @@ export function doAssert(result, msg) {
 }
 
 
-export function getDataOrPopupError(resp_data, popupsRef) {
-  if (resp_data.code != 0) {
+export async function getDataOrPopupError(uri, popupsRef) {
+  let url = `${getCurrentApiUrl()}${uri}`
+  let resp
+  try {
+    resp = await axios.get(url)
+  }catch(e){
+    popupsRef.value.addPopup("red", "请求错误", `无法请求${uri}，服务端是否正在运行？`)
+    throw e
+  }
+  if (resp.data.code != 0) {
     let title = "未知错误"
-    if (resp_data.code == -400) {
+    if (resp.data.code == -400) {
       title = "客户端错误"
-    } else if (resp_data.code == -500) {
+    } else if (resp.data.code == -500) {
       title = "服务端错误"
     }
-    popupsRef.value.addPopup("red", title, resp_data.msg)
-    doAssert(false, `${title}: ${resp_data.msg}`)
+    popupsRef.value.addPopup("red", title, resp.data.msg)
+    doAssert(false, `${title}: ${resp.data.msg}`)
     return;
   }
-  return resp_data.data
+  return resp.data.data
 }
 
