@@ -223,6 +223,7 @@ input[type="text"] {
   align-items: center;
   flex-direction: row;
   user-select: none;
+  font-variant-ligatures: none;
 }
 
 .folder-entry:hover {

@@ -4,9 +4,14 @@ html {
     margin: 0;
 }
 
+@font-face {
+    font-family: "FiraCode";
+    src: url("./FiraCodeNerdFontMono-Regular.ttf");
+}
+
 * {
     box-sizing: border-box;
-    font-family: 'Courier New', Courier, monospace;
+    font-family: 'FiraCode', 'Courier New', Courier, monospace;
     transition: background 0.3s ease;
 }
 
