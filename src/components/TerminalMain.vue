@@ -9,28 +9,28 @@ import { getCurrentApiUrl } from "@/assets/utils";
 const props = defineProps({
   session: String,
 })
+const terminalInput = ref("")
 const terminalOutput = ref("")
 const popupsRef = ref(null)
 
 function addOutput(command, output) {
   let leading = ""
-  let textarea = document.getElementById("command-output");
   if (terminalOutput.value) {
     leading = `${terminalOutput.value}\n`;
   }
   terminalOutput.value = `${leading}$ ${command}\n${output}`
   // change scroll position after text rendered.
   setTimeout(() => {
+    let textarea = document.getElementById("command-output");
     textarea.scrollTop = textarea.scrollHeight;
   }, 0)
 }
 
 async function onExecuteCommand(event) {
   const url = `${getCurrentApiUrl()}/session/${props.session}/execute_cmd`
-  const element = document.getElementById("command-input")
-  const cmd = element.value;
+  const cmd = terminalInput.value;
   event.preventDefault()
-  element.value = ""
+  terminalInput.value = ""
   const resp = await Axios.get(url, {
     params: {
       cmd: cmd
@@ -45,7 +45,7 @@ async function onExecuteCommand(event) {
 
 <template>
   <form action="" class="command-input" @submit="onExecuteCommand">
-    <input id="command-input" type="text" placeholder="cat /etc/passwd">
+    <input id="command-input" type="text" placeholder="cat /etc/passwd" v-model="terminalInput">
     <div class="icon-run" @click="onExecuteCommand">
       <IconRun />
     </div>
