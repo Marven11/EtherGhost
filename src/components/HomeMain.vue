@@ -129,7 +129,7 @@ setTimeout(fetchWebshell, 0)
     </div>
   </transition>
 
-  <div class="add-webshell-button">
+  <div class="add-webshell-button" @click="router.push('/webshell_editor/')">
     <IconPlus />
   </div>
   <Popups ref="popupsRef" />
