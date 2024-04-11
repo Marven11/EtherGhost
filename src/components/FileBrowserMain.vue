@@ -22,12 +22,14 @@ const entryIcons = {
 }
 
 
+// something like this:
 // {
-//     name: ".",
-//     icon: IconDirectory,
-//     perm: "rwxrwxrwx",
-//     size: "4KB",
-//   },
+//       name: String,
+//       entryType: one of ["dir", "file", "link-dir", "link-file", "unknown"],
+//       icon: Icon compoment,
+//       permission: sth like "755",
+//       filesize: Number, size in bytes,
+//     }
 const entries = shallowRef([
 
 ])
@@ -82,11 +84,16 @@ async function onPwdChange(newPwd, oldPwd) {
       filesize: entry.filesize,
     }
   })
+  userPwd.value = pwd.value
+}
+
+async function onUserInputPwd(event) {
+  event.preventDefault()
+  pwd.value = userPwd.value
 }
 
 async function initFetch() {
   pwd.value = await requestDataOrPopupError(`/session/${props.session}/get_pwd`, popupsRef)
-  userPwd.value = pwd.value
 }
 
 async function doubleClickEntry(event) {
@@ -113,9 +120,9 @@ watch(pwd, onPwdChange)
 </script>
 
 <template>
-  <form action="" class="filepath-input" @submit="onExecuteCommand">
+  <form action="" class="filepath-input" @submit="onUserInputPwd">
     <input v-model="userPwd" id="filepath-input" type="text" placeholder="/var/www/html">
-    <div class="icon-run" @click="onExecuteCommand">
+    <div class="icon-run" @click="onUserInputPwd">
       <IconRun />
     </div>
   </form>
