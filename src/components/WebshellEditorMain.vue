@@ -2,7 +2,7 @@
 
 import { reactive, ref, shallowRef } from "vue";
 import axios from "axios"
-import { getCurrentApiUrl, getDataOrPopupError } from "@/assets/utils"
+import { getCurrentApiUrl, requestDataOrPopupError } from "@/assets/utils"
 import IconCross from './icons/iconCross.vue'
 import IconCheck from './icons/iconCheck.vue'
 import Popups from './Popups.vue'
@@ -160,7 +160,7 @@ function changeClickboxOption(optionId) {
 }
 
 async function fetchCurrentSession() {
-  const session = await getDataOrPopupError(`/session/${props.session}`, popupsRef)
+  const session = await requestDataOrPopupError(`/session/${props.session}`, popupsRef)
 
   updateOption(session.session_type)
   for (const key of ["name", "session_type", "note"]) {

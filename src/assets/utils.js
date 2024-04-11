@@ -20,18 +20,9 @@ export function doAssert(result, msg) {
   }
 }
 
-
-export async function getDataOrPopupError(uri, popupsRef) {
-  let url = `${getCurrentApiUrl()}${uri}`
-  let resp
-  try {
-    resp = await axios.get(url)
-  }catch(e){
-    popupsRef.value.addPopup("red", "请求错误", `无法请求${uri}，服务端是否正在运行？`)
-    throw e
-  }
+export function getDataOrPopupError(resp, popupsRef) {
   if (resp.data.code != 0) {
-    let title = "未知错误"
+    let title = `未知错误：${resp.data.code}`
     if (resp.data.code == -400) {
       title = "客户端错误"
     } else if (resp.data.code == -500) {
@@ -44,3 +35,15 @@ export async function getDataOrPopupError(uri, popupsRef) {
   return resp.data.data
 }
 
+
+export async function requestDataOrPopupError(uri, popupsRef) {
+  let url = `${getCurrentApiUrl()}${uri}`
+  let resp
+  try {
+    resp = await axios.get(url)
+  }catch(e){
+    popupsRef.value.addPopup("red", "请求错误", `无法请求${uri}，服务端是否正在运行？`)
+    throw e
+  }
+  return getDataOrPopupError(resp, popupsRef)
+}

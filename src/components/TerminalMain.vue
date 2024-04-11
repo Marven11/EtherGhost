@@ -1,28 +1,44 @@
 <script setup>
+import { getDataOrPopupError } from "@/assets/utils";
 import IconRun from "./icons/iconRun.vue"
+import Popups from "./Popups.vue"
 import { ref } from "vue";
+import Axios from "axios";
+import { getCurrentApiUrl } from "@/assets/utils";
 
 const props = defineProps({
   session: String,
 })
 const terminalOutput = ref("")
-
+const popupsRef = ref(null)
 
 function addOutput(command, output) {
   let leading = ""
+  let textarea = document.getElementById("command-output");
   if (terminalOutput.value) {
     leading = `${terminalOutput.value}\n`;
   }
   terminalOutput.value = `${leading}$ ${command}\n${output}`
+  // change scroll position after text rendered.
+  setTimeout(() => {
+    textarea.scrollTop = textarea.scrollHeight;
+  }, 0)
 }
-addOutput("whoami", "root")
 
-function onExecuteCommand(event) {
+async function onExecuteCommand(event) {
+  const url = `${getCurrentApiUrl()}/session/${props.session}/execute_cmd`
+  const element = document.getElementById("command-input")
+  const cmd = element.value;
   event.preventDefault()
-  let element = document.getElementById("command-input")
-  let cmd = element.value;
   element.value = ""
-  addOutput(cmd, "nothing here")
+  const resp = await Axios.get(url, {
+    params: {
+      cmd: cmd
+    }
+  })
+  console.log(resp)
+  const result = getDataOrPopupError(resp, popupsRef)
+  addOutput(cmd, result)
 }
 
 </script>
@@ -35,8 +51,9 @@ function onExecuteCommand(event) {
     </div>
   </form>
   <div class="terminal-output">
-    <textarea name="output-area" id="output-area" readonly :value="terminalOutput"></textarea>
+    <textarea name="command-output" id="command-output" readonly :value="terminalOutput"></textarea>
   </div>
+  <Popups ref="popupsRef" />
 </template>
 
 <style scoped>
