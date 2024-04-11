@@ -22,11 +22,16 @@ const popupsRef = ref(null)
 const showClickMenu = ref(false)
 const ClickMenuLeft = ref(0)
 const ClickMenuTop = ref(0)
+
 function onClickIconOthers(event) {
   console.log(event)
   showClickMenu.value = true
   ClickMenuLeft.value = event.clientX;
   ClickMenuTop.value = event.clientY;
+}
+
+function onClickMenuItem(name) {
+  console.log(name)
 }
 
 async function fetchWebshell() {
@@ -61,7 +66,8 @@ setTimeout(fetchWebshell, 0)
     </div>
   </div>
   <div v-if="showClickMenu">
-    <ClickMenu :top="ClickMenuTop" :left="ClickMenuLeft" @remove="(_) => showClickMenu = false" />
+    <ClickMenu :top="ClickMenuTop" :left="ClickMenuLeft" @remove="(_) => showClickMenu = false"
+      @clickItem="onClickMenuItem" />
   </div>
   <div class="add-webshell-button">
     <IconPlus />

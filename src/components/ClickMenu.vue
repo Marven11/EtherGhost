@@ -12,7 +12,7 @@ const props = defineProps({
   left: Number,
 })
 
-const emit = defineEmits(['remove'])
+const emit = defineEmits(["remove", "clickItem"])
 
 const menu_items = shallowRef([
   {
@@ -61,7 +61,7 @@ setTimeout(() => {
 }, 0)
 
 
-function onClickBackground() {
+function hideAndEmit() {
   opacity.value = 0
   useBackground.value = false
   setTimeout(() => {
@@ -69,16 +69,21 @@ function onClickBackground() {
   }, 300) // same as css opacity transition
 }
 
+function onClickItem(itemName) {
+  emit("clickItem", itemName)
+  hideAndEmit()
+}
+
 </script>
 
 <template>
   <div v-if="useBackground">
-    <div class="background" @click="onClickBackground">
+    <div class="background" @click="hideAndEmit">
     </div>
 
   </div>
   <div class="click-menu" :style="`top: ${props.top || 0}px; left: ${props.left || 0}px; opacity: ${opacity};`">
-    <div class="click-menu-item" v-for="menu_item in menu_items">
+    <div class="click-menu-item" v-for="menu_item in menu_items" @click="onClickItem(menu_item.name)">
       <div :class="'click-menu-icon item-color-' + menu_item.color">
         <component :is="menu_item.icon"></component>
       </div>
@@ -111,6 +116,7 @@ function onClickBackground() {
   padding-left: 20px;
   padding-right: 20px;
   color: var(--font-color-white);
+  user-select: none;
 }
 
 .click-menu-item:hover {
