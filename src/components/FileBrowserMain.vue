@@ -207,6 +207,7 @@ input[type="text"] {
   border-radius: 20px;
   background-color: var(--background-color-2);
   padding-top: 20px;
+  overflow: scroll;
 }
 
 .folder-entry {
