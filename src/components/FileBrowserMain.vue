@@ -5,7 +5,7 @@ import IconFile from "./icons/iconFile.vue"
 import IconSymlinkFile from "./icons/iconSymlinkFile.vue"
 import IconSymlinkDirectory from "./icons/iconSymlinkDirectory.vue"
 import IconUnknownFile from "./icons/iconUnknownFile.vue"
-import { ref, shallowRef } from "vue";
+import { ref, shallowRef, watch } from "vue";
 import { requestDataOrPopupError } from "@/assets/utils"
 import Popups from "./Popups.vue"
 
@@ -36,7 +36,8 @@ const userPwd = ref("") // pwd of user input
 
 // pwd we maintain, might be different when user modify 
 // the input and do not hit enter
-let pwd = undefined
+// we will add a watcher to this ref to automatically refresh it
+let pwd = ref("")
 
 function readableFileSize(fileSize) {
   if (fileSize == -1) {
@@ -66,25 +67,49 @@ function readableFilePerm(filePerm) {
   return result
 }
 
-async function initFetch() {
-  pwd = await requestDataOrPopupError(`/session/${props.session}/get_pwd`, popupsRef)
-  userPwd.value = pwd
+async function onPwdChange(newPwd, oldPwd) {
   let newEntries = await requestDataOrPopupError(`/session/${props.session}/list_dir`, popupsRef, {
     params: {
-      current_dir: pwd
+      current_dir: newPwd
     }
   })
   entries.value = newEntries.map(entry => {
     return {
       name: entry.name,
+      entryType: entry.entry_type,
       icon: entryIcons[entry.entry_type],
-      perm: readableFilePerm(entry.permission),
-      size: readableFileSize(entry.filesize),
+      permission: entry.permission,
+      filesize: entry.filesize,
     }
   })
 }
 
+async function initFetch() {
+  pwd.value = await requestDataOrPopupError(`/session/${props.session}/get_pwd`, popupsRef)
+  userPwd.value = pwd.value
+}
+
+async function doubleClickEntry(event) {
+  const element = event.currentTarget
+  const entry = entries.value[element.dataset.entryIndex]
+  if (["dir", "link-dir"].includes(entry.entryType)) {
+    let newPwd = await requestDataOrPopupError("/utils/changedir", popupsRef, {
+      params: {
+        folder: pwd.value,
+        entry: entry.name
+      }
+    })
+    pwd.value = newPwd
+    console.log(entry.entryType)
+  } else if (["file", "link-file"].includes(entry.entryType)) {
+    console.log("TODO: opening file")
+  } else {
+    popupsRef.value.addPopup("red", "未知文件类型", `文件${entry.name}类型未知，无法打开`)
+  }
+}
+
 setTimeout(initFetch, 0)
+watch(pwd, onPwdChange)
 </script>
 
 <template>
@@ -96,7 +121,8 @@ setTimeout(initFetch, 0)
   </form>
   <div class="file-panel">
     <div class="folder-panel">
-      <div class="folder-entry" v-for="entry in entries">
+      <div class="folder-entry" v-for="[entryIndex, entry] in entries.entries()" @dblclick="doubleClickEntry"
+        :data-entry-index="entryIndex">
         <div class="folder-entry-icon">
           <component :is="entry.icon"></component>
         </div>
@@ -105,7 +131,7 @@ setTimeout(initFetch, 0)
             {{ entry.name }}
           </p>
           <div class="folder-entry-meta">
-            {{ entry.perm }} {{ entry.size }}
+            {{ readableFilePerm(entry.permission) }} {{ readableFileSize(entry.filesize) }}
           </div>
         </div>
 
