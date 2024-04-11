@@ -6,31 +6,90 @@ import IconSymlinkFile from "./icons/iconSymlinkFile.vue"
 import IconSymlinkDirectory from "./icons/iconSymlinkDirectory.vue"
 import IconUnknownFile from "./icons/iconUnknownFile.vue"
 import { ref, shallowRef } from "vue";
+import { requestDataOrPopupError } from "@/assets/utils"
+import Popups from "./Popups.vue"
 
 const props = defineProps({
   session: String,
 })
+// "dir", "file", "link-dir", "link-file", "unknown"
+const entryIcons = {
+  "dir": IconDirectory,
+  "file": IconFile,
+  "link-dir": IconSymlinkDirectory,
+  "link-file": IconSymlinkFile,
+  "unknown": IconUnknownFile
+}
 
+
+// {
+//     name: ".",
+//     icon: IconDirectory,
+//     perm: "rwxrwxrwx",
+//     size: "4KB",
+//   },
 const entries = shallowRef([
-  {
-    name: ".",
-    icon: IconDirectory,
-    perm: "rwxrwxrwx",
-    size: "4KB",
-  },
-  {
-    name: "passwd",
-    icon: IconFile,
-    perm: "rw-r--r--",
-    size: "4KB",
-  },
-])
 
+])
+const popupsRef = ref(null)
+const userPwd = ref("") // pwd of user input
+
+// pwd we maintain, might be different when user modify 
+// the input and do not hit enter
+let pwd = undefined
+
+function readableFileSize(fileSize) {
+  if (fileSize == -1) {
+    return "? KB"
+  }
+  let units = ["B", "KiB", "MiB", "GiB", "TiB"]
+  for (let unit of units) {
+    if (fileSize <= 1024 || unit == "TiB") {
+      return `${Math.round(fileSize)} ${unit}`
+    }
+    fileSize /= 1024
+  }
+}
+
+function readableFilePerm(filePerm) {
+  let result = ""
+  for (let chr of filePerm) {
+    let x = Number(chr)
+    for (let [permIndex, permChr] of Array.from("rwx").entries()) {
+      if (x & Math.pow(2, 2 - permIndex)) {
+        result += permChr
+      } else {
+        result += "-"
+      }
+    }
+  }
+  return result
+}
+
+async function initFetch() {
+  pwd = await requestDataOrPopupError(`/session/${props.session}/get_pwd`, popupsRef)
+  userPwd.value = pwd
+  let newEntries = await requestDataOrPopupError(`/session/${props.session}/list_dir`, popupsRef, {
+    params: {
+      current_dir: pwd
+    }
+  })
+  entries.value = newEntries.map(entry => {
+    return {
+      name: entry.name,
+      icon: entryIcons[entry.entry_type],
+      perm: readableFilePerm(entry.permission),
+      size: readableFileSize(entry.filesize),
+    }
+  })
+}
+
+setTimeout(initFetch, 0)
 </script>
 
 <template>
   <form action="" class="filepath-input" @submit="onExecuteCommand">
-    <input id="filepath-input" type="text" placeholder="/var/www/html">
+    <input v-model="userPwd" id="filepath-input" type="text" placeholder="/var/www/html">
     <div class="icon-run" @click="onExecuteCommand">
       <IconRun />
     </div>
@@ -65,6 +124,7 @@ const entries = shallowRef([
       </div>
     </div>
   </div>
+  <Popups ref="popupsRef" />
 </template>
 
 <style scoped>
