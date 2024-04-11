@@ -46,7 +46,7 @@ const menu_items = [
     "text": "浏览文件",
     "icon": IconFileBrowser,
     "color": "white",
-    "link": "/file_browser/SESSION"
+    "link": "/file-browser/SESSION"
   },
   {
     "name": "open_proxy",
@@ -67,7 +67,7 @@ const menu_items = [
     "text": "修改webshell",
     "icon": IconEdit,
     "color": "white",
-    "link": "/webshell_editor/SESSION"
+    "link": "/webshell-editor/SESSION"
   },
   {
     "name": "delete_session",
@@ -129,7 +129,7 @@ setTimeout(fetchWebshell, 0)
     </div>
   </transition>
 
-  <div class="add-webshell-button" @click="router.push('/webshell_editor/')">
+  <div class="add-webshell-button" @click="router.push('/webshell-editor/')">
     <IconPlus />
   </div>
   <Popups ref="popupsRef" />

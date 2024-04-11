@@ -12,17 +12,17 @@ import { createRouter, createWebHashHistory } from "vue-router";
 const routes = [
   { path: "/", component: HomeMain, props: true },
   {
-    path: "/webshell_editor/:session",
+    path: "/webshell-editor/:session",
     component: WebshellEditorMain,
     props: true,
   },
   {
-    path: "/webshell_editor/",
+    path: "/webshell-editor/",
     component: WebshellEditorMain,
     props: true,
   },
   { path: "/terminal/:session", component: TerminalMain, props: true },
-  { path: "/file_browser/:session", component: FileBrowserMain, props: true },
+  { path: "/file-browser/:session", component: FileBrowserMain, props: true },
 ];
 
 const router = createRouter({
