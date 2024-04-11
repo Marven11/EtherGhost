@@ -91,6 +91,7 @@ setTimeout(fetchWebshell, 0)
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  align-items: center;
   width: 100%;
   height: 40%;
 }
@@ -102,7 +103,7 @@ setTimeout(fetchWebshell, 0)
 }
 
 .session-top p {
-  font-size: 20px;
+  font-size: 26px;
   font-weight: bold;
 }
 
