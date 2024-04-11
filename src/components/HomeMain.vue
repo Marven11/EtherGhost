@@ -13,7 +13,7 @@ import IconDelete from "./icons/iconDelete.vue"
 import ClickMenu from "./ClickMenu.vue"
 import { requestDataOrPopupError } from "@/assets/utils";
 import Popups from "./Popups.vue";
-import {useRouter} from "vue-router"
+import { useRouter } from "vue-router"
 
 const sessions = ref([
   {
@@ -122,10 +122,13 @@ setTimeout(fetchWebshell, 0)
       </div>
     </div>
   </div>
-  <div v-if="showClickMenu">
-    <ClickMenu :top="clickMenuTop" :left="clickMenuLeft" :menu_items="menu_items" @remove="(_) => showClickMenu = false"
-      @clickItem="onClickMenuItem" />
-  </div>
+  <transition>
+    <div v-if="showClickMenu">
+      <ClickMenu :top="clickMenuTop" :left="clickMenuLeft" :menu_items="menu_items"
+        @remove="(_) => showClickMenu = false" @clickItem="onClickMenuItem" />
+    </div>
+  </transition>
+
   <div class="add-webshell-button">
     <IconPlus />
   </div>
@@ -187,6 +190,16 @@ setTimeout(fetchWebshell, 0)
   width: 50px;
   stroke: var(--font-color-white);
   margin: 10px;
+}
+
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
 }
 
 svg {

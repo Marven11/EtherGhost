@@ -15,20 +15,8 @@ const emit = defineEmits(["remove", "clickItem"])
 //   },
 const menu_items = shallowRef([...props.menu_items])
 
-const opacity = ref(0)
-const useBackground = ref(true)
-
-setTimeout(() => {
-  opacity.value = 1
-}, 0)
-
-
 function hideAndEmit() {
-  opacity.value = 0
-  useBackground.value = false
-  setTimeout(() => {
-    emit("remove", true)
-  }, 300) // same as css opacity transition
+  emit("remove", true)
 }
 
 function onClickItem(itemName) {
@@ -39,17 +27,14 @@ function onClickItem(itemName) {
 </script>
 
 <template>
-  <div v-if="useBackground">
-    <div class="background" @click="hideAndEmit">
-    </div>
-
+  <div class="background" @click="hideAndEmit">
   </div>
-  <div class="click-menu" :style="`top: ${props.top || 0}px; left: ${props.left || 0}px; opacity: ${opacity};`">
+  <div class="click-menu" :style="`top: ${props.top || 0}px; left: ${props.left || 0}px; `">
     <div class="click-menu-item" v-for="menu_item in menu_items" @click="onClickItem(menu_item)">
-      <div :class="'click-menu-icon item-color-' + menu_item.color">
+      <div class="click-menu-icon" :color="menu_item.color">
         <component :is="menu_item.icon"></component>
       </div>
-      <div :class="'item-color-' + menu_item.color">
+      <div class="menu-item" :color="menu_item.color">
         <p>
           {{ menu_item.text }}
         </p>
@@ -67,7 +52,6 @@ function onClickItem(itemName) {
   border-radius: 20px;
   padding-top: 20px;
   padding-bottom: 20px;
-  transition: opacity 0.3s ease;
 }
 
 .click-menu-item {
@@ -100,12 +84,12 @@ svg {
   width: 35px;
 }
 
-.item-color-white {
+*[color="white"] {
   stroke: var(--white);
   color: var(--white);
 }
 
-.item-color-red {
+*[color="red"] {
   stroke: var(--red);
   color: var(--red);
 }
