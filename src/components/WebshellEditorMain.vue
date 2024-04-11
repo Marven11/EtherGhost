@@ -183,7 +183,13 @@ async function fetchCurrentSession() {
   }
 }
 
-setTimeout(fetchCurrentSession, 0)
+setTimeout(() => {
+  if(props.session) {
+    fetchCurrentSession
+  }else{
+    updateOption("ONELINE_PHP")
+  }
+}, 0)
 
 </script>
 
