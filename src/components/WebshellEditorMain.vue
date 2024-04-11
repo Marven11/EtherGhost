@@ -2,7 +2,7 @@
 
 import { reactive, ref, shallowRef } from "vue";
 import axios from "axios"
-import { getCurrentApiUrl, doAssert } from "@/assets/utils"
+import { getCurrentApiUrl, mustGetData } from "@/assets/utils"
 import IconCross from './icons/iconCross.vue'
 import IconCheck from './icons/iconCheck.vue'
 import Popups from './Popups.vue'
@@ -162,9 +162,8 @@ function changeClickboxOption(optionId) {
 async function fetchCurrentSession() {
   const url = getCurrentApiUrl()
   const resp = await axios.get(`${url}/session/${props.session}`)
-  doAssert(resp.data.code == 0, `Response code is not zero: ${resp.data.code}`)
-  const session = resp.data.data
-  console.log("updating from session", session)
+  const session = mustGetData(resp.data, popupsRef)
+
   updateOption(session.session_type)
   for (const key of ["name", "session_type", "note"]) {
     const option = getOption(key)
@@ -184,14 +183,9 @@ async function fetchCurrentSession() {
       console.log(option)
     }
   }
-  console.log(options)
 }
 
 setTimeout(fetchCurrentSession, 0)
-
-setInterval(() => {
-  popupsRef.value.addPopup("green", "测试父元素调用", "父元素正在调用")
-}, 2000)
 
 </script>
 
@@ -221,7 +215,7 @@ setInterval(() => {
       <p v-else>内部错误：未知选项类型 {{ option.type }}</p>
     </div>
   </div>
-  <Popups ref="popupsRef"/>
+  <Popups ref="popupsRef" />
 </template>
 
 <style scoped>

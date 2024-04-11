@@ -11,7 +11,7 @@ import FileBrowserMain from './components/FileBrowserMain.vue'
     <!-- modified button from https://www.svgrepo.com/collection/dazzle-line-icons/ -->
     <Header />
     <main>
-      <WebshellEditorMain session="42127cd3-6226-4472-abe6-4568d53fe50a" />
+      <WebshellEditorMain session="b9ffbeaa-2906-4865-ad7f-1818896dfe8c" />
       <!-- <HomeMain/> -->
     </main>
   </div>
