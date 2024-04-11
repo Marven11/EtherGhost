@@ -184,9 +184,9 @@ async function fetchCurrentSession() {
 }
 
 setTimeout(() => {
-  if(props.session) {
+  if (props.session) {
     fetchCurrentSession(props.session)
-  }else{
+  } else {
     updateOption("ONELINE_PHP")
   }
 }, 0)
@@ -217,6 +217,17 @@ setTimeout(() => {
         <IconCross v-else />
       </div>
       <p v-else>内部错误：未知选项类型 {{ option.type }}</p>
+    </div>
+  </div>
+  <div class="submit-buttons">
+    <div class="submit-button">
+      丢弃
+    </div>
+    <div class="submit-button">
+      保存
+    </div>
+    <div class="submit-button">
+      测试
     </div>
   </div>
   <Popups ref="popupsRef" />
@@ -302,6 +313,10 @@ input {
   align-items: center;
 }
 
+.input-checkbox:hover {
+  background-color: #ffffff15;
+}
+
 .input-checkbox[checked=true] {
   background-color: var(--font-color-white);
   stroke: var(--font-color-grey);
@@ -310,5 +325,39 @@ input {
 .input-checkbox svg {
   width: 20px;
   height: 20px;
+}
+
+.submit-buttons {
+  height: 100px;
+  width: 60%;
+  border-radius: 20px;
+  margin-left: 20%;
+  margin-right: 20%;
+  background-color: var(--background-color-2);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  user-select: none;
+}
+
+.submit-button {
+  height: 60%;
+  width: 30%;
+  margin-left: 20px;
+  margin-right: 20px;
+  border-radius: 12px;
+
+  background-color: var(--background-color-3);
+  color: var(--font-color-white);
+  outline: 2px dashed var(--font-color-grey);
+  font-size: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.submit-button:hover {
+  background-color: color-mix(in lch, rgb(255, 255, 255) 10%, var(--background-color-3));
 }
 </style>
