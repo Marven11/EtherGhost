@@ -20,7 +20,7 @@ export function doAssert(result, msg) {
 }
 
 
-export function mustGetData(resp_data, popupsRef) {
+export function getDataOrPopupError(resp_data, popupsRef) {
   if (resp_data.code != 0) {
     let title = "未知错误"
     if (resp_data.code == -400) {

@@ -3,30 +3,22 @@ import IconOthers from "./icons/iconOthers.vue"
 import IconPlus from "./icons/iconPlus.vue"
 import ClickMenu from "./ClickMenu.vue"
 import { ref } from "vue";
+import { getCurrentApiUrl, getDataOrPopupError } from "@/assets/utils";
+import Popups from "./Popups.vue";
+import axios from "axios";
 
-const cards = ref([
+const sessions = ref([
   {
-    title: "测试webshell",
-    note: "测试测试"
-  },
-  {
-    title: "测试webshell",
-    note: "测试测试"
-  },
-  {
-    title: "测试webshell",
-    note: "测试测试"
-  },
-  {
-    title: "测试webshell",
-    note: "测试测试"
-  },
-  {
-    title: "测试webshell",
-    note: "测试测试"
-  },
+    type: "ONELINE_PHP",
+    readable_type: "PHP一句话",
+    id: "b9ffbeaa-2906-4865-ad7f-1818896dfe8c",
+    name: "123",
+    note: "测试备注",
+    location: "未知位置"
+  }
 ])
 
+const popupsRef = ref(null)
 const showClickMenu = ref(false)
 const ClickMenuLeft = ref(0)
 const ClickMenuTop = ref(0)
@@ -37,27 +29,35 @@ function onClickIconOthers(event) {
   ClickMenuTop.value = event.clientY;
 }
 
+async function fetchWebshell() {
+  const url = getCurrentApiUrl()
+  const resp = await axios.get(`${url}/session`)
+  const sessions = getDataOrPopupError(resp.data, popupsRef)
+  sessions.value = sessions
+}
+
+setTimeout(fetchWebshell, 0)
 
 </script>
 
 <template>
-  <div class="cards">
-    <div class="card" v-for="card in cards">
-      <div class="card-top">
-        <div class="card-name">
+  <div class="sessions">
+    <div class="session" v-for="session in sessions">
+      <div class="session-top">
+        <div class="session-name">
           <p>
-            {{ card.title }}
+            {{ session.name }}
           </p>
         </div>
         <div>
-          <div class="card-icon-others" @click="onClickIconOthers">
+          <div class="session-icon-others" @click="onClickIconOthers">
             <IconOthers />
           </div>
         </div>
       </div>
-      <div class="card-bottom">
-        <div class="card-note">
-          {{ card.note }}
+      <div class="session-bottom">
+        <div class="session-note">
+          {{ session.note }}
         </div>
       </div>
     </div>
@@ -68,17 +68,18 @@ function onClickIconOthers(event) {
   <div class="add-webshell-button">
     <IconPlus />
   </div>
+  <Popups ref="popupsRef" />
 </template>
 
 <style scoped>
-.cards {
+.sessions {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   column-gap: 2%;
   justify-content: space-between;
 }
 
-.card {
+.session {
   height: 160px;
   background-color: var(--background-color-2);
   color: var(--font-color-white);
@@ -88,7 +89,7 @@ function onClickIconOthers(event) {
   border-radius: 20px;
 }
 
-.card-top {
+.session-top {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -96,18 +97,18 @@ function onClickIconOthers(event) {
   height: 40%;
 }
 
-.card-top p,
-.card-top svg {
+.session-top p,
+.session-top svg {
   margin: 0px;
   margin-top: 20px;
 }
 
-.card-top p {
+.session-top p {
   font-size: 20px;
   font-weight: bold;
 }
 
-.card-bottom {
+.session-bottom {
   color: var(--font-color-grey);
 }
 
