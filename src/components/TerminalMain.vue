@@ -5,6 +5,8 @@ import { ref } from "vue";
 const props = defineProps({
   session: String,
 })
+const terminalOutput = ref("")
+
 
 function addOutput(command, output) {
   let leading = ""

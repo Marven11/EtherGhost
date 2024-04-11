@@ -1,57 +1,19 @@
 <script setup>
 import { ref, shallowRef, defineEmits } from "vue"
-import IconTerminal from "./icons/iconTerminal.vue"
-import IconFileBrowser from "./icons/iconFileBrowser.vue"
-import IconProxy from "./icons/iconProxy.vue"
-import IconInfo from "./icons/iconInfo.vue"
-import IconEdit from "./icons/iconEdit.vue"
-import IconDelete from "./icons/iconDelete.vue"
 
-const props = defineProps({
-  top: Number,
-  left: Number,
-})
+
+const props = defineProps(["top", "left", "menu_items"])
 
 const emit = defineEmits(["remove", "clickItem"])
 
-const menu_items = shallowRef([
-  {
-    "name": "open_terminal",
-    "text": "打开终端",
-    "icon": IconTerminal,
-    "color": "white",
-  },
-  {
-    "name": "browse_files",
-    "text": "浏览文件",
-    "icon": IconFileBrowser,
-    "color": "white",
-  },
-  {
-    "name": "open_proxy",
-    "text": "打开代理",
-    "icon": IconProxy,
-    "color": "white",
-  },
-  {
-    "name": "get_info",
-    "text": "基本信息",
-    "icon": IconInfo,
-    "color": "white",
-  },
-  {
-    "name": "edit_session",
-    "text": "修改webshell",
-    "icon": IconEdit,
-    "color": "white",
-  },
-  {
-    "name": "delete_session",
-    "text": "删除Webshell",
-    "icon": IconDelete,
-    "color": "red",
-  }
-])
+// An item is sth loke this:
+// {
+//     "name": "open_terminal",
+//     "text": "打开终端",
+//     "icon": IconTerminal,
+//     "color": "white",
+//   },
+const menu_items = shallowRef([...props.menu_items])
 
 const opacity = ref(0)
 const useBackground = ref(true)
@@ -83,7 +45,7 @@ function onClickItem(itemName) {
 
   </div>
   <div class="click-menu" :style="`top: ${props.top || 0}px; left: ${props.left || 0}px; opacity: ${opacity};`">
-    <div class="click-menu-item" v-for="menu_item in menu_items" @click="onClickItem(menu_item.name)">
+    <div class="click-menu-item" v-for="menu_item in menu_items" @click="onClickItem(menu_item)">
       <div :class="'click-menu-icon item-color-' + menu_item.color">
         <component :is="menu_item.icon"></component>
       </div>

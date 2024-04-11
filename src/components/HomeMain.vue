@@ -1,11 +1,19 @@
 <script setup>
+import { ref } from "vue";
+
 import IconOthers from "./icons/iconOthers.vue"
 import IconPlus from "./icons/iconPlus.vue"
+import IconTerminal from "./icons/iconTerminal.vue"
+import IconFileBrowser from "./icons/iconFileBrowser.vue"
+import IconProxy from "./icons/iconProxy.vue"
+import IconInfo from "./icons/iconInfo.vue"
+import IconEdit from "./icons/iconEdit.vue"
+import IconDelete from "./icons/iconDelete.vue"
+
 import ClickMenu from "./ClickMenu.vue"
-import { ref } from "vue";
-import { getCurrentApiUrl, getDataOrPopupError } from "@/assets/utils";
+import { getDataOrPopupError } from "@/assets/utils";
 import Popups from "./Popups.vue";
-import axios from "axios";
+import {useRouter} from "vue-router"
 
 const sessions = ref([
   {
@@ -20,18 +28,67 @@ const sessions = ref([
 
 const popupsRef = ref(null)
 const showClickMenu = ref(false)
-const ClickMenuLeft = ref(0)
-const ClickMenuTop = ref(0)
+const clickMenuLeft = ref(0)
+const clickMenuTop = ref(0)
+const router = useRouter();
+let clickMenuSession = ""
+
+const menu_items = [
+  {
+    "name": "open_terminal",
+    "text": "打开终端",
+    "icon": IconTerminal,
+    "color": "white",
+    "link": "/terminal/SESSION"
+  },
+  {
+    "name": "browse_files",
+    "text": "浏览文件",
+    "icon": IconFileBrowser,
+    "color": "white",
+    "link": "/file_browser/SESSION"
+  },
+  {
+    "name": "open_proxy",
+    "text": "打开代理",
+    "icon": IconProxy,
+    "color": "white",
+    "link": "/page_404/SESSION"
+  },
+  {
+    "name": "get_info",
+    "text": "基本信息",
+    "icon": IconInfo,
+    "color": "white",
+    "link": "/page_404/SESSION"
+  },
+  {
+    "name": "edit_session",
+    "text": "修改webshell",
+    "icon": IconEdit,
+    "color": "white",
+    "link": "/webshell_editor/SESSION"
+  },
+  {
+    "name": "delete_session",
+    "text": "删除Webshell",
+    "icon": IconDelete,
+    "color": "red",
+    "link": "/page_404/SESSION",
+  }
+]
 
 function onClickIconOthers(event) {
-  console.log(event)
   showClickMenu.value = true
-  ClickMenuLeft.value = event.clientX;
-  ClickMenuTop.value = event.clientY;
+  clickMenuLeft.value = event.clientX;
+  clickMenuTop.value = event.clientY;
+  clickMenuSession = event.currentTarget.dataset["session"];
 }
 
-function onClickMenuItem(name) {
-  console.log(name)
+function onClickMenuItem(item) {
+  const uri = item.link.replace("SESSION", clickMenuSession)
+  console.log(uri)
+  router.push(uri)
 }
 
 async function fetchWebshell() {
@@ -53,7 +110,7 @@ setTimeout(fetchWebshell, 0)
           </p>
         </div>
         <div>
-          <div class="session-icon-others" @click="onClickIconOthers">
+          <div class="session-icon-others" :data-session="session.id" @click="onClickIconOthers">
             <IconOthers />
           </div>
         </div>
@@ -66,7 +123,7 @@ setTimeout(fetchWebshell, 0)
     </div>
   </div>
   <div v-if="showClickMenu">
-    <ClickMenu :top="ClickMenuTop" :left="ClickMenuLeft" @remove="(_) => showClickMenu = false"
+    <ClickMenu :top="clickMenuTop" :left="clickMenuLeft" :menu_items="menu_items" @remove="(_) => showClickMenu = false"
       @clickItem="onClickMenuItem" />
   </div>
   <div class="add-webshell-button">
