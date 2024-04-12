@@ -1,5 +1,5 @@
 <script setup>
-import { ref, shallowRef, defineEmits } from "vue"
+import { ref, shallowRef } from "vue"
 
 
 const props = defineProps(["top", "left", "menu_items"])

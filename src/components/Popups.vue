@@ -1,5 +1,5 @@
 <script setup>
-import { ref, shallowRef, defineEmits } from "vue"
+import { ref, shallowRef } from "vue"
 import IconCross from "./icons/iconCross.vue"
 import IconCheck from "./icons/iconCheck.vue"
 import IconWarning from "./icons/iconWarning.vue"
