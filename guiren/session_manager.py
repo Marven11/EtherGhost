@@ -126,7 +126,8 @@ def list_sessions_readable() -> t.List[t.Dict[str, t.Any]]:
     for sess in db.list_sessions():
         results.append(
             {
-                "type": session_type_readable.get(sess.session_type, "未知类型"),
+                "type": sess.session_type,
+                "readable_type": session_type_readable.get(sess.session_type, "未知类型"),
                 "id": sess.session_id,
                 "name": sess.name,
                 "note": sess.note,

@@ -45,21 +45,22 @@ async def set_no_cache(request, call_next) -> Response:
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
+    response.headers["Access-Control-Allow-Origin"] = "*" # TODO: remove me, this is added for testing.
     return response
 
 
-@app.middleware("http")
-async def check_token(request: Request, call_next):
-    user_token = request.cookies.get("token")
-    if (
-        user_token is None or user_token != token
-    ) and request.url.path != "/public/token.html":
-        logger.warning(
-            "user_token=%s, cookie=%s", repr(user_token), repr(request.cookies)
-        )
-        return RedirectResponse("/public/token.html")
-    response = await call_next(request)
-    return response
+# @app.middleware("http")
+# async def check_token(request: Request, call_next):
+#     user_token = request.cookies.get("token")
+#     if (
+#         user_token is None or user_token != token
+#     ) and request.url.path != "/public/token.html":
+#         logger.warning(
+#             "user_token=%s, cookie=%s", repr(user_token), repr(request.cookies)
+#         )
+#         return RedirectResponse("/public/token.html")
+#     response = await call_next(request)
+#     return response
 
 
 @app.get("/session")
@@ -67,6 +68,16 @@ async def get_sessions(session_id: t.Union[UUID, None] = None):
     """列出所有的session或者查找session"""
     if session_id is None:
         return {"code": 0, "data": session_manager.list_sessions_readable()}
+    session: t.Union[session_types.SessionInfo, None] = (
+        session_manager.get_session_info_by_id(session_id)
+    )
+    if not session:
+        return {"code": -400, "msg": "没有这个session"}
+    return {"code": 0, "data": session}
+
+@app.get("/session/{session_id}")
+async def get_session(session_id: UUID):
+    """查找session"""
     session: t.Union[session_types.SessionInfo, None] = (
         session_manager.get_session_info_by_id(session_id)
     )
