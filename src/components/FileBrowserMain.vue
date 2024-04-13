@@ -8,6 +8,13 @@ import IconUnknownFile from "./icons/iconUnknownFile.vue"
 import { ref, shallowRef, watch } from "vue";
 import { requestDataOrPopupError } from "@/assets/utils"
 import Popups from "./Popups.vue"
+import { Codemirror } from 'vue-codemirror'
+import { javascript } from '@codemirror/lang-javascript'
+import { php } from '@codemirror/lang-php'
+import { oneDark } from '@codemirror/theme-one-dark'
+import { EditorView } from "@codemirror/view"
+import { StreamLanguage } from "@codemirror/language"
+import { shell } from "@codemirror/legacy-modes/mode/shell"
 
 const props = defineProps({
   session: String,
@@ -35,11 +42,31 @@ const entries = shallowRef([
 ])
 const popupsRef = ref(null)
 const userPwd = ref("") // pwd of user input
+const userFilename = ref("")
 
-// pwd we maintain, might be different when user modify 
+// variable we maintain, might be different when user modify 
 // the input and do not hit enter
 // we will add a watcher to this ref to automatically refresh it
 let pwd = ref("")
+let filename = ref("")
+
+const fileExtension = ref("")
+
+
+const codeMirrorView = shallowRef()
+const codeMirrorContent = ref("")
+const codeMirrorTheme = EditorView.theme({
+  "&": {
+    "background-color": "var(--background-color-2)",
+    "font-size": "24px",
+  },
+}, { dark: true })
+
+const codeMirrorExtensions = shallowRef([codeMirrorTheme, oneDark])
+
+function codeMirrorReady(payload) {
+  codeMirrorView.value = payload.view
+}
 
 function readableFileSize(fileSize) {
   if (fileSize == -1) {
@@ -69,7 +96,49 @@ function readableFilePerm(filePerm) {
   return result
 }
 
-async function onPwdChange(newPwd, oldPwd) {
+async function initFetch() {
+  pwd.value = await requestDataOrPopupError(`/session/${props.session}/get_pwd`, popupsRef)
+}
+
+async function viewFile(newFilename) {
+  let { text: fileContent, encoding: fileEncoding } = await requestDataOrPopupError(`/session/${props.session}/get_file_contents`, popupsRef, {
+    params: {
+      current_dir: pwd.value,
+      filename: newFilename
+    }
+  })
+  console.log(fileContent)
+  filename.value = newFilename
+  userFilename.value = newFilename
+  codeMirrorContent.value = fileContent
+
+}
+
+async function onUserInputPwd(event) {
+  event.preventDefault()
+  pwd.value = userPwd.value
+}
+
+async function onDoubleClickEntry(event) {
+  const element = event.currentTarget
+  const entry = entries.value[element.dataset.entryIndex]
+  if (["dir", "link-dir"].includes(entry.entryType)) {
+    let newPwd = await requestDataOrPopupError("/utils/changedir", popupsRef, {
+      params: {
+        folder: pwd.value,
+        entry: entry.name
+      }
+    })
+    pwd.value = newPwd
+    console.log(entry.entryType)
+  } else if (["file", "link-file"].includes(entry.entryType)) {
+    viewFile(entry.name)
+  } else {
+    popupsRef.value.addPopup("red", "未知文件类型", `文件${entry.name}类型未知，无法打开`)
+  }
+}
+
+watch(pwd, async (newPwd, oldPwd) => {
   let newEntries = await requestDataOrPopupError(`/session/${props.session}/list_dir`, popupsRef, {
     params: {
       current_dir: newPwd
@@ -85,38 +154,34 @@ async function onPwdChange(newPwd, oldPwd) {
     }
   })
   userPwd.value = pwd.value
-}
-
-async function onUserInputPwd(event) {
-  event.preventDefault()
-  pwd.value = userPwd.value
-}
-
-async function initFetch() {
-  pwd.value = await requestDataOrPopupError(`/session/${props.session}/get_pwd`, popupsRef)
-}
-
-async function doubleClickEntry(event) {
-  const element = event.currentTarget
-  const entry = entries.value[element.dataset.entryIndex]
-  if (["dir", "link-dir"].includes(entry.entryType)) {
-    let newPwd = await requestDataOrPopupError("/utils/changedir", popupsRef, {
-      params: {
-        folder: pwd.value,
-        entry: entry.name
-      }
-    })
-    pwd.value = newPwd
-    console.log(entry.entryType)
-  } else if (["file", "link-file"].includes(entry.entryType)) {
-    console.log("TODO: opening file")
-  } else {
-    popupsRef.value.addPopup("red", "未知文件类型", `文件${entry.name}类型未知，无法打开`)
+})
+watch(fileExtension, (newFileExtension, _) => {
+  let extensions = [codeMirrorTheme, oneDark];
+  if (["js", "mjs"].includes(newFileExtension)) {
+    extensions.push(javascript())
   }
-}
+  else if (["php", "php7", "php5", "phar"].includes(newFileExtension)) {
+    extensions.push(php())
+  }
+  else if(["sh"].includes(newFileExtension)) {
+    extensions.push(StreamLanguage.define(shell))
+  }
+   else {
+    console.log("Extension not supported", newFileExtension)
+  }
+  codeMirrorExtensions.value = extensions
+})
+watch(filename, (newFilename, _) => {
+  if (newFilename.indexOf(".") == "") {
+    return ""
+  }
+  let dotPosition = newFilename.lastIndexOf(".") + 1
+  fileExtension.value = newFilename.substring(dotPosition)
+})
 
 setTimeout(initFetch, 0)
-watch(pwd, onPwdChange)
+
+
 </script>
 
 <template>
@@ -128,7 +193,7 @@ watch(pwd, onPwdChange)
   </form>
   <div class="file-panel">
     <div class="folder-panel">
-      <div class="folder-entry" v-for="[entryIndex, entry] in entries.entries()" @dblclick="doubleClickEntry"
+      <div class="folder-entry" v-for="[entryIndex, entry] in entries.entries()" @dblclick="onDoubleClickEntry"
         :data-entry-index="entryIndex">
         <div class="folder-entry-icon">
           <component :is="entry.icon"></component>
@@ -146,10 +211,11 @@ watch(pwd, onPwdChange)
     </div>
     <div class="file-content-panel">
       <div class="files-title">
-        <input type="text" name="filename" id="files-title-filename" placeholder="passwd">
+        <input type="text" name="filename" id="files-title-filename" placeholder="passwd" v-model="userFilename">
       </div>
       <div class="files-content">
-        <!-- code mirror will live here -->
+        <codemirror v-model="codeMirrorContent" placeholder="Content goes here..." :autofocus="true"
+          :indent-with-tab="true" :tab-size="4" :extensions="codeMirrorExtensions" @ready="codeMirrorReady" />
       </div>
       <div class="files-property">
         <p>文件编码: </p>
@@ -277,6 +343,7 @@ input[type="text"] {
   border-radius: 20px;
   padding: 20px;
   background-color: var(--background-color-2);
+  overflow: auto;
 }
 
 .files-property {
