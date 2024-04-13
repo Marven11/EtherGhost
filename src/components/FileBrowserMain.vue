@@ -273,7 +273,7 @@ input[type="text"] {
 }
 
 .folder-panel {
-  min-width: max-content;
+  width: 30%;
   flex-grow: 1;
   margin-right: 30px;
   height: 100%;
@@ -281,11 +281,13 @@ input[type="text"] {
   background-color: var(--background-color-2);
   padding-top: 20px;
   overflow: scroll;
+  flex-shrink: 0;
 }
 
 .folder-entry {
   display: flex;
   height: 80px;
+  padding-right: 50px;
   align-items: center;
   flex-direction: row;
   user-select: none;
@@ -317,8 +319,8 @@ input[type="text"] {
 }
 
 .file-content-panel {
-  min-width: 350px;
-  flex-grow: 3;
+  width: 60%;
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
 }
@@ -326,6 +328,7 @@ input[type="text"] {
 .files-title {
   height: 70px;
   width: 100%;
+  flex-shrink: 0;
 }
 
 .files-title input {
@@ -355,6 +358,7 @@ input[type="text"] {
   border-radius: 20px;
   padding-left: 20px;
   color: var(--font-color-white);
+  flex-shrink: 0;
 
 }
 
