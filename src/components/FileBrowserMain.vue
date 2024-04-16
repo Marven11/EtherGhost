@@ -9,8 +9,14 @@ import { ref, shallowRef, watch } from "vue";
 import { requestDataOrPopupError } from "@/assets/utils"
 import Popups from "./Popups.vue"
 import { Codemirror } from 'vue-codemirror'
+
+// --- CodeMirror Stuff
+
 import { javascript } from '@codemirror/lang-javascript'
 import { php } from '@codemirror/lang-php'
+import { python } from '@codemirror/lang-python'
+import { html } from '@codemirror/lang-html'
+import { css } from '@codemirror/lang-css'
 import { oneDark } from '@codemirror/theme-one-dark'
 import { EditorView } from "@codemirror/view"
 import { StreamLanguage } from "@codemirror/language"
@@ -160,13 +166,22 @@ watch(fileExtension, (newFileExtension, _) => {
   if (["js", "mjs"].includes(newFileExtension)) {
     extensions.push(javascript())
   }
+  else if (["html", "htm"].includes(newFileExtension)) {
+    extensions.push(html())
+  }
+  else if (["css"].includes(newFileExtension)) {
+    extensions.push(css())
+  }
   else if (["php", "php7", "php5", "phar"].includes(newFileExtension)) {
     extensions.push(php())
   }
-  else if(["sh"].includes(newFileExtension)) {
+  else if (["py"].includes(newFileExtension)) {
+    extensions.push(python())
+  }
+  else if (["sh"].includes(newFileExtension)) {
     extensions.push(StreamLanguage.define(shell))
   }
-   else {
+  else {
     console.log("Extension not supported", newFileExtension)
   }
   codeMirrorExtensions.value = extensions
@@ -344,7 +359,8 @@ input[type="text"] {
   flex-grow: 1;
   margin-top: 20px;
   border-radius: 20px;
-  padding: 20px;
+  padding-top: 20px;
+  padding-bottom: 20px;
   background-color: var(--background-color-2);
   overflow: auto;
 }
