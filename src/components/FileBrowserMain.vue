@@ -33,7 +33,9 @@ if (props.session) {
   store.session = props.session
 }
 
+// ###########
 // --- PWD ---
+// ###########
 
 // variable we maintain, pwd might be different when user modify 
 // the input and do not hit enter
@@ -52,7 +54,9 @@ async function onUserInputPwd(event) {
   pwd.value = userPwd.value
 }
 
+// ####################
 // --- Folder entry ---
+// ####################
 
 // "dir", "file", "link-dir", "link-file", "unknown"
 const entryIcons = {
@@ -129,7 +133,9 @@ const entries = shallowRef([
 ])
 const popupsRef = ref(null)
 
+// ###############################
 // --- Folder entry click menu ---
+// ###############################
 
 const clickMenuTop = ref(0)
 const clickMenuLeft = ref(0)
@@ -183,7 +189,9 @@ function onClickMenuItem(item) {
 }
 
 
+// ##################################
 // --- File editor and CodeMirror ---
+// ##################################
 
 const userFilename = ref("")
 let filename = ref("")
@@ -238,8 +246,9 @@ watch(filename, (newFilename, _) => {
   fileExtension.value = newFilename.substring(dotPosition)
 })
 
-
-// --- Util ---
+// #################
+// --- Utilities ---
+// #################
 
 function readableFileSize(fileSize) {
   if (fileSize == -1) {
