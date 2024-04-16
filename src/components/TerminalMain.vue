@@ -6,6 +6,8 @@ import { ref } from "vue";
 import Axios from "axios";
 import { getCurrentApiUrl } from "@/assets/utils";
 import { store } from "@/assets/store";
+import InputBox from "./InputBox.vue"
+
 
 const props = defineProps({
   session: String,
@@ -14,7 +16,7 @@ const terminalInput = ref("")
 const terminalOutput = ref("")
 const popupsRef = ref(null)
 
-if(props.session) {
+if (props.session) {
   store.session = props.session
 }
 
@@ -46,6 +48,12 @@ async function onExecuteCommand(event) {
   addOutput(cmd, result)
 }
 
+// ###########
+// --- Input Box ---
+// ###########
+
+const showInputBox = ref(true)
+
 </script>
 
 <template>
@@ -59,6 +67,10 @@ async function onExecuteCommand(event) {
     <textarea name="command-output" id="command-output" readonly :value="terminalOutput"></textarea>
   </div>
   <Popups ref="popupsRef" />
+  <transition>
+    <InputBox v-if="showInputBox" title="测试标题" note="测试测试，这是一个测试" :requireInput="true"
+      @result="(_) => showInputBox = false" />
+  </transition>
 </template>
 
 <style scoped>
