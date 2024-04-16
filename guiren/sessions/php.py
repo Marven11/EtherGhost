@@ -72,6 +72,23 @@ else if(filesize($filePath) > MAX_SIZE) {
 }
 """
 
+MOVE_FILE_PHP = """
+$filePath = #FILEPATH#;
+$newFilePath = #NEW_FILEPATH#;
+if(!file_exists($filePath)) {
+    echo "WRONG_NOT_EXIST";
+}else if(!is_writeable($filePath)) {
+    echo "WRONG_NO_PERMISSION";
+}else {
+    $result = rename($filePath, $newFilePath);
+    if($result) {
+        echo "SUCCESS";
+    }else{
+        echo "FAILED";
+    }
+}
+"""
+
 GET_BASIC_INFO_PHP = """
 $infos = array();
 array_push($infos, [
@@ -328,6 +345,20 @@ class PHPWebshell(PHPSessionInterface):
         if result == "WRONG_FILE_TOO_LARGE":
             raise exceptions.FileError(f"文件大小太大(>{max_size}B)，建议下载编辑")
         return base64.b64decode(result)
+
+    async def move_file(self, filepath: str, new_filepath: str) -> None:
+        php_code = MOVE_FILE_PHP.replace("#FILEPATH#", repr(filepath)).replace(
+            "#NEW_FILEPATH#", repr(new_filepath)
+        )
+        result = await self.submit(php_code)
+        if result == "WRONG_NOT_EXIST":
+            raise exceptions.FileError("目标不存在")
+        if result == "WRONG_NO_PERMISSION":
+            raise exceptions.FileError("没有权限移动这个文件")
+        if result == "FAILED":
+            raise exceptions.UnexpectedError("因未知原因移动失败")
+        if result != "SUCCESS":
+            raise exceptions.UnexpectedError("目标没有反馈移动成功")
 
     async def get_pwd(self) -> str:
         return await self.submit("echo __DIR__;")

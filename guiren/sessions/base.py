@@ -34,6 +34,10 @@ class SessionInterface:
         """获取文件的内容，内容是一个字节序列，不是已经解码的字符串"""
         raise NotImplementedError()
 
+    async def move_file(self, filepath: str, new_filepath: str) -> None:
+        """移动文件到新的目录"""
+        raise NotImplementedError()
+
     async def get_pwd(self) -> str:
         """获取当前的目录"""
         raise NotImplementedError()

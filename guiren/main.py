@@ -157,6 +157,24 @@ async def session_list_dir(session_id: UUID, current_dir: str):
         return {"code": -500, "msg": "未知错误: " + str(exc)}
 
 
+@app.get("/session/{session_id}/move_file")
+async def session_move_file(session_id: UUID, filepath: str, new_filepath):
+    """使用session列出某个目录"""
+    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(
+        session_id
+    )
+    if session is None:
+        return {"code": -400, "msg": "没有这个session"}
+    try:
+        await session.move_file(filepath, new_filepath)
+        return {"code": 0, "data": True}
+    except sessions.FileError as exc:
+        return {"code": -500, "msg": "文件错误: " + str(exc)}
+    except sessions.NetworkError as exc:
+        return {"code": -500, "msg": "网络错误: " + str(exc)}
+    except sessions.UnexpectedError as exc:
+        return {"code": -500, "msg": "未知错误: " + str(exc)}
+
 @app.get("/session/{session_id}/get_file_contents")
 async def session_get_file_contents(session_id: UUID, current_dir: str, filename: str):
     """使用session获取文件内容"""
