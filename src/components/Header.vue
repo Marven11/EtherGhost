@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue"
+import { shallowRef, watch } from "vue"
 import IconHome from "./icons/iconHome.vue"
 import IconTerminal from "./icons/iconTerminal.vue"
 import IconFileBrowser from "./icons/iconFileBrowser.vue"
@@ -7,8 +7,11 @@ import IconInfo from "./icons/iconInfo.vue"
 import IconProxy from "./icons/iconProxy.vue"
 import IconOthers from "./icons/iconOthers.vue"
 import IconSetting from "./icons/iconSetting.vue"
+import { useRouter } from "vue-router"
+import { store } from "@/assets/store.js"
 
-const icons = [
+const router = useRouter()
+const iconSpecs = [
   {
     type: "home",
     component: IconHome,
@@ -17,12 +20,12 @@ const icons = [
   {
     type: "terminal",
     component: IconTerminal,
-    uri: "/"
+    uri: "/terminal/SESSION"
   },
   {
     type: "file-browser",
     component: IconFileBrowser,
-    uri: "/"
+    uri: "/file-browser/SESSION"
   },
   {
     type: "info",
@@ -41,8 +44,33 @@ const icons = [
   },
 ]
 
+const icons = shallowRef({})
+
+function fillSession(icons, session) {
+  console.log("fillSession", session)
+  return icons.map(icon => {
+    let clone = { ...icon };
+    if (icon.uri.indexOf("SESSION") == -1) {
+      return clone
+    }
+    if (session) {
+      clone.uri = icon.uri.replace("SESSION", session)
+    } else {
+      clone.uri = "/page_404/no_session"
+    }
+    return clone
+  })
+}
+
+icons.value = fillSession(iconSpecs, "")
+
+watch(() => store.session, (newSession, _) => {
+  console.log("watch")
+  icons.value = fillSession(iconSpecs, newSession)
+})
+
 function clickIcon(icon) {
-  window.location = icon.uri
+  router.push(icon.uri)
 }
 
 </script>

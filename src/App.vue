@@ -4,6 +4,8 @@ import WebshellEditorMain from "./components/WebshellEditorMain.vue"
 import HomeMain from "./components/HomeMain.vue"
 import TerminalMain from "./components/TerminalMain.vue"
 import FileBrowserMain from "./components/FileBrowserMain.vue"
+import { ref } from "vue"
+import { store } from "./assets/store"
 
 </script>
 
