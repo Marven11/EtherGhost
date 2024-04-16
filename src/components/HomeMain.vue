@@ -33,7 +33,7 @@ const clickMenuTop = ref(0)
 const router = useRouter();
 let clickMenuSession = ""
 
-const menu_items = [
+const menuItems = [
   {
     "name": "open_terminal",
     "text": "打开终端",
@@ -124,7 +124,7 @@ setTimeout(fetchWebshell, 0)
   </div>
   <transition>
     <div v-if="showClickMenu">
-      <ClickMenu :top="clickMenuTop" :left="clickMenuLeft" :menu_items="menu_items"
+      <ClickMenu :top="clickMenuTop" :left="clickMenuLeft" :menuItems="menuItems"
         @remove="(_) => showClickMenu = false" @clickItem="onClickMenuItem" />
     </div>
   </transition>
@@ -190,16 +190,6 @@ setTimeout(fetchWebshell, 0)
   width: 50px;
   stroke: var(--font-color-white);
   margin: 10px;
-}
-
-.v-enter-active,
-.v-leave-active {
-  transition: opacity 0.5s ease;
-}
-
-.v-enter-from,
-.v-leave-to {
-  opacity: 0;
 }
 
 svg {

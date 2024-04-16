@@ -2,7 +2,7 @@
 import { ref, shallowRef } from "vue"
 
 
-const props = defineProps(["top", "left", "menu_items"])
+const props = defineProps(["top", "left", "menuItems"])
 
 const emit = defineEmits(["remove", "clickItem"])
 
@@ -13,7 +13,7 @@ const emit = defineEmits(["remove", "clickItem"])
 //     "icon": IconTerminal,
 //     "color": "white",
 //   },
-const menu_items = shallowRef([...props.menu_items])
+const menuItems = shallowRef([...props.menuItems])
 
 function hideAndEmit() {
   emit("remove", true)
@@ -30,7 +30,7 @@ function onClickItem(itemName) {
   <div class="background" @click="hideAndEmit">
   </div>
   <div class="click-menu" :style="`top: ${props.top || 0}px; left: ${props.left || 0}px; `">
-    <div class="click-menu-item" v-for="menu_item in menu_items" @click="onClickItem(menu_item)">
+    <div class="click-menu-item" v-for="menu_item in menuItems" @click="onClickItem(menu_item)">
       <div class="click-menu-icon" :color="menu_item.color">
         <component :is="menu_item.icon"></component>
       </div>

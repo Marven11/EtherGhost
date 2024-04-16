@@ -8,6 +8,7 @@ import IconUnknownFile from "./icons/iconUnknownFile.vue"
 import { ref, shallowRef, watch } from "vue";
 import { requestDataOrPopupError } from "@/assets/utils"
 import Popups from "./Popups.vue"
+import ClickMenu from "./ClickMenu.vue"
 import { Codemirror } from 'vue-codemirror'
 
 // --- CodeMirror Stuff
@@ -22,12 +23,13 @@ import { EditorView } from "@codemirror/view"
 import { StreamLanguage } from "@codemirror/language"
 import { shell } from "@codemirror/legacy-modes/mode/shell"
 import { store } from "@/assets/store"
+import IconTerminal from "./icons/iconTerminal.vue"
 
 const props = defineProps({
   session: String,
 })
 
-if(props.session) {
+if (props.session) {
   store.session = props.session
 }
 
@@ -61,6 +63,15 @@ const entryIcons = {
   "unknown": IconUnknownFile
 }
 
+async function changeDir(entry) {
+  let newPwd = await requestDataOrPopupError("/utils/changedir", popupsRef, {
+    params: {
+      folder: pwd.value,
+      entry: entry
+    }
+  })
+  pwd.value = newPwd
+}
 
 async function viewFile(newFilename) {
   let { text: fileContent, encoding: fileEncoding } = await requestDataOrPopupError(`/session/${props.session}/get_file_contents`, popupsRef, {
@@ -79,14 +90,7 @@ async function onDoubleClickEntry(event) {
   const element = event.currentTarget
   const entry = entries.value[element.dataset.entryIndex]
   if (["dir", "link-dir"].includes(entry.entryType)) {
-    let newPwd = await requestDataOrPopupError("/utils/changedir", popupsRef, {
-      params: {
-        folder: pwd.value,
-        entry: entry.name
-      }
-    })
-    pwd.value = newPwd
-    console.log(entry.entryType)
+    changeDir(entry.name)
   } else if (["file", "link-file"].includes(entry.entryType)) {
     viewFile(entry.name)
   } else {
@@ -124,6 +128,60 @@ const entries = shallowRef([
 
 ])
 const popupsRef = ref(null)
+
+// --- Folder entry click menu ---
+
+const clickMenuTop = ref(0)
+const clickMenuLeft = ref(0)
+const showClickMenu = ref(false)
+const menuItemsAll = [
+  {
+    "name": "open_file",
+    "text": "打开文件",
+    "icon": IconFile,
+    "color": "white",
+    "entry_type": ["file", "link-file"]
+  },
+  {
+    "name": "open_dir",
+    "text": "打开文件夹",
+    "icon": IconDirectory,
+    "color": "white",
+    "entry_type": ["dir", "link-dir"]
+  },
+]
+
+
+const menuItems = shallowRef([
+])
+
+let clickMenuEntry = undefined
+
+function onRightClickEntry(event) {
+  event.preventDefault()
+  const element = event.currentTarget
+  const entry = entries.value[element.dataset.entryIndex]
+  clickMenuLeft.value = event.clientX;
+  clickMenuTop.value = event.clientY;
+  menuItems.value = menuItemsAll.filter(item => item.entry_type.includes(entry.entryType))
+  clickMenuEntry = entry
+  console.log(entry)
+  showClickMenu.value = true
+}
+
+function onClickMenuItem(item) {
+  console.log(item)
+  if (item.name == "open_file") {
+    viewFile(clickMenuEntry.name)
+    popupsRef.value.addPopup("blue", "提示", `可以双击打开文件`)
+  } else if (item.name == "open_dir") {
+    changeDir(clickMenuEntry.name)
+  }
+  else {
+    popupsRef.value.addPopup("blue", "TODO", `还没实现${item.name}`)
+  }
+}
+
 
 // --- File editor and CodeMirror ---
 
@@ -224,7 +282,7 @@ function readableFilePerm(filePerm) {
   <div class="file-panel">
     <div class="folder-panel">
       <div class="folder-entry" v-for="[entryIndex, entry] in entries.entries()" @dblclick="onDoubleClickEntry"
-        :data-entry-index="entryIndex">
+        @click.right="onRightClickEntry" :data-entry-index="entryIndex">
         <div class="folder-entry-icon">
           <component :is="entry.icon"></component>
         </div>
@@ -254,6 +312,12 @@ function readableFilePerm(filePerm) {
     </div>
   </div>
   <Popups ref="popupsRef" />
+  <transition>
+    <div v-if="showClickMenu">
+      <ClickMenu :top="clickMenuTop" :left="clickMenuLeft" :menuItems="menuItems" @remove="(_) => showClickMenu = false"
+        @clickItem="onClickMenuItem" />
+    </div>
+  </transition>
 </template>
 
 <style scoped>
