@@ -5,6 +5,7 @@ import Popups from "./Popups.vue"
 import { ref } from "vue";
 import Axios from "axios";
 import { getCurrentApiUrl } from "@/assets/utils";
+import { store } from "@/assets/store";
 
 const props = defineProps({
   session: String,
@@ -12,6 +13,10 @@ const props = defineProps({
 const terminalInput = ref("")
 const terminalOutput = ref("")
 const popupsRef = ref(null)
+
+if(props.session) {
+  store.session = props.session
+}
 
 function addOutput(command, output) {
   let leading = ""

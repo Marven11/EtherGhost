@@ -21,10 +21,15 @@ import { oneDark } from '@codemirror/theme-one-dark'
 import { EditorView } from "@codemirror/view"
 import { StreamLanguage } from "@codemirror/language"
 import { shell } from "@codemirror/legacy-modes/mode/shell"
+import { store } from "@/assets/store"
 
 const props = defineProps({
   session: String,
 })
+
+if(props.session) {
+  store.session = props.session
+}
 
 // --- PWD ---
 

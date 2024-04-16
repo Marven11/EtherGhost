@@ -6,11 +6,15 @@ import { getCurrentApiUrl, requestDataOrPopupError } from "@/assets/utils"
 import IconCross from './icons/iconCross.vue'
 import IconCheck from './icons/iconCheck.vue'
 import Popups from './Popups.vue'
+import { store } from "@/assets/store";
 
 const props = defineProps({
   session: String,
 })
 
+if(props.session) {
+  store.session = props.session
+}
 
 const webshellTypes = [
   "ONELINE_PHP"
