@@ -25,6 +25,28 @@ import { shell } from "@codemirror/legacy-modes/mode/shell"
 const props = defineProps({
   session: String,
 })
+
+// --- PWD ---
+
+// variable we maintain, pwd might be different when user modify 
+// the input and do not hit enter
+// we will add a watcher to this ref to automatically refresh it
+const userPwd = ref("") // pwd of user input
+let pwd = ref("")
+
+async function initFetch() {
+  pwd.value = await requestDataOrPopupError(`/session/${props.session}/get_pwd`, popupsRef)
+}
+
+setTimeout(initFetch, 0)
+
+async function onUserInputPwd(event) {
+  event.preventDefault()
+  pwd.value = userPwd.value
+}
+
+// --- Folder entry ---
+
 // "dir", "file", "link-dir", "link-file", "unknown"
 const entryIcons = {
   "dir": IconDirectory,
@@ -34,77 +56,6 @@ const entryIcons = {
   "unknown": IconUnknownFile
 }
 
-
-// something like this:
-// {
-//       name: String,
-//       entryType: one of ["dir", "file", "link-dir", "link-file", "unknown"],
-//       icon: Icon compoment,
-//       permission: sth like "755",
-//       filesize: Number, size in bytes,
-//     }
-const entries = shallowRef([
-
-])
-const popupsRef = ref(null)
-const userPwd = ref("") // pwd of user input
-const userFilename = ref("")
-
-// variable we maintain, might be different when user modify 
-// the input and do not hit enter
-// we will add a watcher to this ref to automatically refresh it
-let pwd = ref("")
-let filename = ref("")
-
-const fileExtension = ref("")
-
-
-const codeMirrorView = shallowRef()
-const codeMirrorContent = ref("")
-const codeMirrorTheme = EditorView.theme({
-  "&": {
-    "background-color": "var(--background-color-2)",
-    "font-size": "24px",
-  },
-}, { dark: true })
-
-const codeMirrorExtensions = shallowRef([codeMirrorTheme, oneDark])
-
-function codeMirrorReady(payload) {
-  codeMirrorView.value = payload.view
-}
-
-function readableFileSize(fileSize) {
-  if (fileSize == -1) {
-    return "? KB"
-  }
-  let units = ["B", "KiB", "MiB", "GiB", "TiB"]
-  for (let unit of units) {
-    if (fileSize <= 1024 || unit == "TiB") {
-      return `${Math.round(fileSize)} ${unit}`
-    }
-    fileSize /= 1024
-  }
-}
-
-function readableFilePerm(filePerm) {
-  let result = ""
-  for (let chr of filePerm) {
-    let x = Number(chr)
-    for (let [permIndex, permChr] of Array.from("rwx").entries()) {
-      if (x & Math.pow(2, 2 - permIndex)) {
-        result += permChr
-      } else {
-        result += "-"
-      }
-    }
-  }
-  return result
-}
-
-async function initFetch() {
-  pwd.value = await requestDataOrPopupError(`/session/${props.session}/get_pwd`, popupsRef)
-}
 
 async function viewFile(newFilename) {
   let { text: fileContent, encoding: fileEncoding } = await requestDataOrPopupError(`/session/${props.session}/get_file_contents`, popupsRef, {
@@ -117,12 +68,6 @@ async function viewFile(newFilename) {
   filename.value = newFilename
   userFilename.value = newFilename
   codeMirrorContent.value = fileContent
-
-}
-
-async function onUserInputPwd(event) {
-  event.preventDefault()
-  pwd.value = userPwd.value
 }
 
 async function onDoubleClickEntry(event) {
@@ -161,6 +106,42 @@ watch(pwd, async (newPwd, oldPwd) => {
   })
   userPwd.value = pwd.value
 })
+
+// something like this:
+// {
+//       name: String,
+//       entryType: one of ["dir", "file", "link-dir", "link-file", "unknown"],
+//       icon: Icon compoment,
+//       permission: sth like "755",
+//       filesize: Number, size in bytes,
+//     }
+const entries = shallowRef([
+
+])
+const popupsRef = ref(null)
+
+// --- File editor and CodeMirror ---
+
+const userFilename = ref("")
+let filename = ref("")
+
+const fileExtension = ref("")
+
+const codeMirrorView = shallowRef()
+const codeMirrorContent = ref("")
+const codeMirrorTheme = EditorView.theme({
+  "&": {
+    "background-color": "var(--background-color-2)",
+    "font-size": "24px",
+  },
+}, { dark: true })
+
+const codeMirrorExtensions = shallowRef([codeMirrorTheme, oneDark])
+
+function codeMirrorReady(payload) {
+  codeMirrorView.value = payload.view
+}
+
 watch(fileExtension, (newFileExtension, _) => {
   let extensions = [codeMirrorTheme, oneDark];
   if (["js", "mjs"].includes(newFileExtension)) {
@@ -194,7 +175,36 @@ watch(filename, (newFilename, _) => {
   fileExtension.value = newFilename.substring(dotPosition)
 })
 
-setTimeout(initFetch, 0)
+
+// --- Util ---
+
+function readableFileSize(fileSize) {
+  if (fileSize == -1) {
+    return "? KB"
+  }
+  let units = ["B", "KiB", "MiB", "GiB", "TiB"]
+  for (let unit of units) {
+    if (fileSize <= 1024 || unit == "TiB") {
+      return `${Math.round(fileSize)} ${unit}`
+    }
+    fileSize /= 1024
+  }
+}
+
+function readableFilePerm(filePerm) {
+  let result = ""
+  for (let chr of filePerm) {
+    let x = Number(chr)
+    for (let [permIndex, permChr] of Array.from("rwx").entries()) {
+      if (x & Math.pow(2, 2 - permIndex)) {
+        result += permChr
+      } else {
+        result += "-"
+      }
+    }
+  }
+  return result
+}
 
 
 </script>
