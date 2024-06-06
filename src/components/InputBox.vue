@@ -14,18 +14,28 @@ const inputBox = ref(null)
 
 function onClickConfirm(event) {
   event.preventDefault()
-  emit("result", userInput.value)
+  if (props.requireInput) {
+    emit("result", userInput.value)
+  } else {
+    emit("result", true)
+  }
 }
 
 function onClickCancel(event) {
   event.preventDefault()
-  emit("result", undefined)
+  if (props.requireInput) {
+    emit("result", undefined)
+  } else {
+    emit("result", false)
+  }
 }
 
 function onClickBackground(event) {
   event.preventDefault()
-  if (event.target !== inputBox.value && !inputBox.value.contains(event.target)) {
+  if (props.requireInput) {
     emit("result", undefined)
+  } else {
+    emit("result", false)
   }
 }
 

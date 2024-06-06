@@ -14,9 +14,19 @@ import ClickMenu from "./ClickMenu.vue"
 import { getDataOrPopupError } from "@/assets/utils";
 import Popups from "./Popups.vue";
 import { useRouter } from "vue-router"
+import InputBox from "./InputBox.vue"
+import axios from "axios"
+
+import { getCurrentApiUrl } from "@/assets/utils";
+
 
 const sessions = ref([
 ])
+
+// ################
+// --- Elements ---
+// ################
+
 
 const popupsRef = ref(null)
 const showClickMenu = ref(false)
@@ -66,7 +76,8 @@ const menuItems = [
     "text": "删除Webshell",
     "icon": IconDelete,
     "color": "red",
-    "link": "/page_404/SESSION",
+    "link": undefined,
+    "func": (session) => onMarkDeleteSession(session),
   }
 ]
 
@@ -78,9 +89,14 @@ function onClickIconOthers(event) {
 }
 
 function onClickMenuItem(item) {
-  const uri = item.link.replace("SESSION", clickMenuSession)
-  console.log(uri)
-  router.push(uri)
+  if (item.link) {
+    const uri = item.link.replace("SESSION", clickMenuSession)
+    console.log(uri)
+    router.push(uri)
+  } else if (item.func) {
+    item.func(clickMenuSession)
+  }
+
 }
 
 async function fetchWebshell() {
@@ -90,6 +106,49 @@ async function fetchWebshell() {
 }
 
 setTimeout(fetchWebshell, 0)
+
+// ################
+// --- InputBox ---
+// ################
+
+
+const showInputBox = ref(false)
+const inputBoxTitle = ref("")
+const inputBoxNote = ref("")
+let inputBoxCallback = ref(undefined)
+
+// ######################
+// --- Delete Session ---
+// ######################
+
+let sessionToDelete = undefined
+
+function onMarkDeleteSession(sessionId) {
+  sessionToDelete = sessionId
+  showInputBox.value = true
+  inputBoxTitle.value = "删除Session"
+  inputBoxNote.value = "你真的要删除这个session吗？"
+  inputBoxCallback = onDeleteSessionConfirm
+}
+
+async function onDeleteSessionConfirm(userConfirm) {
+  console.log(userConfirm)
+  if (!sessionToDelete) {
+    popupsRef.value.addPopup("red", "内部错误", `找不到要删除的webshell`)
+    return
+  }
+  if (userConfirm) {
+    let result = await axios.delete(`${getCurrentApiUrl()}/session/${sessionToDelete}`)
+    if (result) {
+      popupsRef.value.addPopup("green", "删除成功", `已经删除指定session`)
+    } else {
+      popupsRef.value.addPopup("red", "删除失败", `无法删除指定session`)
+    }
+  }
+  showInputBox.value = false
+  sessionToDelete = undefined
+  setTimeout(fetchWebshell, 0)
+}
 
 </script>
 
@@ -117,8 +176,8 @@ setTimeout(fetchWebshell, 0)
   </div>
   <transition>
     <div v-if="showClickMenu">
-      <ClickMenu :top="clickMenuTop" :left="clickMenuLeft" :menuItems="menuItems"
-        @remove="(_) => showClickMenu = false" @clickItem="onClickMenuItem" />
+      <ClickMenu :top="clickMenuTop" :left="clickMenuLeft" :menuItems="menuItems" @remove="(_) => showClickMenu = false"
+        @clickItem="onClickMenuItem" />
     </div>
   </transition>
 
@@ -126,6 +185,10 @@ setTimeout(fetchWebshell, 0)
     <IconPlus />
   </div>
   <Popups ref="popupsRef" />
+  <transition>
+    <InputBox v-if="showInputBox" :title="inputBoxTitle" :note="inputBoxNote" :requireInput="false"
+      @result="inputBoxCallback" />
+  </transition>
 </template>
 
 <style scoped>
