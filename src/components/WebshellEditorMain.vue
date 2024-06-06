@@ -2,17 +2,19 @@
 
 import { reactive, ref, shallowRef } from "vue";
 import axios from "axios"
-import { getCurrentApiUrl, requestDataOrPopupError } from "@/assets/utils"
+import { getCurrentApiUrl, requestDataOrPopupError, postDataOrPopupError } from "@/assets/utils"
 import IconCross from './icons/iconCross.vue'
 import IconCheck from './icons/iconCheck.vue'
 import Popups from './Popups.vue'
 import { store } from "@/assets/store";
+import { useRouter } from "vue-router"
 
+const router = useRouter()
 const props = defineProps({
   session: String,
 })
 
-if(props.session) {
+if (props.session) {
   store.session = props.session
 }
 
@@ -52,6 +54,17 @@ const webshellOptionGroups = {
   ]
 }
 
+const webshellConnectionOptions = {
+  ONELINE_PHP: [
+    "url",
+    "method",
+    "password",
+    "encoder",
+    "http_params_obfs",
+    "sessionize_payload"
+  ]
+}
+
 const currentWebshellType = ref(null)
 
 
@@ -77,13 +90,13 @@ const options = reactive([
     name: "备注",
     type: "text",
     placeholder: "xxx...",
-    value: undefined
+    value: ""
   },
   {
     id: "session_type",
     name: "类型",
     type: "select",
-    value: undefined,
+    value: "ONELINE_PHP",
     alternatives: [
       {
         name: "PHP一句话",
@@ -95,7 +108,7 @@ const options = reactive([
     id: "method",
     name: "Webshell请求方式",
     type: "select",
-    value: undefined,
+    value: "POST",
     alternatives: [
       {
         name: "POST",
@@ -118,7 +131,7 @@ const options = reactive([
     id: "encoder",
     name: "类型",
     type: "select",
-    value: undefined,
+    value: "base64",
     alternatives: [
       {
         name: "base64",
@@ -142,6 +155,8 @@ const options = reactive([
 ])
 
 const popupsRef = ref(null)
+
+
 
 function updateOption(webshellType) {
   currentWebshellType.value = webshellType
@@ -169,22 +184,75 @@ async function fetchCurrentSession() {
   updateOption(session.session_type)
   for (const key of ["name", "session_type", "note"]) {
     const option = getOption(key)
-    if (["text", "checkbox"].includes(option.type)) {
+    if (["text", "checkbox", "select"].includes(option.type)) {
       option.value = session[key]
-    } else if (option.type == "select") {
-      option.value = session[key]
-      console.log(option)
     }
   }
   for (const key of Object.keys(session.connection)) {
     const option = getOption(key)
-    if (["text", "checkbox"].includes(option.type)) {
+    if (["text", "checkbox", "select"].includes(option.type)) {
       option.value = session.connection[key]
-    } else if (option.type == "select") {
-      option.value = session.connection[key]
-      console.log(option)
     }
   }
+}
+
+function getCurrentSession() {
+  let session = { connection: {} }
+  if (!getOption("session_type").value) {
+    return undefined;
+  }
+  for (const key of ["name", "session_type", "note"]) {
+    const option = getOption(key)
+    if (["text", "checkbox", "select"].includes(option.type)) {
+      if (option.value == undefined) {
+        popupsRef.value.addPopup("red", `选项${key}未填写`, `选项${key}仍未填写，无法获取当前配置！`)
+        return undefined
+      }
+      session[key] = option.value
+    }
+  }
+  for (const key of webshellConnectionOptions[session.session_type]) {
+    const option = getOption(key)
+    if (["text", "checkbox", "select"].includes(option.type)) {
+      if (option.value == undefined) {
+        popupsRef.value.addPopup("red", `选项${key}未填写`, `选项${key}仍未填写，无法获取当前配置！`)
+        return undefined
+      }
+      session.connection[key] = option.value
+    }
+  }
+  return session
+}
+
+
+async function testSession() {
+  let session = getCurrentSession()
+  if (!session) {
+    return;
+  }
+  let data = await postDataOrPopupError("/test_webshell", popupsRef, session)
+  if (!data.success) {
+    popupsRef.value.addPopup("red", "测试失败", data.msg)
+  } else {
+    popupsRef.value.addPopup("green", "测试成功", data.msg)
+  }
+}
+
+async function saveSession() {
+  let session = getCurrentSession()
+  if (!session) {
+    return;
+  }
+  let data = await postDataOrPopupError("/update_webshell", popupsRef, session)
+  if (!data) {
+    popupsRef.value.addPopup("red", "保存失败", "保存webshell到本地数据库失败")
+  } else {
+    popupsRef.value.addPopup("green", "保存成功", "保存webshell到本地数据库成功")
+    setTimeout(() => {
+      router.push("/")
+    }, 1000);
+  }
+
 }
 
 setTimeout(() => {
@@ -227,10 +295,10 @@ setTimeout(() => {
     <div class="submit-button">
       丢弃
     </div>
-    <div class="submit-button">
+    <div class="submit-button" @click="saveSession">
       保存
     </div>
-    <div class="submit-button">
+    <div class="submit-button" @click="testSession">
       测试
     </div>
   </div>

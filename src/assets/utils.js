@@ -47,3 +47,16 @@ export async function requestDataOrPopupError(uri, popupsRef, config) {
   }
   return getDataOrPopupError(resp, popupsRef)
 }
+
+export async function postDataOrPopupError(uri, popupsRef, config) {
+  let url = `${getCurrentApiUrl()}${uri}`
+  let resp
+  try {
+    resp = await axios.post(url, config)
+  }catch(e){
+    popupsRef.value.addPopup("red", "请求错误", `无法请求${uri}，服务端是否正在运行？`)
+    throw e
+  }
+  return getDataOrPopupError(resp, popupsRef)
+}
+
