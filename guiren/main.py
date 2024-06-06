@@ -13,6 +13,7 @@ from fastapi import FastAPI, Response, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 from . import session_manager, session_types, sessions
 from .sessions import SessionInterface, PHPSessionInterface
@@ -54,22 +55,17 @@ async def set_no_cache(request, call_next) -> Response:
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
-    response.headers["Access-Control-Allow-Origin"] = "*" # TODO: remove me, this is added for testing.
+    response.headers["Access-Control-Allow-Origin"] = (
+        "*"  # TODO: remove me, this is added for testing.
+    )
     return response
 
 
-# @app.middleware("http")
-# async def check_token(request: Request, call_next):
-#     user_token = request.cookies.get("token")
-#     if (
-#         user_token is None or user_token != token
-#     ) and request.url.path != "/public/token.html":
-#         logger.warning(
-#             "user_token=%s, cookie=%s", repr(user_token), repr(request.cookies)
-#         )
-#         return RedirectResponse("/public/token.html")
-#     response = await call_next(request)
-#     return response
+class FileContentRequest(BaseModel):
+    current_dir: str
+    filename: str
+    text: str
+    encoding: str
 
 
 @app.get("/session")
@@ -83,6 +79,7 @@ async def get_sessions(session_id: t.Union[UUID, None] = None):
     if not session:
         return {"code": -400, "msg": "没有这个session"}
     return {"code": 0, "data": session}
+
 
 @app.get("/session/{session_id}")
 async def get_session(session_id: UUID):
@@ -102,24 +99,24 @@ async def test_webshell(session_info: session_types.SessionInfo):
     try:
         result = await session.test_usablility()
         if not result:
-            return {"code": 0, "data": {
-                "success": False,
-                "msg": "Webshell无法使用"
-            }}
-        return {"code": 0, "data": {
-            "success": True,
-            "msg": "Webshell可以使用"
-        }}
+            return {"code": 0, "data": {"success": False, "msg": "Webshell无法使用"}}
+        return {"code": 0, "data": {"success": True, "msg": "Webshell可以使用"}}
     except sessions.UnexpectedError as exc:
-        return {"code": 0, "data": {
-            "success": False,
-            "msg": "未知错误，Webshell不可以使用：" + str(exc)
-        }}
+        return {
+            "code": 0,
+            "data": {
+                "success": False,
+                "msg": "未知错误，Webshell不可以使用：" + str(exc),
+            },
+        }
     except sessions.NetworkError as exc:
-        return {"code": 0, "data": {
-            "success": False,
-            "msg": "网络错误，Webshell不可以使用：" + str(exc)
-        }}
+        return {
+            "code": 0,
+            "data": {
+                "success": False,
+                "msg": "网络错误，Webshell不可以使用：" + str(exc),
+            },
+        }
 
 
 @app.post("/update_webshell")
@@ -200,6 +197,7 @@ async def session_move_file(session_id: UUID, filepath: str, new_filepath):
     except sessions.UnexpectedError as exc:
         return {"code": -500, "msg": "未知错误: " + str(exc)}
 
+
 @app.get("/session/{session_id}/get_file_contents")
 async def session_get_file_contents(session_id: UUID, current_dir: str, filename: str):
     """使用session获取文件内容"""
@@ -220,8 +218,9 @@ async def session_get_file_contents(session_id: UUID, current_dir: str, filename
         return {"code": -500, "msg": "未知错误: " + str(exc)}
     try:
         detected_encoding = chardet.detect(content)["encoding"]
-        if detected_encoding is None:
-            detected_encoding = "UTF-8"
+        # TODO: Linux的编码一般是utf-8, windows的编码一般是utf-8
+        if detected_encoding is None or detected_encoding == "ascii":
+            detected_encoding = "utf-8"
         text = content.decode(detected_encoding)
         return {"code": 0, "data": {"text": text, "encoding": detected_encoding}}
     except UnicodeDecodeError as exc:
@@ -230,6 +229,27 @@ async def session_get_file_contents(session_id: UUID, current_dir: str, filename
             "msg": f"编码错误：检测出编码为{detected_encoding}，但是解码失败："
             + str(exc),
         }
+
+
+@app.post("/session/{session_id}/put_file_contents")
+async def session_put_file_contents(session_id: UUID, request: FileContentRequest):
+    """使用session写入文件内容"""
+    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(
+        session_id
+    )
+    if session is None:
+        return {"code": -400, "msg": "没有这个session"}
+    try:
+        path = remote_path(request.current_dir) / request.filename
+        content = request.text.encode(request.encoding)
+        success = await session.put_file_contents(str(path), content)
+        return {"code": 0, "data": success}
+    except sessions.NetworkError as exc:
+        return {"code": -500, "msg": "网络错误: " + str(exc)}
+    except sessions.FileError as exc:
+        return {"code": -500, "msg": "文件读取错误: " + str(exc)}
+    except sessions.UnexpectedError as exc:
+        return {"code": -500, "msg": "未知错误: " + str(exc)}
 
 
 @app.get("/session/{session_id}/basicinfo")

