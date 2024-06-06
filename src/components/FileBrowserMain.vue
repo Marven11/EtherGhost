@@ -78,16 +78,16 @@ async function changeDir(entry) {
 }
 
 async function viewFile(newFilename) {
-  let { text: fileContent, encoding: fileEncoding } = await requestDataOrPopupError(`/session/${props.session}/get_file_contents`, popupsRef, {
+  let { text: fileContent, encoding: encoding } = await requestDataOrPopupError(`/session/${props.session}/get_file_contents`, popupsRef, {
     params: {
       current_dir: pwd.value,
       filename: newFilename
     }
   })
-  console.log(fileContent)
   filename.value = newFilename
   userFilename.value = newFilename
   codeMirrorContent.value = fileContent
+  fileEncoding.value = encoding
 }
 
 async function onDoubleClickEntry(event) {
@@ -171,12 +171,10 @@ function onRightClickEntry(event) {
   clickMenuTop.value = event.clientY;
   menuItems.value = menuItemsAll.filter(item => item.entry_type.includes(entry.entryType))
   clickMenuEntry = entry
-  console.log(entry)
   showClickMenu.value = true
 }
 
 function onClickMenuItem(item) {
-  console.log(item)
   if (item.name == "open_file") {
     viewFile(clickMenuEntry.name)
     popupsRef.value.addPopup("blue", "提示", `可以双击打开文件`)
@@ -195,6 +193,7 @@ function onClickMenuItem(item) {
 
 const userFilename = ref("")
 let filename = ref("")
+let fileEncoding = ref("")
 
 const fileExtension = ref("")
 
@@ -316,7 +315,7 @@ function readableFilePerm(filePerm) {
       </div>
       <div class="files-property">
         <p>文件编码: </p>
-        <input type="text" name="encoding" id="files-property-encoding">
+        <input type="text" name="encoding" id="files-property-encoding" v-model="fileEncoding">
       </div>
     </div>
   </div>
