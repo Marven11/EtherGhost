@@ -90,7 +90,7 @@ const options = reactive([
     name: "备注",
     type: "text",
     placeholder: "xxx...",
-    value: ""
+    value: "并没有备注"
   },
   {
     id: "session_type",

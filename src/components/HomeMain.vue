@@ -16,14 +16,6 @@ import Popups from "./Popups.vue";
 import { useRouter } from "vue-router"
 
 const sessions = ref([
-  {
-    type: "ONELINE_PHP",
-    readable_type: "PHP一句话",
-    id: "b9ffbeaa-2906-4865-ad7f-1818896dfe8c",
-    name: "123",
-    note: "测试备注",
-    location: "未知位置"
-  }
 ])
 
 const popupsRef = ref(null)
@@ -92,8 +84,9 @@ function onClickMenuItem(item) {
 }
 
 async function fetchWebshell() {
-  const sessions = await requestDataOrPopupError("/session", popupsRef)
-  sessions.value = sessions
+  const newSessions = await requestDataOrPopupError("/session", popupsRef)
+  console.log(newSessions)
+  sessions.value = newSessions
 }
 
 setTimeout(fetchWebshell, 0)
