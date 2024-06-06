@@ -52,7 +52,7 @@ async function onExecuteCommand(event) {
 // --- Input Box ---
 // ###########
 
-const showInputBox = ref(true)
+const showInputBox = ref(false)
 
 </script>
 
@@ -87,7 +87,7 @@ const showInputBox = ref(true)
   margin-right: 20px;
   outline: none;
   flex-grow: 1;
-  font-size: 30px;
+  font-size: 24px;
   text-indent: 10px;
 }
 
