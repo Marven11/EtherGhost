@@ -40,11 +40,11 @@ function addPopup(color, title, message) {
     }
   }, POPUP_SHOW_TIME)
   setTimeout(() => {
-    const idx = popups.value.find(popup => popup.id == id)
+    const idx = popups.value.findIndex(popup => popup.id == id)
     if(idx > -1) {
-      popups.splice(idx, 1)
-    } 
-  }, POPUP_SHOW_TIME + 2000)
+      popups.value.splice(idx, 1)
+    }
+  }, POPUP_SHOW_TIME + 1000)
 }
 
 defineExpose({ addPopup })
