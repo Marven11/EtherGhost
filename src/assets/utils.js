@@ -20,7 +20,7 @@ export function doAssert(result, msg) {
   }
 }
 
-export function getDataOrPopupError(resp, popupsRef) {
+export function parseDataOrPopupError(resp, popupsRef) {
   if (resp.data.code != 0) {
     let title = `未知错误：${resp.data.code}`
     if (resp.data.code == -400) {
@@ -36,7 +36,7 @@ export function getDataOrPopupError(resp, popupsRef) {
 }
 
 
-export async function requestDataOrPopupError(uri, popupsRef, config) {
+export async function getDataOrPopupError(uri, popupsRef, config) {
   let url = `${getCurrentApiUrl()}${uri}`
   let resp
   try {
@@ -45,7 +45,7 @@ export async function requestDataOrPopupError(uri, popupsRef, config) {
     popupsRef.value.addPopup("red", "请求错误", `无法请求${uri}，服务端是否正在运行？`)
     throw e
   }
-  return getDataOrPopupError(resp, popupsRef)
+  return parseDataOrPopupError(resp, popupsRef)
 }
 
 export async function postDataOrPopupError(uri, popupsRef, config) {
@@ -57,6 +57,6 @@ export async function postDataOrPopupError(uri, popupsRef, config) {
     popupsRef.value.addPopup("red", "请求错误", `无法请求${uri}，服务端是否正在运行？`)
     throw e
   }
-  return getDataOrPopupError(resp, popupsRef)
+  return parseDataOrPopupError(resp, popupsRef)
 }
 

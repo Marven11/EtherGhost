@@ -1,5 +1,5 @@
 <script setup>
-import { getDataOrPopupError } from "@/assets/utils";
+import { parseDataOrPopupError } from "@/assets/utils";
 import IconRun from "./icons/iconRun.vue"
 import Popups from "./Popups.vue"
 import { ref } from "vue";
@@ -44,7 +44,7 @@ async function onExecuteCommand(event) {
     }
   })
   console.log(resp)
-  const result = getDataOrPopupError(resp, popupsRef)
+  const result = parseDataOrPopupError(resp, popupsRef)
   addOutput(cmd, result)
 }
 

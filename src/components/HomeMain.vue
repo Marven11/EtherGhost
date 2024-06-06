@@ -11,7 +11,7 @@ import IconEdit from "./icons/iconEdit.vue"
 import IconDelete from "./icons/iconDelete.vue"
 
 import ClickMenu from "./ClickMenu.vue"
-import { requestDataOrPopupError } from "@/assets/utils";
+import { getDataOrPopupError } from "@/assets/utils";
 import Popups from "./Popups.vue";
 import { useRouter } from "vue-router"
 
@@ -84,7 +84,7 @@ function onClickMenuItem(item) {
 }
 
 async function fetchWebshell() {
-  const newSessions = await requestDataOrPopupError("/session", popupsRef)
+  const newSessions = await getDataOrPopupError("/session", popupsRef)
   console.log(newSessions)
   sessions.value = newSessions
 }

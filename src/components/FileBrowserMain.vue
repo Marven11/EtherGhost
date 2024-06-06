@@ -6,7 +6,7 @@ import IconSymlinkFile from "./icons/iconSymlinkFile.vue"
 import IconSymlinkDirectory from "./icons/iconSymlinkDirectory.vue"
 import IconUnknownFile from "./icons/iconUnknownFile.vue"
 import { ref, shallowRef, watch } from "vue";
-import { requestDataOrPopupError, postDataOrPopupError } from "@/assets/utils"
+import { getDataOrPopupError, postDataOrPopupError } from "@/assets/utils"
 import Popups from "./Popups.vue"
 import ClickMenu from "./ClickMenu.vue"
 import { Codemirror } from 'vue-codemirror'
@@ -44,7 +44,7 @@ const userPwd = ref("") // pwd of user input
 let pwd = ref("")
 
 async function initFetch() {
-  pwd.value = await requestDataOrPopupError(`/session/${props.session}/get_pwd`, popupsRef)
+  pwd.value = await getDataOrPopupError(`/session/${props.session}/get_pwd`, popupsRef)
 }
 
 setTimeout(initFetch, 0)
@@ -68,7 +68,7 @@ const entryIcons = {
 }
 
 async function changeDir(entry) {
-  let newPwd = await requestDataOrPopupError("/utils/changedir", popupsRef, {
+  let newPwd = await getDataOrPopupError("/utils/changedir", popupsRef, {
     params: {
       folder: pwd.value,
       entry: entry
@@ -78,7 +78,7 @@ async function changeDir(entry) {
 }
 
 async function viewFile(newFilename) {
-  let { text: fileContent, encoding: encoding } = await requestDataOrPopupError(`/session/${props.session}/get_file_contents`, popupsRef, {
+  let { text: fileContent, encoding: encoding } = await getDataOrPopupError(`/session/${props.session}/get_file_contents`, popupsRef, {
     params: {
       current_dir: pwd.value,
       filename: newFilename
@@ -103,7 +103,7 @@ async function onDoubleClickEntry(event) {
 }
 
 watch(pwd, async (newPwd, oldPwd) => {
-  let newEntries = await requestDataOrPopupError(`/session/${props.session}/list_dir`, popupsRef, {
+  let newEntries = await getDataOrPopupError(`/session/${props.session}/list_dir`, popupsRef, {
     params: {
       current_dir: newPwd
     }
