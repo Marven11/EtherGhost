@@ -12,6 +12,7 @@ import chardet
 from fastapi import FastAPI, Response, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 from . import session_manager, session_types, sessions
 from .sessions import SessionInterface, PHPSessionInterface
@@ -29,6 +30,14 @@ async def lifespan(_: FastAPI):
 DIR = Path(__file__).parent
 app = FastAPI(lifespan=lifespan)
 app.mount("/public", StaticFiles(directory=DIR / "public"), name="public")
+app.mount("/assets", StaticFiles(directory=DIR / "public" / "assets"), name="assets")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 允许的源，这里设置为所有
+    allow_credentials=True,  # 是否允许携带凭据
+    allow_methods=["*"],  # 允许的 HTTP 方法
+    allow_headers=["*"],  # 允许的头部信息
+)
 
 
 def remote_path(filepath: str) -> PurePath:
@@ -92,9 +101,25 @@ async def test_webshell(session_info: session_types.SessionInfo):
     session = session_manager.session_info_to_session(session_info)
     try:
         result = await session.test_usablility()
-        return {"code": 0, "data": result}
+        if not result:
+            return {"code": 0, "data": {
+                "success": False,
+                "msg": "Webshell无法使用"
+            }}
+        return {"code": 0, "data": {
+            "success": True,
+            "msg": "Webshell可以使用"
+        }}
+    except sessions.UnexpectedError as exc:
+        return {"code": 0, "data": {
+            "success": False,
+            "msg": "未知错误，Webshell不可以使用：" + str(exc)
+        }}
     except sessions.NetworkError as exc:
-        return {"code": -500, "data": "网络错误：" + str(exc)}
+        return {"code": 0, "data": {
+            "success": False,
+            "msg": "网络错误，Webshell不可以使用：" + str(exc)
+        }}
 
 
 @app.post("/update_webshell")
