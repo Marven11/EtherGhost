@@ -6,7 +6,7 @@ import IconSymlinkFile from "./icons/iconSymlinkFile.vue"
 import IconSymlinkDirectory from "./icons/iconSymlinkDirectory.vue"
 import IconUnknownFile from "./icons/iconUnknownFile.vue"
 import { ref, shallowRef, watch } from "vue";
-import { requestDataOrPopupError } from "@/assets/utils"
+import { requestDataOrPopupError, postDataOrPopupError } from "@/assets/utils"
 import Popups from "./Popups.vue"
 import ClickMenu from "./ClickMenu.vue"
 import { Codemirror } from 'vue-codemirror'
@@ -245,6 +245,20 @@ watch(filename, (newFilename, _) => {
   fileExtension.value = newFilename.substring(dotPosition)
 })
 
+async function saveFile() {
+  let success = await postDataOrPopupError(`/session/${props.session}/put_file_contents`, popupsRef, {
+    text: codeMirrorContent.value,
+    encoding: fileEncoding.value,
+    filename: filename.value,
+    current_dir: pwd.value
+  })
+  if(success) {
+    popupsRef.value.addPopup("green", "保存成功", `文件${filename.value}已经成功保存`)
+  }else{
+    popupsRef.value.addPopup("red", "保存失败", `文件${filename.value}保存失败`)
+  }
+}
+
 // #################
 // --- Utilities ---
 // #################
@@ -313,9 +327,14 @@ function readableFilePerm(filePerm) {
         <codemirror v-model="codeMirrorContent" placeholder="Content goes here..." :autofocus="true"
           :indent-with-tab="true" :tab-size="4" :extensions="codeMirrorExtensions" @ready="codeMirrorReady" />
       </div>
-      <div class="files-property">
-        <p>文件编码: </p>
-        <input type="text" name="encoding" id="files-property-encoding" v-model="fileEncoding">
+      <div class="files-control">
+        <div class="file-control-left">
+          <p>文件编码: </p>
+          <input type="text" name="encoding" id="files-control-encoding" v-model="fileEncoding">
+        </div>
+        <div class="file-control-right">
+          <button @click="saveFile">保存</button>
+        </div>
       </div>
     </div>
   </div>
@@ -452,7 +471,7 @@ input[type="text"] {
   overflow: auto;
 }
 
-.files-property {
+.files-control {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -460,16 +479,35 @@ input[type="text"] {
   margin-top: 20px;
   border-radius: 20px;
   padding-left: 20px;
+  padding-right: 20px;
   color: var(--font-color-white);
   flex-shrink: 0;
-
+  justify-content: space-between;
 }
 
-.files-property input {
+.file-control-left,
+.file-control-right {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.files-control input,
+.files-control button {
   width: 100px;
   height: 40px;
   background-color: var(--background-color-3);
   font-size: 16px;
+  color: var(--font-color-white);
+}
+
+.files-control button {
+  border-radius: 20px;
+  border: none;
+}
+
+.files-control button:hover {
+  background-color: #ffffff15;
 }
 
 svg {
