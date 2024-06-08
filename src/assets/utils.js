@@ -46,7 +46,7 @@ export async function getDataOrPopupError(uri, config) {
   try {
     resp = await axios.get(url, config)
   }catch(e){
-    addPopup("red", "请求错误", `无法请求${uri}，服务端是否正在运行？`)
+    addPopup("red", "请求服务端失败", `无法请求${uri}，服务端是否正在运行？`)
     throw e
   }
   return parseDataOrPopupError(resp, popupsRef)
@@ -58,7 +58,7 @@ export async function postDataOrPopupError(uri, config) {
   try {
     resp = await axios.post(url, config)
   }catch(e){
-    addPopup("red", "请求错误", `无法请求${uri}，服务端是否正在运行？`)
+    addPopup("red", "请求服务端失败", `无法请求${uri}，服务端是否正在运行？`)
     throw e
   }
   return parseDataOrPopupError(resp, popupsRef)
