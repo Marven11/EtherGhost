@@ -399,7 +399,6 @@ class PHPWebshell(PHPSessionInterface):
             raise exceptions.FileError("没有权限保存这个文件")
         return result == "SUCCESS"
 
-
     async def move_file(self, filepath: str, new_filepath: str) -> None:
         php_code = MOVE_FILE_PHP.replace("#FILEPATH#", repr(filepath)).replace(
             "#NEW_FILEPATH#", repr(new_filepath)

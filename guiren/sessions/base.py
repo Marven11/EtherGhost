@@ -51,7 +51,6 @@ class SessionInterface:
         """删除文件"""
         raise NotImplementedError()
 
-
     async def move_file(self, filepath: str, new_filepath: str) -> None:
         """移动文件到新的目录"""
         raise NotImplementedError()
