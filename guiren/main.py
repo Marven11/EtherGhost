@@ -254,6 +254,26 @@ async def session_put_file_contents(session_id: UUID, request: FileContentReques
     except sessions.UnexpectedError as exc:
         return {"code": -500, "msg": "未知错误: " + str(exc)}
 
+@app.get("/session/{session_id}/delete_file")
+async def session_delete_file(session_id: UUID, current_dir: str, filename: str):
+    """使用session获取文件内容"""
+    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(
+        session_id
+    )
+    if session is None:
+        return {"code": -400, "msg": "没有这个session"}
+    try:
+        path = remote_path(current_dir) / filename
+        result = await session.delete_file(str(path))
+        return {"code": 0, "data": result}
+    except sessions.NetworkError as exc:
+        return {"code": -500, "msg": "网络错误: " + str(exc)}
+    except sessions.FileError as exc:
+        return {"code": -500, "msg": "文件删除错误: " + str(exc)}
+    except sessions.UnexpectedError as exc:
+        return {"code": -500, "msg": "未知错误: " + str(exc)}
+
+
 
 @app.get("/session/{session_id}/basicinfo")
 async def session_get_basicinfo(session_id: UUID):
