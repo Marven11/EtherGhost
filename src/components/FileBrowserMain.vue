@@ -7,6 +7,7 @@ import IconSymlinkDirectory from "./icons/iconSymlinkDirectory.vue"
 import IconUnknownFile from "./icons/iconUnknownFile.vue"
 import { ref, shallowRef, watch } from "vue";
 import ClickMenu from "./ClickMenu.vue"
+import InputBox from "./InputBox.vue"
 import { Codemirror } from 'vue-codemirror'
 import { getDataOrPopupError, postDataOrPopupError, addPopup } from "@/assets/utils"
 import { store } from "@/assets/store"
@@ -88,6 +89,14 @@ async function viewFile(newFilename) {
   fileEncoding.value = encoding
 }
 
+
+async function viewNewFile(newFilename) {
+  filename.value = newFilename
+  userFilename.value = newFilename
+  codeMirrorContent.value = ""
+  fileEncoding.value = "utf-8"
+}
+
 async function onDoubleClickEntry(event) {
   const element = event.currentTarget
   const entry = entries.value[element.dataset.entryIndex]
@@ -146,6 +155,13 @@ const menuItemsAll = [
     "entry_type": ["file", "link-file"]
   },
   {
+    "name": "new_file",
+    "text": "新建文件",
+    "icon": IconFile,
+    "color": "white",
+    "entry_type": ["file", "link-file", "dir", "link-dir"]
+  },
+  {
     "name": "open_dir",
     "text": "打开文件夹",
     "icon": IconDirectory,
@@ -159,6 +175,19 @@ const menuItems = shallowRef([
 ])
 
 let clickMenuEntry = undefined
+
+function askNewFilename() {
+  showInputBox.value = true
+  inputBoxTitle.value = "新建文件"
+  inputBoxNote.value = "输入文件的文件名"
+  inputBoxCallback = result => {
+    console.log(result)
+    if (result) {
+      viewNewFile(result)
+    }
+    showInputBox.value = false
+  }
+}
 
 function onRightClickEntry(event) {
   event.preventDefault()
@@ -177,6 +206,9 @@ function onClickMenuItem(item) {
     addPopup("blue", "提示", `可以双击打开文件`)
   } else if (item.name == "open_dir") {
     changeDir(clickMenuEntry.name)
+  } else if (item.name == "new_file") {
+    askNewFilename()
+    viewNewFile(clickMenuEntry.name)
   }
   else {
     addPopup("blue", "TODO", `还没实现${item.name}`)
@@ -249,12 +281,19 @@ async function saveFile() {
     filename: filename.value,
     current_dir: pwd.value
   })
-  if(success) {
+  if (success) {
     addPopup("green", "保存成功", `文件${filename.value}已经成功保存`)
-  }else{
+  } else {
     addPopup("red", "保存失败", `文件${filename.value}保存失败`)
   }
 }
+
+// input box 
+
+const showInputBox = ref(false)
+const inputBoxTitle = ref("")
+const inputBoxNote = ref("")
+let inputBoxCallback = ref(undefined)
 
 // #################
 // --- Utilities ---
@@ -340,6 +379,11 @@ function readableFilePerm(filePerm) {
       <ClickMenu :top="clickMenuTop" :left="clickMenuLeft" :menuItems="menuItems" @remove="(_) => showClickMenu = false"
         @clickItem="onClickMenuItem" />
     </div>
+  </transition>
+
+  <transition>
+    <InputBox v-if="showInputBox" :title="inputBoxTitle" :note="inputBoxNote" :requireInput="true"
+      @result="inputBoxCallback" />
   </transition>
 </template>
 

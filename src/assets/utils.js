@@ -6,7 +6,7 @@ export function hello() {
 }
 
 export function getCurrentApiUrl() {
-  return window.location.origin 
+  return window.location.origin.includes("5173") ? "http://127.0.0.1:8022" : window.location.origin
 }
 
 export function doAssert(result, msg) {
@@ -45,7 +45,7 @@ export async function getDataOrPopupError(uri, config) {
   let resp
   try {
     resp = await axios.get(url, config)
-  }catch(e){
+  } catch (e) {
     addPopup("red", "请求服务端失败", `无法请求${uri}，服务端是否正在运行？`)
     throw e
   }
@@ -57,7 +57,7 @@ export async function postDataOrPopupError(uri, config) {
   let resp
   try {
     resp = await axios.post(url, config)
-  }catch(e){
+  } catch (e) {
     addPopup("red", "请求服务端失败", `无法请求${uri}，服务端是否正在运行？`)
     throw e
   }
