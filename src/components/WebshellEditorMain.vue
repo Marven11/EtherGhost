@@ -1,8 +1,7 @@
 <script setup>
 
 import { reactive, ref, shallowRef } from "vue";
-import axios from "axios"
-import { getCurrentApiUrl, getDataOrPopupError, postDataOrPopupError } from "@/assets/utils"
+import { getDataOrPopupError, postDataOrPopupError } from "@/assets/utils"
 import IconCross from './icons/iconCross.vue'
 import IconCheck from './icons/iconCheck.vue'
 import Popups from './Popups.vue'
@@ -220,6 +219,9 @@ function getCurrentSession() {
       }
       session.connection[key] = option.value
     }
+  }
+  if(store.session) {
+    session.session_id = store.session;
   }
   return session
 }
