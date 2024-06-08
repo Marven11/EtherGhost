@@ -488,6 +488,9 @@ class PHPWebshell(PHPSessionInterface):
         """
         raise NotImplementedError("这个函数应该由实际的实现override")
 
+    async def php_eval(self, code: str) -> str:
+        result = await self.submit(code)
+        return result
 
 class PHPWebshellOneliner(PHPWebshell):
     """一句话的php webshell"""

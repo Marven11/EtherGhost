@@ -1,23 +1,30 @@
 """定义session的接口和输入输出"""
+
 import typing as t
 from dataclasses import dataclass
+
 
 @dataclass
 class DirectoryEntry:
     """文件夹中某一项的信息"""
+
     name: str
     permission: str
     filesize: int
     entry_type: t.Literal["dir", "file", "link-dir", "link-file", "unknown"] = "file"
 
+
 @dataclass
 class BasicInfoEntry:
     """有关session的一项基本信息"""
+
     key: str
     value: str
 
+
 class SessionInterface:
     """Session接口"""
+
     async def execute_cmd(self, cmd: str) -> str:
         """在目标上执行命令"""
         raise NotImplementedError()
@@ -30,7 +37,9 @@ class SessionInterface:
         """列出某个文件夹中的内容，包括`.`和`..`，如果没有内容则会填充`..`"""
         raise NotImplementedError()
 
-    async def get_file_contents(self, filepath: str, max_size: int = 1024 * 200) -> bytes:
+    async def get_file_contents(
+        self, filepath: str, max_size: int = 1024 * 200
+    ) -> bytes:
         """获取文件的内容，内容是一个字节序列，不是已经解码的字符串"""
         raise NotImplementedError()
 
@@ -50,8 +59,14 @@ class SessionInterface:
         """获取当前的基本信息"""
         raise NotImplementedError()
 
+
 class PHPSessionInterface(SessionInterface):
     """PHP Session接口"""
+
     async def download_phpinfo(self) -> bytes:
         """获取当前的phpinfo文件"""
+        raise NotImplementedError()
+
+    async def php_eval(self, code: str) -> str:
+        """执行给定的代码，使用eval"""
         raise NotImplementedError()

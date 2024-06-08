@@ -295,6 +295,26 @@ async def session_download_phpinfo(session_id: UUID):
         return {"code": -500, "msg": "未知错误: " + str(exc)}
 
 
+@app.get("/session/{session_id}/php_eval")
+async def session_php_eval(session_id: UUID, code: str):
+    """下载phpinfo"""
+    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(
+        session_id
+    )
+    if session is None:
+        return {"code": -400, "msg": "没有这个session"}
+    if not isinstance(session, PHPSessionInterface):
+        return {"code": -400, "msg": "指定的session不是PHP Session"}
+    result = None
+    try:
+        result = await session.php_eval(code)
+        return {"code": 0, "data": result}
+    except sessions.NetworkError as exc:
+        return {"code": -500, "msg": "网络错误: " + str(exc)}
+    except sessions.UnexpectedError as exc:
+        return {"code": -500, "msg": "未知错误: " + str(exc)}
+
+
 @app.delete("/session/{session_id}")
 async def delete_session(session_id: UUID):
     """删除session"""
