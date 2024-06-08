@@ -1,10 +1,10 @@
 <script setup>
 
 import { reactive, ref, shallowRef } from "vue";
-import { getDataOrPopupError, postDataOrPopupError } from "@/assets/utils"
+import { getDataOrPopupError, postDataOrPopupError, addPopup } from "@/assets/utils"
 import IconCross from './icons/iconCross.vue'
 import IconCheck from './icons/iconCheck.vue'
-import { store, popupsRef } from "@/assets/store";
+import { store } from "@/assets/store";
 import { useRouter } from "vue-router"
 
 const router = useRouter()
@@ -176,7 +176,7 @@ function changeClickboxOption(optionId) {
 }
 
 async function fetchCurrentSession() {
-  const session = await getDataOrPopupError(`/session/${props.session}`, popupsRef)
+  const session = await getDataOrPopupError(`/session/${props.session}`)
 
   updateOption(session.session_type)
   for (const key of ["name", "session_type", "note"]) {
@@ -202,7 +202,7 @@ function getCurrentSession() {
     const option = getOption(key)
     if (["text", "checkbox", "select"].includes(option.type)) {
       if (option.value == undefined) {
-        popupsRef.value.addPopup("red", `选项${key}未填写`, `选项${key}仍未填写，无法获取当前配置！`)
+        addPopup("red", `选项${key}未填写`, `选项${key}仍未填写，无法获取当前配置！`)
         return undefined
       }
       session[key] = option.value
@@ -212,7 +212,7 @@ function getCurrentSession() {
     const option = getOption(key)
     if (["text", "checkbox", "select"].includes(option.type)) {
       if (option.value == undefined) {
-        popupsRef.value.addPopup("red", `选项${key}未填写`, `选项${key}仍未填写，无法获取当前配置！`)
+        addPopup("red", `选项${key}未填写`, `选项${key}仍未填写，无法获取当前配置！`)
         return undefined
       }
       session.connection[key] = option.value
@@ -230,11 +230,11 @@ async function testSession() {
   if (!session) {
     return;
   }
-  let data = await postDataOrPopupError("/test_webshell", popupsRef, session)
+  let data = await postDataOrPopupError("/test_webshell", session)
   if (!data.success) {
-    popupsRef.value.addPopup("red", "测试失败", data.msg)
+    addPopup("red", "测试失败", data.msg)
   } else {
-    popupsRef.value.addPopup("green", "测试成功", data.msg)
+    addPopup("green", "测试成功", data.msg)
   }
 }
 
@@ -243,11 +243,11 @@ async function saveSession() {
   if (!session) {
     return;
   }
-  let data = await postDataOrPopupError("/update_webshell", popupsRef, session)
+  let data = await postDataOrPopupError("/update_webshell", session)
   if (!data) {
-    popupsRef.value.addPopup("red", "保存失败", "保存webshell到本地数据库失败")
+    addPopup("red", "保存失败", "保存webshell到本地数据库失败")
   } else {
-    popupsRef.value.addPopup("green", "保存成功", "保存webshell到本地数据库成功")
+    addPopup("green", "保存成功", "保存webshell到本地数据库成功")
     setTimeout(() => {
       router.push("/")
     }, 1000);

@@ -1,5 +1,5 @@
 import axios from "axios"
-
+import { popupsRef } from "./store"
 
 export function hello() {
   console.log("Hello, World!")
@@ -20,7 +20,11 @@ export function doAssert(result, msg) {
   }
 }
 
-export function parseDataOrPopupError(resp, popupsRef) {
+export function addPopup(color, title, msg) {
+  popupsRef.value.addPopup(color, title, msg)
+}
+
+export function parseDataOrPopupError(resp) {
   if (resp.data.code != 0) {
     let title = `未知错误：${resp.data.code}`
     if (resp.data.code == -400) {
@@ -28,7 +32,7 @@ export function parseDataOrPopupError(resp, popupsRef) {
     } else if (resp.data.code == -500) {
       title = "服务端错误"
     }
-    popupsRef.value.addPopup("red", title, resp.data.msg)
+    addPopup("red", title, resp.data.msg)
     doAssert(false, `${title}: ${resp.data.msg}`)
     return;
   }
@@ -36,25 +40,25 @@ export function parseDataOrPopupError(resp, popupsRef) {
 }
 
 
-export async function getDataOrPopupError(uri, popupsRef, config) {
+export async function getDataOrPopupError(uri, config) {
   let url = `${getCurrentApiUrl()}${uri}`
   let resp
   try {
     resp = await axios.get(url, config)
   }catch(e){
-    popupsRef.value.addPopup("red", "请求错误", `无法请求${uri}，服务端是否正在运行？`)
+    addPopup("red", "请求错误", `无法请求${uri}，服务端是否正在运行？`)
     throw e
   }
   return parseDataOrPopupError(resp, popupsRef)
 }
 
-export async function postDataOrPopupError(uri, popupsRef, config) {
+export async function postDataOrPopupError(uri, config) {
   let url = `${getCurrentApiUrl()}${uri}`
   let resp
   try {
     resp = await axios.post(url, config)
   }catch(e){
-    popupsRef.value.addPopup("red", "请求错误", `无法请求${uri}，服务端是否正在运行？`)
+    addPopup("red", "请求错误", `无法请求${uri}，服务端是否正在运行？`)
     throw e
   }
   return parseDataOrPopupError(resp, popupsRef)

@@ -11,13 +11,12 @@ import IconEdit from "./icons/iconEdit.vue"
 import IconDelete from "./icons/iconDelete.vue"
 
 import ClickMenu from "./ClickMenu.vue"
-import { getDataOrPopupError } from "@/assets/utils";
+import { addPopup, getDataOrPopupError } from "@/assets/utils";
 import { useRouter } from "vue-router"
 import InputBox from "./InputBox.vue"
 import axios from "axios"
 
 import { getCurrentApiUrl } from "@/assets/utils";
-import { popupsRef } from "@/assets/store";
 
 
 const sessions = ref([
@@ -99,7 +98,7 @@ function onClickMenuItem(item) {
 }
 
 async function fetchWebshell() {
-  const newSessions = await getDataOrPopupError("/session", popupsRef)
+  const newSessions = await getDataOrPopupError("/session")
   console.log(newSessions)
   sessions.value = newSessions
 }
@@ -133,15 +132,15 @@ function onMarkDeleteSession(sessionId) {
 async function onDeleteSessionConfirm(userConfirm) {
   console.log(userConfirm)
   if (!sessionToDelete) {
-    popupsRef.value.addPopup("red", "内部错误", `找不到要删除的webshell`)
+    addPopup("red", "内部错误", `找不到要删除的webshell`)
     return
   }
   if (userConfirm) {
     let result = await axios.delete(`${getCurrentApiUrl()}/session/${sessionToDelete}`)
     if (result) {
-      popupsRef.value.addPopup("green", "删除成功", `已经删除指定session`)
+      addPopup("green", "删除成功", `已经删除指定session`)
     } else {
-      popupsRef.value.addPopup("red", "删除失败", `无法删除指定session`)
+      addPopup("red", "删除失败", `无法删除指定session`)
     }
   }
   showInputBox.value = false

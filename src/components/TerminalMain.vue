@@ -1,11 +1,10 @@
 <script setup>
 import { parseDataOrPopupError } from "@/assets/utils";
 import IconRun from "./icons/iconRun.vue"
-import Popups from "./Popups.vue"
 import { ref } from "vue";
 import Axios from "axios";
 import { getCurrentApiUrl } from "@/assets/utils";
-import { store, popupsRef } from "@/assets/store";
+import { store } from "@/assets/store";
 import InputBox from "./InputBox.vue"
 
 
@@ -43,7 +42,7 @@ async function onExecuteCommand(event) {
     }
   })
   console.log(resp)
-  const result = parseDataOrPopupError(resp, popupsRef)
+  const result = parseDataOrPopupError(resp)
   addOutput(cmd, result)
 }
 

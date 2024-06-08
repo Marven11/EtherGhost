@@ -6,9 +6,10 @@ import IconSymlinkFile from "./icons/iconSymlinkFile.vue"
 import IconSymlinkDirectory from "./icons/iconSymlinkDirectory.vue"
 import IconUnknownFile from "./icons/iconUnknownFile.vue"
 import { ref, shallowRef, watch } from "vue";
-import { getDataOrPopupError, postDataOrPopupError } from "@/assets/utils"
 import ClickMenu from "./ClickMenu.vue"
 import { Codemirror } from 'vue-codemirror'
+import { getDataOrPopupError, postDataOrPopupError, addPopup } from "@/assets/utils"
+import { store } from "@/assets/store"
 
 // --- CodeMirror Stuff
 
@@ -21,7 +22,6 @@ import { oneDark } from '@codemirror/theme-one-dark'
 import { EditorView } from "@codemirror/view"
 import { StreamLanguage } from "@codemirror/language"
 import { shell } from "@codemirror/legacy-modes/mode/shell"
-import { store, popupsRef } from "@/assets/store"
 
 const props = defineProps({
   session: String,
@@ -42,7 +42,7 @@ const userPwd = ref("") // pwd of user input
 let pwd = ref("")
 
 async function initFetch() {
-  pwd.value = await getDataOrPopupError(`/session/${props.session}/get_pwd`, popupsRef)
+  pwd.value = await getDataOrPopupError(`/session/${props.session}/get_pwd`)
 }
 
 setTimeout(initFetch, 0)
@@ -66,7 +66,7 @@ const entryIcons = {
 }
 
 async function changeDir(entry) {
-  let newPwd = await getDataOrPopupError("/utils/changedir", popupsRef, {
+  let newPwd = await getDataOrPopupError("/utils/changedir", {
     params: {
       folder: pwd.value,
       entry: entry
@@ -76,7 +76,7 @@ async function changeDir(entry) {
 }
 
 async function viewFile(newFilename) {
-  let { text: fileContent, encoding: encoding } = await getDataOrPopupError(`/session/${props.session}/get_file_contents`, popupsRef, {
+  let { text: fileContent, encoding: encoding } = await getDataOrPopupError(`/session/${props.session}/get_file_contents`, {
     params: {
       current_dir: pwd.value,
       filename: newFilename
@@ -96,12 +96,12 @@ async function onDoubleClickEntry(event) {
   } else if (["file", "link-file"].includes(entry.entryType)) {
     viewFile(entry.name)
   } else {
-    popupsRef.value.addPopup("red", "未知文件类型", `文件${entry.name}类型未知，无法打开`)
+    addPopup("red", "未知文件类型", `文件${entry.name}类型未知，无法打开`)
   }
 }
 
 watch(pwd, async (newPwd, oldPwd) => {
-  let newEntries = await getDataOrPopupError(`/session/${props.session}/list_dir`, popupsRef, {
+  let newEntries = await getDataOrPopupError(`/session/${props.session}/list_dir`, {
     params: {
       current_dir: newPwd
     }
@@ -174,12 +174,12 @@ function onRightClickEntry(event) {
 function onClickMenuItem(item) {
   if (item.name == "open_file") {
     viewFile(clickMenuEntry.name)
-    popupsRef.value.addPopup("blue", "提示", `可以双击打开文件`)
+    addPopup("blue", "提示", `可以双击打开文件`)
   } else if (item.name == "open_dir") {
     changeDir(clickMenuEntry.name)
   }
   else {
-    popupsRef.value.addPopup("blue", "TODO", `还没实现${item.name}`)
+    addPopup("blue", "TODO", `还没实现${item.name}`)
   }
 }
 
@@ -243,16 +243,16 @@ watch(filename, (newFilename, _) => {
 })
 
 async function saveFile() {
-  let success = await postDataOrPopupError(`/session/${props.session}/put_file_contents`, popupsRef, {
+  let success = await postDataOrPopupError(`/session/${props.session}/put_file_contents`, {
     text: codeMirrorContent.value,
     encoding: fileEncoding.value,
     filename: filename.value,
     current_dir: pwd.value
   })
   if(success) {
-    popupsRef.value.addPopup("green", "保存成功", `文件${filename.value}已经成功保存`)
+    addPopup("green", "保存成功", `文件${filename.value}已经成功保存`)
   }else{
-    popupsRef.value.addPopup("red", "保存失败", `文件${filename.value}保存失败`)
+    addPopup("red", "保存失败", `文件${filename.value}保存失败`)
   }
 }
 
