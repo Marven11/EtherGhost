@@ -1,14 +1,15 @@
 <script setup>
 import { ref } from "vue";
-
+import IconCode from "./icons/iconCode.vue"
+import IconDelete from "./icons/iconDelete.vue"
+import IconEdit from "./icons/iconEdit.vue"
+import IconFileBrowser from "./icons/iconFileBrowser.vue"
+import IconInfo from "./icons/iconInfo.vue"
 import IconOthers from "./icons/iconOthers.vue"
 import IconPlus from "./icons/iconPlus.vue"
-import IconTerminal from "./icons/iconTerminal.vue"
-import IconFileBrowser from "./icons/iconFileBrowser.vue"
 import IconProxy from "./icons/iconProxy.vue"
-import IconInfo from "./icons/iconInfo.vue"
-import IconEdit from "./icons/iconEdit.vue"
-import IconDelete from "./icons/iconDelete.vue"
+import IconTerminal from "./icons/iconTerminal.vue"
+
 
 import ClickMenu from "./ClickMenu.vue"
 import { addPopup, getDataOrPopupError } from "@/assets/utils";
@@ -47,6 +48,13 @@ const menuItems = [
     "icon": IconFileBrowser,
     "color": "white",
     "link": "/file-browser/SESSION"
+  },
+  {
+    "name": "open_php_eval",
+    "text": "PHP Eval",
+    "icon": IconCode,
+    "color": "white",
+    "link": "/php-eval/SESSION"
   },
   {
     "name": "open_proxy",
