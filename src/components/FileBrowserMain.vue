@@ -109,7 +109,7 @@ async function onDoubleClickEntry(event) {
   }
 }
 
-watch(pwd, async (newPwd, oldPwd) => {
+async function refreshNewPwd(newPwd) {
   let newEntries = await getDataOrPopupError(`/session/${props.session}/list_dir`, {
     params: {
       current_dir: newPwd
@@ -124,7 +124,11 @@ watch(pwd, async (newPwd, oldPwd) => {
       filesize: entry.filesize,
     }
   })
-  userPwd.value = pwd.value
+}
+
+watch(pwd, async (newPwd, oldPwd) => {
+  refreshNewPwd(newPwd)
+  userPwd.value = newPwd
 })
 
 // something like this:
@@ -286,6 +290,8 @@ async function saveFile() {
   } else {
     addPopup("red", "保存失败", `文件${filename.value}保存失败`)
   }
+  await refreshNewPwd(pwd.value)
+
 }
 
 // input box 
