@@ -5,6 +5,7 @@ import IconFile from "./icons/iconFile.vue"
 import IconSymlinkFile from "./icons/iconSymlinkFile.vue"
 import IconSymlinkDirectory from "./icons/iconSymlinkDirectory.vue"
 import IconUnknownFile from "./icons/iconUnknownFile.vue"
+import IconDelete from "./icons/iconDelete.vue"
 import { ref, shallowRef, watch } from "vue";
 import ClickMenu from "./ClickMenu.vue"
 import InputBox from "./InputBox.vue"
@@ -166,6 +167,13 @@ const menuItemsAll = [
     "entry_type": ["file", "link-file", "dir", "link-dir"]
   },
   {
+    "name": "delete_file",
+    "text": "删除文件",
+    "icon": IconDelete,
+    "color": "red",
+    "entry_type": ["file", "link-file"]
+  },
+  {
     "name": "open_dir",
     "text": "打开文件夹",
     "icon": IconDirectory,
@@ -184,10 +192,36 @@ function askNewFilename() {
   showInputBox.value = true
   inputBoxTitle.value = "新建文件"
   inputBoxNote.value = "输入文件的文件名"
+  inputBoxRequireInput.value = true
   inputBoxCallback = result => {
     console.log(result)
     if (result) {
       viewNewFile(result)
+    }
+    showInputBox.value = false
+  }
+}
+
+function askDeleteFile(filename) {
+  showInputBox.value = true
+  inputBoxTitle.value = "删除文件"
+  inputBoxNote.value = `真的要删除文件${filename}吗`
+  inputBoxRequireInput.value = false
+  inputBoxCallback = result => {
+    console.log(result)
+    if (result) {
+      let result = getDataOrPopupError(`/session/${props.session}/delete_file`, {
+        params: {
+          current_dir: pwd.value,
+          filename: filename
+        }
+      })
+      if (result) {
+        addPopup("green", "删除成功", `文件${filename}已经删除`)
+      } else {
+        addPopup("red", "删除失败", `文件${filename}删除失败`)
+      }
+      refreshNewPwd(pwd.value)
     }
     showInputBox.value = false
   }
@@ -212,7 +246,8 @@ function onClickMenuItem(item) {
     changeDir(clickMenuEntry.name)
   } else if (item.name == "new_file") {
     askNewFilename()
-    viewNewFile(clickMenuEntry.name)
+  } else if (item.name == "delete_file") {
+    askDeleteFile(clickMenuEntry.name)
   }
   else {
     addPopup("blue", "TODO", `还没实现${item.name}`)
@@ -299,6 +334,7 @@ async function saveFile() {
 const showInputBox = ref(false)
 const inputBoxTitle = ref("")
 const inputBoxNote = ref("")
+const inputBoxRequireInput = ref(false)
 let inputBoxCallback = ref(undefined)
 
 // #################
@@ -388,7 +424,7 @@ function readableFilePerm(filePerm) {
   </transition>
 
   <transition>
-    <InputBox v-if="showInputBox" :title="inputBoxTitle" :note="inputBoxNote" :requireInput="true"
+    <InputBox v-if="showInputBox" :title="inputBoxTitle" :note="inputBoxNote" :requireInput="inputBoxRequireInput"
       @result="inputBoxCallback" />
   </transition>
 </template>
