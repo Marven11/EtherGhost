@@ -250,7 +250,7 @@ async def session_put_file_contents(session_id: UUID, request: FileContentReques
     except sessions.NetworkError as exc:
         return {"code": -500, "msg": "网络错误: " + str(exc)}
     except sessions.FileError as exc:
-        return {"code": -500, "msg": "文件读取错误: " + str(exc)}
+        return {"code": -500, "msg": "文件写入错误: " + str(exc)}
     except sessions.UnexpectedError as exc:
         return {"code": -500, "msg": "未知错误: " + str(exc)}
 

@@ -75,10 +75,7 @@ else if(filesize($filePath) > MAX_SIZE) {
 PUT_FILE_CONTENT_PHP = """
 $filePath = FILE_PATH;
 $fileContent = base64_decode(FILE_CONTENT);
-if(!is_file($filePath)) {
-    echo "WRONG_NOT_FILE";
-}
-else if(!is_writeable($filePath)) {
+if(!is_file($filePath) && is_writeable($filePath)) {
     echo "WRONG_NO_PERMISSION";
 }else{
     $content = file_put_contents($filePath, $fileContent);
