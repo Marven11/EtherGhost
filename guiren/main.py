@@ -68,6 +68,9 @@ class FileContentRequest(BaseModel):
     encoding: str
 
 
+class PhpCodeRequest(BaseModel):
+    code: str
+
 @app.get("/session")
 async def get_sessions(session_id: t.Union[UUID, None] = None):
     """列出所有的session或者查找session"""
@@ -295,8 +298,8 @@ async def session_download_phpinfo(session_id: UUID):
         return {"code": -500, "msg": "未知错误: " + str(exc)}
 
 
-@app.get("/session/{session_id}/php_eval")
-async def session_php_eval(session_id: UUID, code: str):
+@app.post("/session/{session_id}/php_eval")
+async def session_php_eval(session_id: UUID, request: PhpCodeRequest):
     """下载phpinfo"""
     session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(
         session_id
@@ -307,6 +310,7 @@ async def session_php_eval(session_id: UUID, code: str):
         return {"code": -400, "msg": "指定的session不是PHP Session"}
     result = None
     try:
+        code = request.code
         result = await session.php_eval(code)
         return {"code": 0, "data": result}
     except sessions.NetworkError as exc:
