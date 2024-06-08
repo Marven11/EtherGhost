@@ -6,7 +6,7 @@ export function hello() {
 }
 
 export function getCurrentApiUrl() {
-  return "http://127.0.0.1:8000" // TODO: rewrite me
+  return window.location.origin 
 }
 
 export function doAssert(result, msg) {
