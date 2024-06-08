@@ -7,7 +7,6 @@ import IconSymlinkDirectory from "./icons/iconSymlinkDirectory.vue"
 import IconUnknownFile from "./icons/iconUnknownFile.vue"
 import { ref, shallowRef, watch } from "vue";
 import { getDataOrPopupError, postDataOrPopupError } from "@/assets/utils"
-import Popups from "./Popups.vue"
 import ClickMenu from "./ClickMenu.vue"
 import { Codemirror } from 'vue-codemirror'
 
@@ -22,8 +21,7 @@ import { oneDark } from '@codemirror/theme-one-dark'
 import { EditorView } from "@codemirror/view"
 import { StreamLanguage } from "@codemirror/language"
 import { shell } from "@codemirror/legacy-modes/mode/shell"
-import { store } from "@/assets/store"
-import IconTerminal from "./icons/iconTerminal.vue"
+import { store, popupsRef } from "@/assets/store"
 
 const props = defineProps({
   session: String,
@@ -131,7 +129,6 @@ watch(pwd, async (newPwd, oldPwd) => {
 const entries = shallowRef([
 
 ])
-const popupsRef = ref(null)
 
 // ###############################
 // --- Folder entry click menu ---
@@ -338,7 +335,6 @@ function readableFilePerm(filePerm) {
       </div>
     </div>
   </div>
-  <Popups ref="popupsRef" />
   <transition>
     <div v-if="showClickMenu">
       <ClickMenu :top="clickMenuTop" :left="clickMenuLeft" :menuItems="menuItems" @remove="(_) => showClickMenu = false"

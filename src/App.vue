@@ -1,11 +1,8 @@
 <script setup>
 import Header from "./components/Header.vue"
-import WebshellEditorMain from "./components/WebshellEditorMain.vue"
-import HomeMain from "./components/HomeMain.vue"
-import TerminalMain from "./components/TerminalMain.vue"
-import FileBrowserMain from "./components/FileBrowserMain.vue"
-import { ref } from "vue"
-import { store } from "./assets/store"
+import { store, popupsRef } from "./assets/store"
+import Popups from "@/components/Popups.vue"
+
 
 </script>
 
@@ -18,6 +15,7 @@ import { store } from "./assets/store"
       <!-- <WebshellEditorMain session="b9ffbeaa-2906-4865-ad7f-1818896dfe8c" /> -->
     </main>
   </div>
+  <Popups ref="popupsRef" />
 </template>
 
 <style scoped>

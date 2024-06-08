@@ -4,8 +4,7 @@ import { reactive, ref, shallowRef } from "vue";
 import { getDataOrPopupError, postDataOrPopupError } from "@/assets/utils"
 import IconCross from './icons/iconCross.vue'
 import IconCheck from './icons/iconCheck.vue'
-import Popups from './Popups.vue'
-import { store } from "@/assets/store";
+import { store, popupsRef } from "@/assets/store";
 import { useRouter } from "vue-router"
 
 const router = useRouter()
@@ -153,7 +152,6 @@ const options = reactive([
 
 ])
 
-const popupsRef = ref(null)
 
 
 
@@ -304,7 +302,6 @@ setTimeout(() => {
       测试
     </div>
   </div>
-  <Popups ref="popupsRef" />
 </template>
 
 <style scoped>

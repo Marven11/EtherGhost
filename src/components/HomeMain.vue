@@ -12,12 +12,12 @@ import IconDelete from "./icons/iconDelete.vue"
 
 import ClickMenu from "./ClickMenu.vue"
 import { getDataOrPopupError } from "@/assets/utils";
-import Popups from "./Popups.vue";
 import { useRouter } from "vue-router"
 import InputBox from "./InputBox.vue"
 import axios from "axios"
 
 import { getCurrentApiUrl } from "@/assets/utils";
+import { popupsRef } from "@/assets/store";
 
 
 const sessions = ref([
@@ -28,7 +28,6 @@ const sessions = ref([
 // ################
 
 
-const popupsRef = ref(null)
 const showClickMenu = ref(false)
 const clickMenuLeft = ref(0)
 const clickMenuTop = ref(0)
@@ -184,7 +183,6 @@ async function onDeleteSessionConfirm(userConfirm) {
   <div class="add-webshell-button" @click="router.push('/webshell-editor/')">
     <IconPlus />
   </div>
-  <Popups ref="popupsRef" />
   <transition>
     <InputBox v-if="showInputBox" :title="inputBoxTitle" :note="inputBoxNote" :requireInput="false"
       @result="inputBoxCallback" />
