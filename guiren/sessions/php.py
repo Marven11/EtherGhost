@@ -537,6 +537,8 @@ class PHPWebshellOneliner(PHPWebshell):
                 )
                 return response.status_code, response.text
 
+        except httpx.TimeoutException as exc:
+            raise exceptions.NetworkError("HTTP请求超时") from exc
         except httpx.HTTPError as exc:
             raise exceptions.NetworkError("发送HTTP请求失败") from exc
 
@@ -558,6 +560,8 @@ class PHPWebshellBehinderAES(PHPWebshell):
             async with httpx.AsyncClient() as client:
                 response = await client.request(method="POST", url=self.url, data=data)
                 return response.status_code, response.text
+        except httpx.TimeoutException as exc:
+            raise exceptions.NetworkError("HTTP请求超时") from exc
         except httpx.HTTPError as exc:
             raise exceptions.NetworkError("发送HTTP请求失败") from exc
 
@@ -579,5 +583,7 @@ class PHPWebshellBehinderXor(PHPWebshell):
             async with httpx.AsyncClient() as client:
                 response = await client.request(method="POST", url=self.url, data=data)
                 return response.status_code, response.text
+        except httpx.TimeoutException as exc:
+            raise exceptions.NetworkError("HTTP请求超时") from exc
         except httpx.HTTPError as exc:
             raise exceptions.NetworkError("发送HTTP请求失败") from exc
