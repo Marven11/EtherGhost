@@ -7,6 +7,7 @@ import WebshellEditorMain from "./components/WebshellEditorMain.vue";
 import HomeMain from "./components/HomeMain.vue";
 import TerminalMain from "./components/TerminalMain.vue";
 import FileBrowserMain from "./components/FileBrowserMain.vue";
+import PhpEvalMain from "./components/PhpEvalMain.vue";
 import { createRouter, createWebHashHistory } from "vue-router";
 
 const routes = [
@@ -23,6 +24,7 @@ const routes = [
   },
   { path: "/terminal/:session", component: TerminalMain, props: true },
   { path: "/file-browser/:session", component: FileBrowserMain, props: true },
+  { path: "/php-eval/:session", component: PhpEvalMain, props: true },
 ];
 
 const router = createRouter({
