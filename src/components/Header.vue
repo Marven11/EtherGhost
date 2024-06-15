@@ -16,37 +16,44 @@ const iconSpecs = [
   {
     type: "home",
     component: IconHome,
-    uri: "/"
+    uri: "/",
+    tooltip: "回到主页，打开其他webshell"
   },
   {
     type: "terminal",
     component: IconTerminal,
-    uri: "/terminal/SESSION"
+    uri: "/terminal/SESSION",
+    tooltip: "模拟终端"
   },
   {
     type: "open-php-eval",
     component: IconCode,
-    uri: "/php-eval/SESSION"
+    uri: "/php-eval/SESSION",
+    tooltip: "PHP Eval"
   },
   {
     type: "file-browser",
     component: IconFileBrowser,
-    uri: "/file-browser/SESSION"
+    uri: "/file-browser/SESSION",
+    tooltip: "文件管理"
   },
   {
     type: "info",
     component: IconInfo,
-    uri: "/"
+    uri: "/",
+    tooltip: "机器信息"
   },
   {
     type: "proxy",
     component: IconProxy,
-    uri: "/"
+    uri: "/",
+    tooltip: "代理"
   },
   {
     type: "others",
     component: IconOthers,
-    uri: "/"
+    uri: "/",
+    tooltip: "其他"
   },
 ]
 
@@ -89,7 +96,7 @@ function clickIcon(icon) {
       </p>
     </div>
     <nav>
-      <div v-for="icon in icons" @click="clickIcon(icon)" class="icon">
+      <div v-for="icon in icons" @click="clickIcon(icon)" class="icon" :title="icon.tooltip">
         <component :is="icon.component"></component>
       </div>
     </nav>

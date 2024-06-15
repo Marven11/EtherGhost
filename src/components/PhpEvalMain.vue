@@ -119,7 +119,7 @@ include $temp_file;
           @keydown.ctrl.enter="onCtrlEnter" />
       </div>
       <div class="actions">
-        <button class="button" @click="onExecute">自动选择模式执行</button>
+        <button class="button" title="自动判断使用eval还是include执行，快捷键Ctrl+Enter" @click="onExecute">自动选择模式执行</button>
         <button class="button" @click="onPhpEval">使用eval执行</button>
         <button class="button" @click="onPhpInclude">使用include执行</button>
       </div>
@@ -128,15 +128,8 @@ include $temp_file;
       <div class="php-output">
         <textarea name="php-output" id="php-output" readonly :value="terminalOutput"></textarea>
       </div>
-      <!-- <transition>
-        <InputBox v-if="showInputBox" title="测试标题" note="测试测试，这是一个测试" :requireInput="true"
-          @result="(_) => showInputBox = false" />
-      </transition> -->
     </div>
   </div>
-
-
-
 </template>
 
 <style scoped>
