@@ -102,9 +102,9 @@ include $temp_file;
           :indent-with-tab="true" :tab-size="4" :extensions="codeMirrorExtensions" @ready="codeMirrorReady" />
       </div>
       <div class="actions">
-        <button @click="onExecute">自动选择模式执行</button>
-        <button @click="onPhpEval">使用eval执行</button>
-        <button @click="onPhpInclude">使用include执行</button>
+        <button class="button" @click="onExecute">自动选择模式执行</button>
+        <button class="button" @click="onPhpEval">使用eval执行</button>
+        <button class="button" @click="onPhpInclude">使用include执行</button>
       </div>
     </div>
     <div class="right-panel">
@@ -150,19 +150,11 @@ include $temp_file;
   padding-right: 20px;
 }
 
+
+
 .actions button {
   height: 40px;
-  border: none;
-  outline: none;
-  border-radius: 12px;
-  justify-content: center;
-  margin-right: 10px;
-  font-size: 16px;
-  align-items: center;
-  background-color: var(--background-color-3);
-  color: var(--font-color-white);
-  padding-left: 10px;
-  padding-right: 10px;
+
 }
 
 .actions button:hover {

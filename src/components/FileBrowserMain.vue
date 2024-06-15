@@ -411,7 +411,7 @@ function readableFilePerm(filePerm) {
           <input type="text" name="encoding" id="files-control-encoding" v-model="fileEncoding">
         </div>
         <div class="file-control-right">
-          <button @click="saveFile">保存</button>
+          <button class="button" @click="saveFile">保存</button>
         </div>
       </div>
     </div>
@@ -574,23 +574,14 @@ input[type="text"] {
   align-items: center;
 }
 
-.files-control input,
-.files-control button {
-  width: 100px;
+.files-control input {
   height: 40px;
+  width: 100px;
   background-color: var(--background-color-3);
   font-size: 16px;
   color: var(--font-color-white);
 }
 
-.files-control button {
-  border-radius: 20px;
-  border: none;
-}
-
-.files-control button:hover {
-  background-color: #ffffff15;
-}
 
 svg {
   width: 40px;
