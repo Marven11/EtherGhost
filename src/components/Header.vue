@@ -9,6 +9,7 @@ import IconOthers from "./icons/iconOthers.vue"
 import IconSetting from "./icons/iconSetting.vue"
 import { useRouter } from "vue-router"
 import { store } from "@/assets/store.js"
+import IconCode from "./icons/iconCode.vue"
 
 const router = useRouter()
 const iconSpecs = [
@@ -21,6 +22,11 @@ const iconSpecs = [
     type: "terminal",
     component: IconTerminal,
     uri: "/terminal/SESSION"
+  },
+  {
+    type: "open-php-eval",
+    component: IconCode,
+    uri: "/php-eval/SESSION"
   },
   {
     type: "file-browser",
