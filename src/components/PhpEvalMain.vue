@@ -3,7 +3,7 @@ import { ref, shallowRef, watch } from "vue";
 import { Codemirror } from 'vue-codemirror'
 import { php } from '@codemirror/lang-php'
 import { oneDark } from '@codemirror/theme-one-dark'
-import { EditorView } from "@codemirror/view"
+import { EditorView, keymap } from "@codemirror/view"
 import { addPopup, postDataOrPopupError } from "@/assets/utils";
 
 const props = defineProps({
@@ -53,11 +53,21 @@ watch(codeMirrorContent, (newValue, _) => {
 
 const terminalOutput = ref("")
 
+async function onCtrlEnter() {
+  let content = codeMirrorContent.value
+  // evil hack to implement ctrl+enter event
+  // that ignore user input newline
+  if (content[content.length - 1] == "\n") {
+    codeMirrorContent.value = content.slice(0, content.length - 1)
+  }
+  await onExecute()
+}
+
 async function onExecute() {
-  if(phpPlain.value) {
-    await onPhpEval();
-  }else{
-    await onPhpInclude();
+  if (phpPlain.value) {
+    await onPhpEval()
+  } else {
+    await onPhpInclude()
   }
 }
 
@@ -99,7 +109,8 @@ include $temp_file;
     <div class="left-panel">
       <div class="php-code">
         <codemirror v-model="codeMirrorContent" placeholder="var_dump('exploit!');" :autofocus="true"
-          :indent-with-tab="true" :tab-size="4" :extensions="codeMirrorExtensions" @ready="codeMirrorReady" />
+          :indent-with-tab="true" :tab-size="4" :extensions="codeMirrorExtensions" @ready="codeMirrorReady"
+          @keydown.ctrl.enter="onCtrlEnter" />
       </div>
       <div class="actions">
         <button class="button" @click="onExecute">自动选择模式执行</button>
