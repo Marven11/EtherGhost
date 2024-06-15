@@ -200,11 +200,25 @@ function confirmNewFile() {
   inputBoxTitle.value = "新建文件"
   inputBoxNote.value = "输入文件的文件名"
   inputBoxRequireInput.value = true
-  inputBoxCallback = result => {
-    console.log(result)
-    if (result) {
-      viewNewFile(result)
+  inputBoxCallback = async filename => {
+    if (!filename) {
+      showInputBox.value = false
+
     }
+    let success = await postDataOrPopupError(`/session/${props.session}/put_file_contents`, {
+      text: "",
+      encoding: "utf-8",
+      filename: filename,
+      current_dir: pwd.value
+    })
+    if (success) {
+      addPopup("green", "新建文件成功", `文件${filename}已经成功新建`)
+    } else {
+      addPopup("red", "新建失败", `文件${filename}新建失败`)
+    }
+    await refreshNewPwd(pwd.value)
+
+    viewNewFile(filename)
     showInputBox.value = false
   }
 }
@@ -269,7 +283,7 @@ function onClickMenuItem(item) {
     confirmNewFile()
   } else if (item.name == "rename_file") {
     confirmRenameFile(clickMenuEntry.name)
-  }else if (item.name == "delete_file") {
+  } else if (item.name == "delete_file") {
     confirmDeleteFile(clickMenuEntry.name)
   }
   else {
