@@ -164,7 +164,7 @@ const menuItemsAll = [
     "text": "新建文件",
     "icon": IconFile,
     "color": "white",
-    "entry_type": ["file", "link-file"]
+    "entry_type": ["empty", "file", "link-file"]
   },
   {
     "name": "rename_file",
@@ -285,6 +285,15 @@ function onRightClickEntry(event) {
   clickMenuTop.value = event.clientY;
   menuItems.value = menuItemsAll.filter(item => item.entry_type.includes(entry.entryType))
   clickMenuEntry = entry
+  showClickMenu.value = true
+}
+
+function onRightClickEmpty(event) {
+  event.preventDefault()
+  clickMenuLeft.value = event.clientX;
+  clickMenuTop.value = event.clientY;
+  menuItems.value = menuItemsAll.filter(item => item.entry_type.includes("empty"))
+  clickMenuEntry = undefined
   showClickMenu.value = true
 }
 
@@ -414,9 +423,9 @@ function readableFilePerm(filePerm) {
     </div>
   </form>
   <div class="file-panel">
-    <div class="folder-panel">
+    <div class="folder-panel" @click.right.stop="onRightClickEmpty">
       <div class="folder-entry" v-for="[entryIndex, entry] in entries.entries()" @dblclick="onDoubleClickEntry"
-        @click.right="onRightClickEntry" :data-entry-index="entryIndex">
+        @click.right.stop="onRightClickEntry" :data-entry-index="entryIndex">
         <div class="folder-entry-icon">
           <component :is="entry.icon"></component>
         </div>
