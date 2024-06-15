@@ -22,6 +22,9 @@ class BasicInfoEntry:
     value: str
 
 
+# Session对象会在处理一个请求的时候创建，请求结束时立即丢弃
+# 所以Session对象基本上是无状态的，状态会在请求结束后被丢弃
+
 class SessionInterface:
     """Session接口"""
 
