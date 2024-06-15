@@ -352,8 +352,8 @@ async def delete_session(session_id: UUID):
     return {"code": 0, "data": True}
 
 
-@app.get("/utils/changedir")
-async def changedir(folder: str, entry: str):
+@app.get("/utils/join_path")
+async def join_path(folder: str, entry: str):
     """改变当前文件夹，为了保证正确实现使用了pathlib"""
     result = None
     if entry == "..":
