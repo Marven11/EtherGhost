@@ -6,7 +6,7 @@ const props = defineProps(["top", "left", "menuItems"])
 
 const emit = defineEmits(["remove", "clickItem"])
 
-// An item is sth loke this:
+// An item is sth like this:
 // {
 //     "name": "open_terminal",
 //     "text": "打开终端",
@@ -27,10 +27,11 @@ function onClickItem(itemName) {
 </script>
 
 <template>
-  <div class="background" @click="hideAndEmit">
+  <div class="background" @click="hideAndEmit" @click.right="e => { e.preventDefault(); hideAndEmit() }">
   </div>
   <div class="click-menu" :style="`top: ${props.top || 0}px; left: ${props.left || 0}px; `">
-    <div class="click-menu-item" v-for="menu_item in menuItems" @click="onClickItem(menu_item)">
+    <div class="click-menu-item" v-for="menu_item in menuItems" @click="onClickItem(menu_item)"
+      @click.right="e => { e.preventDefault(); hideAndEmit() }">
       <div class="click-menu-icon" :color="menu_item.color">
         <component :is="menu_item.icon"></component>
       </div>
