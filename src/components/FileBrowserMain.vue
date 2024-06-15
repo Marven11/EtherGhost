@@ -10,7 +10,7 @@ import { ref, shallowRef, watch } from "vue";
 import ClickMenu from "./ClickMenu.vue"
 import InputBox from "./InputBox.vue"
 import { Codemirror } from 'vue-codemirror'
-import { getDataOrPopupError, postDataOrPopupError, addPopup } from "@/assets/utils"
+import { getDataOrPopupError, postDataOrPopupError, addPopup, joinPath } from "@/assets/utils"
 import { store } from "@/assets/store"
 
 // --- CodeMirror Stuff
@@ -68,7 +68,7 @@ const entryIcons = {
 }
 
 async function changeDir(entry) {
-  let newPwd = await getDataOrPopupError("/utils/changedir", {
+  let newPwd = await getDataOrPopupError("/utils/join_path", {
     params: {
       folder: pwd.value,
       entry: entry
@@ -164,6 +164,13 @@ const menuItemsAll = [
     "text": "新建文件",
     "icon": IconFile,
     "color": "white",
+    "entry_type": ["file", "link-file"]
+  },
+  {
+    "name": "rename_file",
+    "text": "重命名文件",
+    "icon": IconFile,
+    "color": "white",
     "entry_type": ["file", "link-file", "dir", "link-dir"]
   },
   {
@@ -188,7 +195,7 @@ const menuItems = shallowRef([
 
 let clickMenuEntry = undefined
 
-function askNewFilename() {
+function confirmNewFile() {
   showInputBox.value = true
   inputBoxTitle.value = "新建文件"
   inputBoxNote.value = "输入文件的文件名"
@@ -202,15 +209,40 @@ function askNewFilename() {
   }
 }
 
-function askDeleteFile(filename) {
+function confirmRenameFile(filename) {
+  showInputBox.value = true
+  inputBoxTitle.value = "重命名文件"
+  inputBoxNote.value = `输入新的文件名${filename}`
+  inputBoxRequireInput.value = true
+  inputBoxCallback = async new_filename => {
+    if (new_filename) {
+      let result = await getDataOrPopupError(`/session/${props.session}/move_file`, {
+        params: {
+          filepath: (await joinPath(pwd.value, filename)),
+          new_filepath: (await joinPath(pwd.value, new_filename))
+        }
+      })
+      if (result) {
+        addPopup("green", "重命名成功", `文件${filename}已经重命名`)
+      } else {
+        addPopup("red", "重命名失败", `文件${filename}重命名失败`)
+      }
+      refreshNewPwd(pwd.value)
+    }
+    showInputBox.value = false
+  }
+}
+
+
+function confirmDeleteFile(filename) {
   showInputBox.value = true
   inputBoxTitle.value = "删除文件"
   inputBoxNote.value = `真的要删除文件${filename}吗`
   inputBoxRequireInput.value = false
-  inputBoxCallback = result => {
+  inputBoxCallback = async result => {
     console.log(result)
     if (result) {
-      let result = getDataOrPopupError(`/session/${props.session}/delete_file`, {
+      let result = await getDataOrPopupError(`/session/${props.session}/delete_file`, {
         params: {
           current_dir: pwd.value,
           filename: filename
@@ -227,6 +259,24 @@ function askDeleteFile(filename) {
   }
 }
 
+function onClickMenuItem(item) {
+  if (item.name == "open_file") {
+    viewFile(clickMenuEntry.name)
+    addPopup("blue", "提示", `可以双击打开文件`)
+  } else if (item.name == "open_dir") {
+    changeDir(clickMenuEntry.name)
+  } else if (item.name == "new_file") {
+    confirmNewFile()
+  } else if (item.name == "rename_file") {
+    confirmRenameFile(clickMenuEntry.name)
+  }else if (item.name == "delete_file") {
+    confirmDeleteFile(clickMenuEntry.name)
+  }
+  else {
+    addPopup("blue", "TODO", `还没实现${item.name}`)
+  }
+}
+
 function onRightClickEntry(event) {
   event.preventDefault()
   const element = event.currentTarget
@@ -236,22 +286,6 @@ function onRightClickEntry(event) {
   menuItems.value = menuItemsAll.filter(item => item.entry_type.includes(entry.entryType))
   clickMenuEntry = entry
   showClickMenu.value = true
-}
-
-function onClickMenuItem(item) {
-  if (item.name == "open_file") {
-    viewFile(clickMenuEntry.name)
-    addPopup("blue", "提示", `可以双击打开文件`)
-  } else if (item.name == "open_dir") {
-    changeDir(clickMenuEntry.name)
-  } else if (item.name == "new_file") {
-    askNewFilename()
-  } else if (item.name == "delete_file") {
-    askDeleteFile(clickMenuEntry.name)
-  }
-  else {
-    addPopup("blue", "TODO", `还没实现${item.name}`)
-  }
 }
 
 

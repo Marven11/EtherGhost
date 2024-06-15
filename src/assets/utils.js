@@ -5,6 +5,15 @@ export function hello() {
   console.log("Hello, World!")
 }
 
+export async function joinPath(folder, entry) {
+  return await getDataOrPopupError("/utils/join_path", {
+    params: {
+      folder: folder,
+      entry: entry
+    }
+  })
+}
+
 export function getCurrentApiUrl() {
   return window.location.origin.includes("5173") ? "http://127.0.0.1:8022" : window.location.origin
 }
