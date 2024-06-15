@@ -48,7 +48,8 @@ function onClickItem(itemName) {
 <style scoped>
 .click-menu {
   position: absolute;
-  background-color: var(--background-color-2);
+  background-color: var(--background-color-grey);
+  opacity: 0.8;
   border-radius: 20px;
   padding-top: 20px;
   padding-bottom: 20px;
