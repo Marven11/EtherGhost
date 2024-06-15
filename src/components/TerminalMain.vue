@@ -1,5 +1,5 @@
 <script setup>
-import { parseDataOrPopupError } from "@/assets/utils";
+import { getDataOrPopupError, parseDataOrPopupError } from "@/assets/utils";
 import IconRun from "./icons/iconRun.vue"
 import { ref } from "vue";
 import Axios from "axios";
@@ -32,17 +32,14 @@ function addOutput(command, output) {
 }
 
 async function onExecuteCommand(event) {
-  const url = `${getCurrentApiUrl()}/session/${props.session}/execute_cmd`
   const cmd = terminalInput.value;
   event.preventDefault()
   terminalInput.value = ""
-  const resp = await Axios.get(url, {
+  const result = await getDataOrPopupError(`/session/${props.session}/execute_cmd`, {
     params: {
       cmd: cmd
     }
   })
-  console.log(resp)
-  const result = parseDataOrPopupError(resp)
   addOutput(cmd, result)
 }
 
