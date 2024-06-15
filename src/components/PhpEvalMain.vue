@@ -97,11 +97,11 @@ async function onPhpInclude() {
   const rawCode = codeMirrorContent.value;
   const code = `
 $temp_file = tempnam(sys_get_temp_dir(), "");
-$content = ${JSON.stringify(rawCode)};
+$content = base64_decode(${JSON.stringify(btoa(rawCode))});
 file_put_contents($temp_file, $content);
 include $temp_file;
 @unlink($temp_file);
-  `
+  `.trim()
   const data = await postDataOrPopupError(url, {
     code: code
   })
