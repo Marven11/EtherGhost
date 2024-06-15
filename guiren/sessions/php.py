@@ -15,7 +15,7 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 
 from . import exceptions
-from ..utils import random_english_words, random_user_agent
+from ..utils import random_english_words, random_user_agent, random_data
 from .base import PHPSessionInterface, DirectoryEntry, BasicInfoEntry
 
 logger = logging.getLogger("sessions.php")
@@ -548,7 +548,8 @@ class PHPWebshellOneliner(PHPWebshell):
         obfs_data = {}
         if self.http_params_obfs:
             obfs_data = {
-                random_english_words(): random_english_words() for _ in range(20)
+                random_english_words(): random_data()
+                for _ in range(random.randint(8, 12))
             }
         if self.method in ["GET", "HEAD"]:
             params[self.password] = payload
