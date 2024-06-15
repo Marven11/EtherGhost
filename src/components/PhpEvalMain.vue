@@ -3,12 +3,18 @@ import { ref, shallowRef, watch } from "vue";
 import { Codemirror } from 'vue-codemirror'
 import { php } from '@codemirror/lang-php'
 import { oneDark } from '@codemirror/theme-one-dark'
-import { EditorView, keymap } from "@codemirror/view"
+import { EditorView } from "@codemirror/view"
+
 import { addPopup, postDataOrPopupError } from "@/assets/utils";
+import { store } from "@/assets/store";
 
 const props = defineProps({
   session: String,
 })
+
+if (props.session) {
+  store.session = props.session
+}
 
 // ##############
 // --- Editor ---
