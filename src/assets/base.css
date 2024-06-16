@@ -1,0 +1,34 @@
+body,
+html {
+    background-color: #2a303c;
+    margin: 0;
+}
+
+@font-face {
+    font-family: "FiraCode";
+    src: url("./FiraCodeNerdFontMono-Regular.ttf");
+}
+
+* {
+    box-sizing: border-box;
+    font-family: 'FiraCode', 'Courier New', Courier, monospace;
+    transition: background 0.3s ease;
+}
+
+:root {
+    --red: #ffae9b;
+    --yellow: #efd057;
+    --green: #9fe88d;
+    --blue: #28ebff;
+    --white: #b1cbd5;
+    --primary-color: #28ebff;
+    --font-color-black: #091307;
+    --font-color-grey: #64748b;
+    --font-color-white: #b1cbd5;
+    --border-color-grey: #38404c;
+    --background-color-grey: #38404c;
+    --background-color-1: #2a303c;
+    --background-color-2: #242933;
+    --background-color-3: #20252e;
+    --background-color-4: #1c212b;
+}
