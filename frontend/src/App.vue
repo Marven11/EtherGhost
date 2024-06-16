@@ -7,7 +7,7 @@ import Popups from "@/components/Popups.vue"
 </script>
 
 <template>
-  <div id="root">
+  <div id="root" :data-theme="store.theme">
     <!-- modified button from https://www.svgrepo.com/collection/dazzle-line-icons/ -->
     <Header />
     <main>

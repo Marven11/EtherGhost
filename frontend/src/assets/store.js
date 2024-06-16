@@ -5,7 +5,8 @@ export const popupsRef = ref(null)
 
 export const store = reactive({
   session: "",
-  sessionName: ""
+  sessionName: "",
+  theme: "green"
 })
 
 watch(

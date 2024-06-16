@@ -21,7 +21,6 @@ html {
     --green: #9fe88d;
     --blue: #28ebff;
     --white: #b1cbd5;
-    --primary-color: #9fe88d;
     --font-color-black: #091307;
     --font-color-grey: #64748b;
     --font-color-white: #b1cbd5;
@@ -31,4 +30,20 @@ html {
     --background-color-2: #242933;
     --background-color-3: #20252e;
     --background-color-4: #1c212b;
+}
+
+[data-theme="red"] {
+    --primary-color: var(--red);
+}
+
+[data-theme="yellow"] {
+    --primary-color: var(--yellow);
+}
+
+[data-theme="green"] {
+    --primary-color: var(--green);
+}
+
+[data-theme="blue"] {
+    --primary-color: var(--blue);
 }
