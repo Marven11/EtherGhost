@@ -107,6 +107,15 @@ class PHPSessionInterface(SessionInterface):
 
 
 def register_session(cls):
+    """装饰session class, 注册一个session
+    class必需的属性
+      - .conn_options (t.List[ConnOptionGroup]):
+        注明所需的每个选项
+      - .readable_name (str):
+        session的名字
+      - .session_type (str):
+        session的ID，可以包含大小写字符和下划线
+    """
     session_type_info[cls.session_type] = {
         "constructor": cls,
         "options": cls.conn_options,
