@@ -68,7 +68,7 @@ async function updateOption(sessionType) {
   optionsGroups.value = [basicOptionGroup, ...options]
   for (let group of optionsGroups.value) {
     for (let option of group.options) {
-      if(option.default_value) {
+      if(option.default_value !== undefined) {
         optionValues[option.id] = option.default_value
       }
     }
