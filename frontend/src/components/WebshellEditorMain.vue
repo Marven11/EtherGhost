@@ -88,6 +88,7 @@ async function fetchCurrentSession() {
   await updateOption(session.session_type)
   for (const group of optionsGroups.value) {
     for (const option of group.options) {
+      console.log(option.id, session.connection[option.id])
       doAssert(["text", "checkbox", "select"].includes(option.type), "内部错误：没有这类选项")
       if (["name", "session_type", "note"].includes(option.id)) {
         optionValues[option.id] = session[option.id]
@@ -96,8 +97,6 @@ async function fetchCurrentSession() {
       }
     }
   }
-
-
 }
 
 function getCurrentSession() {
@@ -166,15 +165,12 @@ setTimeout(async () => {
   }
 }, 0)
 
-watch(
-  () => optionValues.session_type,
-  async (newValue, oldValue) => {
-    if (newValue == oldValue) {
-      return
-    }
-    await updateOption(newValue)
+function onSelectElementChange(option) {
+  if(option.id != "session_type") {
+    return
   }
-)
+  updateOption(optionValues["session_type"])
+}
 
 </script>
 
@@ -190,7 +186,7 @@ watch(
       <input v-if="option.type == 'text'" :type="option.type" :name="option.id" v-model="optionValues[option.id]"
         :placeholder="option.placeholder" :id="'option-' + option.id">
       <select v-else-if="option.type == 'select'" :name="option.id" :id="'option-' + option.id"
-        v-model="optionValues[option.id]">
+        v-model="optionValues[option.id]" @change="onSelectElementChange(option)">
         <option disabled value="">选择一个</option>
         <option v-for="alternative in option.alternatives" :value="alternative.value">
           {{ alternative.name }}
