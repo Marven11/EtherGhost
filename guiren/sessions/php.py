@@ -24,7 +24,7 @@ from .base import (
     register_session,
     ConnOption,
     ConnOptionGroup,
-    get_http_client
+    get_http_client,
 )
 
 logger = logging.getLogger("sessions.php")
@@ -648,9 +648,57 @@ class PHPWebshellOneliner(PHPWebshell):
             raise exceptions.NetworkError("发送HTTP请求失败") from exc
 
 
-# TODO: fix me
-# @register_session("BEHINDER_PHP_AES", readable_name="冰蝎AES")
+@register_session
 class PHPWebshellBehinderAES(PHPWebshell):
+    session_type = "BEHINDER_PHP_AES"
+    readable_name = "冰蝎AES"
+    conn_options: t.List[ConnOptionGroup] = [
+        {
+            "name": "基本连接配置",
+            "options": [
+                ConnOption(
+                    id="url",
+                    name="地址",
+                    type="text",
+                    placeholder="http://xxx.com",
+                    default_value=None,
+                    alternatives=None,
+                ),
+                ConnOption(
+                    id="password",
+                    name="密码",
+                    type="text",
+                    placeholder="******",
+                    default_value=None,
+                    alternatives=None,
+                ),
+            ],
+        },
+        {
+            "name": "高级连接配置",
+            "options": [
+                ConnOption(
+                    id="encoder",
+                    name="编码器",
+                    type="select",
+                    placeholder="base64",
+                    default_value="base64",
+                    alternatives=[
+                        {"name": "base64", "value": "base64"},
+                    ],
+                ),
+                ConnOption(
+                    id="sessionize_payload",
+                    name="Session暂存payload",
+                    type="checkbox",
+                    placeholder=None,
+                    default_value=False,
+                    alternatives=None,
+                ),
+            ],
+        },
+    ]
+
     def __init__(self, session_conn: dict):
         super().__init__(
             PHPWebshellOptions(
@@ -665,7 +713,7 @@ class PHPWebshellBehinderAES(PHPWebshell):
     async def submit_raw(self, payload):
         data = behinder_aes(payload, self.key)
         try:
-            response = await self.client.request(method="POST", url=self.url, data=data)
+            response = await self.client.request(method="POST", url=self.url, content=data)
             return response.status_code, response.text
         except httpx.TimeoutException as exc:
             raise exceptions.NetworkError("HTTP请求超时") from exc
@@ -673,8 +721,57 @@ class PHPWebshellBehinderAES(PHPWebshell):
             raise exceptions.NetworkError("发送HTTP请求失败") from exc
 
 
-# @register_session("BEHINDER_PHP_XOR", readable_name="冰蝎异或")
+@register_session
 class PHPWebshellBehinderXor(PHPWebshell):
+    session_type = "BEHINDER_PHP_XOR"
+    readable_name = "冰蝎XOR"
+    conn_options: t.List[ConnOptionGroup] = [
+        {
+            "name": "基本连接配置",
+            "options": [
+                ConnOption(
+                    id="url",
+                    name="地址",
+                    type="text",
+                    placeholder="http://xxx.com",
+                    default_value=None,
+                    alternatives=None,
+                ),
+                ConnOption(
+                    id="password",
+                    name="密码",
+                    type="text",
+                    placeholder="******",
+                    default_value=None,
+                    alternatives=None,
+                ),
+            ],
+        },
+        {
+            "name": "高级连接配置",
+            "options": [
+                ConnOption(
+                    id="encoder",
+                    name="编码器",
+                    type="select",
+                    placeholder="base64",
+                    default_value="base64",
+                    alternatives=[
+                        {"name": "base64", "value": "base64"},
+                    ],
+                ),
+                ConnOption(
+                    id="sessionize_payload",
+                    name="Session暂存payload",
+                    type="checkbox",
+                    placeholder=None,
+                    default_value=False,
+                    alternatives=None,
+                ),
+            ],
+        },
+    ]
+
     def __init__(self, session_conn: dict):
         super().__init__(
             PHPWebshellOptions(
@@ -689,7 +786,7 @@ class PHPWebshellBehinderXor(PHPWebshell):
     async def submit_raw(self, payload):
         data = behinder_xor(payload, self.key)
         try:
-            response = await self.client.request(method="POST", url=self.url, data=data)
+            response = await self.client.request(method="POST", url=self.url, content=data)
             return response.status_code, response.text
         except httpx.TimeoutException as exc:
             raise exceptions.NetworkError("HTTP请求超时") from exc
