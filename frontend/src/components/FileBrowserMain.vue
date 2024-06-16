@@ -254,7 +254,6 @@ function confirmDeleteFile(filename) {
   inputBoxNote.value = `真的要删除文件${filename}吗`
   inputBoxRequireInput.value = false
   inputBoxCallback = async result => {
-    console.log(result)
     if (result) {
       let result = await getDataOrPopupError(`/session/${props.session}/delete_file`, {
         params: {

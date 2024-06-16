@@ -88,7 +88,6 @@ async function fetchCurrentSession() {
   await updateOption(session.session_type)
   for (const group of optionsGroups.value) {
     for (const option of group.options) {
-      console.log(option.id, session.connection[option.id])
       doAssert(["text", "checkbox", "select"].includes(option.type), "内部错误：没有这类选项")
       if (["name", "session_type", "note"].includes(option.id)) {
         optionValues[option.id] = session[option.id]

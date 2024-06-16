@@ -60,7 +60,6 @@ const iconSpecs = [
 const icons = shallowRef({})
 
 function fillSession(icons, session) {
-  console.log("fillSession", session)
   return icons.map(icon => {
     let clone = { ...icon };
     if (icon.uri.indexOf("SESSION") == -1) {
@@ -78,7 +77,6 @@ function fillSession(icons, session) {
 icons.value = fillSession(iconSpecs, "")
 
 watch(() => store.session, (newSession, _) => {
-  console.log("watch")
   icons.value = fillSession(iconSpecs, newSession)
 })
 

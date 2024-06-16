@@ -34,9 +34,7 @@ function onClickBackground(event) {
   event.preventDefault()
   let target = event.target
   while(target) {
-    console.log(target)
     if(target.classList.contains("input-box")) {
-      console.log("Click input box!")
       return;
     }
     target = target.parentElement
