@@ -171,10 +171,19 @@ async function onDeleteSessionConfirm(userConfirm) {
           </div>
         </div>
       </div>
-      <div class="session-bottom">
+      <div class="session-middle">
         <div class="session-note">
           {{ session.note }}
         </div>
+      </div>
+      <div class="session-bottom">
+        <p>
+          {{ session.readable_type }}
+        </p>
+        <p>
+          {{ session.location }}
+
+        </p>
       </div>
     </div>
   </div>
@@ -203,12 +212,14 @@ async function onDeleteSessionConfirm(userConfirm) {
 }
 
 .session {
-  height: 160px;
+  display: flex;
+  flex-direction: column;
+  height: 180px;
   background-color: var(--background-color-2);
   color: var(--font-color-white);
   margin-bottom: 40px;
-  padding-left: 20px;
-  padding-right: 20px;
+  padding-left: 25px;
+  padding-right: 25px;
   border-radius: 20px;
 }
 
@@ -219,22 +230,38 @@ async function onDeleteSessionConfirm(userConfirm) {
   align-items: center;
   width: 100%;
   height: 40%;
+  margin-top: 5px;
 }
 
-.session-top p,
 .session-top svg {
-  margin: 0px;
-  margin-top: 20px;
+  margin-top: 5px;
 }
 
 .session-top p {
+  margin: 0px;
   font-size: 26px;
   font-weight: bold;
 }
 
-.session-bottom {
+.session-middle {
   color: var(--font-color-grey);
+  flex-grow: 1;
 }
+
+.session-bottom {
+  bottom: 0;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.session-bottom p{
+  margin: 0;
+  color: var(--font-color-grey);
+  font-size: 14px;
+}
+
 
 .add-webshell-button {
   width: 70px;
