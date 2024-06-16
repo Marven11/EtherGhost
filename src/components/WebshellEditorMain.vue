@@ -292,7 +292,7 @@ setTimeout(() => {
     </div>
   </div>
   <div class="submit-buttons">
-    <div class="submit-button">
+    <div class="submit-button" @click="() => router.go(-1)">
       丢弃
     </div>
     <div class="submit-button" @click="saveSession">
