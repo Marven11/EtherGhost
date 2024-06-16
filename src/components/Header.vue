@@ -91,9 +91,10 @@ function clickIcon(icon) {
 <template>
   <header>
     <div class="header-title">
-      <p>
+      <h1>
         鬼刃
-      </p>
+      </h1>
+      <p>{{ store.sessionName }}</p>
     </div>
     <nav>
       <div v-for="icon in icons" @click="clickIcon(icon)" class="icon" :title="icon.tooltip">
@@ -126,13 +127,22 @@ header {
 .header-title {
   width: 30%;
   display: flex;
-  align-items: center;
+  align-items: left;
+  justify-content: center;
+  flex-direction: column;
   padding-left: 50px;
 }
 
-.header-title p {
+.header-title h1 {
   font-size: 40px;
   font-weight: bolder;
+  margin: 0;
+}
+
+.header-title p {
+  font-size: 16px;
+  color: var(--font-color-grey);
+  margin: 0;
 }
 
 nav {
