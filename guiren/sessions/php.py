@@ -525,7 +525,7 @@ class PHPWebshell(PHPSessionInterface):
         result = await self.submit(EVAL_PHP.format(code_b64=repr(base64_encode(code))))
         return result
 
-@register_session("ONELINE_PHP")
+@register_session("ONELINE_PHP", readable_name="PHP一句话")
 class PHPWebshellOneliner(PHPWebshell):
     """一句话的php webshell"""
 
@@ -571,7 +571,7 @@ class PHPWebshellOneliner(PHPWebshell):
             raise exceptions.NetworkError("发送HTTP请求失败") from exc
 
 
-@register_session("BEHINDER_PHP_AES")
+@register_session("BEHINDER_PHP_AES", readable_name="冰蝎AES")
 class PHPWebshellBehinderAES(PHPWebshell):
     def __init__(self, session_conn: dict):
         super().__init__(
@@ -595,7 +595,7 @@ class PHPWebshellBehinderAES(PHPWebshell):
             raise exceptions.NetworkError("发送HTTP请求失败") from exc
 
 
-@register_session("BEHINDER_PHP_XOR")
+@register_session("BEHINDER_PHP_XOR", readable_name="冰蝎异或")
 class PHPWebshellBehinderXor(PHPWebshell):
     def __init__(self, session_conn: dict):
         super().__init__(
