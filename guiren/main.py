@@ -9,14 +9,14 @@ from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
 from uuid import UUID
 
 import chardet
-from fastapi import FastAPI, Response, Request
+from fastapi import FastAPI, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from . import session_manager, session_types, sessions
-from .sessions import SessionInterface, PHPSessionInterface
+from .sessions import SessionInterface, PHPSessionInterface, session_type_info
 
 token = secrets.token_bytes(16).hex()
 logger = logging.getLogger("main")
@@ -70,6 +70,15 @@ class FileContentRequest(BaseModel):
 
 class PhpCodeRequest(BaseModel):
     code: str
+
+
+@app.get("/sessiontype/{sessiontype}/conn_options")
+async def get_sessiontype(sessiontype: str):
+    """查找session type对应的选项"""
+    if sessiontype not in session_type_info:
+        return {"code": -400, "msg": "没有这个session type"}
+    conn_options = session_type_info[sessiontype]["options"]
+    return {"code": 0, "data": conn_options}
 
 
 @app.get("/session")

@@ -6,17 +6,28 @@ from dataclasses import dataclass
 session_type_info = {}
 
 
-def register_session(session_type, readable_name=None):
-    def deco(cls):
-        session_type_info[session_type] = {
-            "constructor": cls,
-            "readable_name": (
-                readable_name if readable_name is not None else "Session类型名未填写"
-            ),
-        }
-        return cls
+class ConnOption(t.TypedDict):
+    id: str
+    name: str
+    type: t.Literal["text", "select", "checkbox"]
+    placeholder: t.Union[str, None]
+    default_value: t.Any
+    alternatives: t.Union[t.List[str], None]
 
-    return deco
+
+class ConnOptionGroup(t.TypedDict):
+    name: str
+    options: t.List[ConnOption]
+
+
+def register_session(cls):
+    session_type_info[cls.session_type] = {
+        "constructor": cls,
+        "options": cls.conn_options,
+        "readable_name": cls.readable_name,
+    }
+    return cls
+
 
 
 @dataclass

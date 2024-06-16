@@ -17,7 +17,14 @@ from Crypto.Util.Padding import pad
 from . import exceptions
 
 from ..utils import random_english_words, random_user_agent, random_data
-from .base import PHPSessionInterface, DirectoryEntry, BasicInfoEntry, register_session
+from .base import (
+    PHPSessionInterface,
+    DirectoryEntry,
+    BasicInfoEntry,
+    register_session,
+    ConnOption,
+    ConnOptionGroup,
+)
 
 logger = logging.getLogger("sessions.php")
 
@@ -525,9 +532,72 @@ class PHPWebshell(PHPSessionInterface):
         result = await self.submit(EVAL_PHP.format(code_b64=repr(base64_encode(code))))
         return result
 
-@register_session("ONELINE_PHP", readable_name="PHP一句话")
+
+@register_session
 class PHPWebshellOneliner(PHPWebshell):
     """一句话的php webshell"""
+    session_type = "ONELINE_PHP"
+    readable_name = "PHP一句话"
+    conn_options: t.List[ConnOptionGroup] = [
+        {
+            "name": "基本连接配置",
+            "options": [
+                ConnOption(
+                    id="url",
+                    name="地址",
+                    type="text",
+                    placeholder="http://xxx.com",
+                    default_value=None,
+                    alternatives=None,
+                ),
+                ConnOption(
+                    id="method",
+                    name="请求方法",
+                    type="select",
+                    placeholder="POST",
+                    default_value="POST",
+                    alternatives=["POST", "GET"],
+                ),
+                ConnOption(
+                    id="password",
+                    name="密码",
+                    type="text",
+                    placeholder="******",
+                    default_value=None,
+                    alternatives=None,
+                ),
+            ],
+        },
+        {
+            "name": "高级连接配置",
+            "options": [
+                ConnOption(
+                    id="encoder",
+                    name="编码器",
+                    type="select",
+                    placeholder="base64",
+                    default_value="base64",
+                    alternatives=["base64", "raw"],
+                ),
+                ConnOption(
+                    id="http_params_obfs",
+                    name="HTTP参数混淆",
+                    type="checkbox",
+                    placeholder=None,
+                    default_value=True,
+                    alternatives=None,
+                ),
+                ConnOption(
+                    id="sessionize_payload",
+                    name="Session暂存payload",
+                    type="checkbox",
+                    placeholder=None,
+                    default_value=False,
+                    alternatives=None,
+                ),
+            ],
+        },
+    ]
 
     def __init__(self, session_conn: dict) -> None:
         super().__init__(
@@ -570,8 +640,8 @@ class PHPWebshellOneliner(PHPWebshell):
         except httpx.HTTPError as exc:
             raise exceptions.NetworkError("发送HTTP请求失败") from exc
 
-
-@register_session("BEHINDER_PHP_AES", readable_name="冰蝎AES")
+# TODO: fix me
+# @register_session("BEHINDER_PHP_AES", readable_name="冰蝎AES")
 class PHPWebshellBehinderAES(PHPWebshell):
     def __init__(self, session_conn: dict):
         super().__init__(
@@ -595,7 +665,7 @@ class PHPWebshellBehinderAES(PHPWebshell):
             raise exceptions.NetworkError("发送HTTP请求失败") from exc
 
 
-@register_session("BEHINDER_PHP_XOR", readable_name="冰蝎异或")
+# @register_session("BEHINDER_PHP_XOR", readable_name="冰蝎异或")
 class PHPWebshellBehinderXor(PHPWebshell):
     def __init__(self, session_conn: dict):
         super().__init__(
