@@ -9,7 +9,6 @@ from sqlalchemy_utils import ChoiceType, UUIDType  # type: ignore
 from .session_types import (
     SessionType,
     SessionInfo,
-    type_to_class,
 )
 
 DB_FILENAME = "guiren.db"
@@ -69,9 +68,7 @@ Base.metadata.create_all(engine)
 
 def model_to_info(model: SessionInfoModelTypeHint) -> SessionInfo:
     """将SessionInfoModel(SQLAlchemy的对象)转换成SessionInfo(Pydantic的对象)"""
-    if model.session_type not in type_to_class:
-        raise TypeError(f"session type not found: {model.session_type}")
-    connection = type_to_class[model.session_type](**model.connection)
+    connection = {**model.connection}
     result = SessionInfo(
         session_type=model.session_type,
         name=model.name,

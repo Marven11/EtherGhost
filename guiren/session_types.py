@@ -7,7 +7,6 @@ __all__ = [
     "SessionType",
     "SessionInfo",
     "SessionConnOnelinePHP",
-    "type_to_class",
     "session_type_readable"
 ]
 
@@ -53,12 +52,6 @@ SessionConnectionInfo = t.Union[
     SessionConnBehinderPHPXor,
 ]
 
-type_to_class = {
-    SessionType.ONELINE_PHP: SessionConnOnelinePHP,
-    SessionType.BEHINDER_PHP_AES: SessionConnBehinderPHPAES,
-    SessionType.BEHINDER_PHP_XOR: SessionConnBehinderPHPXor,
-}
-
 session_type_readable = {
     SessionType.ONELINE_PHP: "PHP一句话",
     SessionType.BEHINDER_PHP_AES: "冰蝎PHP AES",
@@ -70,32 +63,32 @@ class SessionInfo(BaseModel):
 
     session_type: SessionType
     name: str
-    connection: SessionConnectionInfo
+    connection: t.Dict[str, t.Any]
     session_id: UUID = Field(default_factory=uuid4)
     note: str = ""
     location: str = ""
 
-    # 使用validator装饰器来实现动态类型
-    @validator("connection", pre=True, always=True)
-    @classmethod
-    def set_dynamic_attr_type(cls, v, values):  # type: ignore
-        session_type = values.get("session_type")
-        conn_class = type_to_class[SessionType(session_type)]
-        if isinstance(v, dict):
-            result = conn_class(**v)
-            return result
-        elif isinstance(v, conn_class):
-            return v
-        raise NotImplementedError(
-            f"Serialization from type {type(v)} is not supported."
-        )
+    # # 使用validator装饰器来实现动态类型
+    # @validator("connection", pre=True, always=True)
+    # @classmethod
+    # def set_dynamic_attr_type(cls, v, values):  # type: ignore
+    #     session_type = values.get("session_type")
+    #     conn_class = type_to_class[SessionType(session_type)]
+    #     if isinstance(v, dict):
+    #         result = conn_class(**v)
+    #         return result
+    #     elif isinstance(v, conn_class):
+    #         return v
+    #     raise NotImplementedError(
+    #         f"Serialization from type {type(v)} is not supported."
+    #     )
 
-    @model_validator(mode="after")
-    def validator(self):
-        conn_class = type_to_class[self.session_type]
-        if not isinstance(self.connection, conn_class):
-            raise ValueError(f"Wrong connection data for {self.session_type}")
-        return self
+    # @model_validator(mode="after")
+    # def validator(self):
+    #     conn_class = type_to_class[self.session_type]
+    #     if not isinstance(self.connection, conn_class):
+    #         raise ValueError(f"Wrong connection data for {self.session_type}")
+    #     return self
 
     class Config:
         from_attributes = True

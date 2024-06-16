@@ -28,42 +28,42 @@ def session_conn_converter(session_type):
 
 
 @session_conn_converter(SessionType.ONELINE_PHP)
-def php_normal(session_conn: SessionConnOnelinePHP):
+def php_normal(session_conn: dict):
     """将PHP一句话的info转换成对象"""
     return sessions.PHPWebshellOneliner(
-        method=session_conn.method,
-        url=session_conn.url,
-        password=session_conn.password,
-        http_params_obfs=session_conn.http_params_obfs,
+        method=session_conn["method"],
+        url=session_conn["url"],
+        password=session_conn["password"],
+        http_params_obfs=session_conn["http_params_obfs"],
         options=sessions.php.PHPWebshellOptions(
-            encoder=session_conn.encoder,
-            sessionize_payload=session_conn.sessionize_payload
+            encoder=session_conn["encoder"],
+            sessionize_payload=session_conn["sessionize_payload"]
         ),
     )
 
 
 @session_conn_converter(SessionType.BEHINDER_PHP_AES)
-def php_behinderaes(session_conn: SessionConnBehinderPHPAES):
+def php_behinderaes(session_conn: dict):
     """将冰蝎PHP AES的info转换成对象"""
     return sessions.PHPWebshellBehinderAES(
-        url=session_conn.url,
-        password=session_conn.password,
+        url=session_conn["url"],
+        password=session_conn["password"],
         options=sessions.php.PHPWebshellOptions(
-            encoder=session_conn.encoder,
-            sessionize_payload=session_conn.sessionize_payload
+            encoder=session_conn["encoder"],
+            sessionize_payload=session_conn["sessionize_payload"]
         ),
     )
 
 
 @session_conn_converter(SessionType.BEHINDER_PHP_XOR)
-def php_behinderxor(session_conn: SessionConnBehinderPHPXor):
+def php_behinderxor(session_conn: dict):
     """将冰蝎PHP Xor的info转换成对象"""
     return sessions.PHPWebshellBehinderXor(
-        url=session_conn.url,
-        password=session_conn.password,
+        url=session_conn["url"],
+        password=session_conn["password"],
         options=sessions.php.PHPWebshellOptions(
-            encoder=session_conn.encoder,
-            sessionize_payload=session_conn.sessionize_payload
+            encoder=session_conn["encoder"],
+            sessionize_payload=session_conn["sessionize_payload"]
         ),
     )
 
