@@ -2,12 +2,19 @@
 
 import typing as t
 from dataclasses import dataclass
+from ..utils import random_user_agent
 
+import httpx
+
+USER_AGENT = random_user_agent()
 session_type_info = {}
+proxy = None
+
 
 class ConnOptionAlternative(t.TypedDict):
     name: str
     value: str
+
 
 class ConnOption(t.TypedDict):
     id: str
@@ -21,16 +28,6 @@ class ConnOption(t.TypedDict):
 class ConnOptionGroup(t.TypedDict):
     name: str
     options: t.List[ConnOption]
-
-
-def register_session(cls):
-    session_type_info[cls.session_type] = {
-        "constructor": cls,
-        "options": cls.conn_options,
-        "readable_name": cls.readable_name,
-    }
-    return cls
-
 
 
 @dataclass
@@ -107,3 +104,21 @@ class PHPSessionInterface(SessionInterface):
     async def php_eval(self, code: str) -> str:
         """执行给定的代码，使用eval"""
         raise NotImplementedError()
+
+
+def register_session(cls):
+    session_type_info[cls.session_type] = {
+        "constructor": cls,
+        "options": cls.conn_options,
+        "readable_name": cls.readable_name,
+    }
+    return cls
+
+
+def set_proxy(new_proxy=None):
+    global proxy
+    proxy = new_proxy
+
+
+def get_http_client():
+    return httpx.AsyncClient(headers={"User-Agent": USER_AGENT}, proxy=proxy)

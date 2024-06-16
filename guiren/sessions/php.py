@@ -24,6 +24,7 @@ from .base import (
     register_session,
     ConnOption,
     ConnOptionGroup,
+    get_http_client
 )
 
 logger = logging.getLogger("sessions.php")
@@ -618,7 +619,7 @@ class PHPWebshellOneliner(PHPWebshell):
         self.params = {}
         self.data = {}
         self.http_params_obfs = session_conn["http_params_obfs"]
-        self.client = httpx.AsyncClient(headers={"User-Agent": user_agent})
+        self.client = get_http_client()
 
     async def submit_raw(self, payload: str) -> t.Tuple[int, str]:
         params = self.params.copy()
@@ -659,7 +660,7 @@ class PHPWebshellBehinderAES(PHPWebshell):
         )
         self.url = session_conn["url"]
         self.key = md5_encode(session_conn["password"])[:16].encode()
-        self.client = httpx.AsyncClient(headers={"User-Agent": user_agent})
+        self.client = get_http_client()
 
     async def submit_raw(self, payload):
         data = behinder_aes(payload, self.key)
@@ -683,7 +684,7 @@ class PHPWebshellBehinderXor(PHPWebshell):
         )
         self.url = session_conn["url"]
         self.key = md5_encode(session_conn["password"])[:16].encode()
-        self.client = httpx.AsyncClient(headers={"User-Agent": user_agent})
+        self.client = get_http_client()
 
     async def submit_raw(self, payload):
         data = behinder_xor(payload, self.key)
