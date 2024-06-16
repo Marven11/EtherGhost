@@ -322,3 +322,6 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+
+# build product, it should be generated during build
+guiren/public
