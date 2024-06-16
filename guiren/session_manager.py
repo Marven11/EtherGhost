@@ -3,46 +3,14 @@
 import typing as t
 from uuid import UUID
 from . import db, sessions
+from .sessions.base import session_type_info
 from .session_types import (
-    SessionType,
     SessionInfo,
-    SessionConnOnelinePHP,
-    SessionConnBehinderPHPAES,
-    SessionConnBehinderPHPXor,
-    session_type_readable,
 )
 
 
 location_readable = {"US": "🇺🇸"}
 session_con_converters = {}
-
-
-def session_conn_converter(session_type):
-    """标记将session info转换为session对象的函数"""
-
-    def _wrapper(f):
-        session_con_converters[session_type] = f
-        return f
-
-    return _wrapper
-
-
-@session_conn_converter(SessionType.ONELINE_PHP)
-def php_normal(session_conn: dict):
-    """将PHP一句话的info转换成对象"""
-    return sessions.PHPWebshellOneliner(session_conn=session_conn)
-
-
-@session_conn_converter(SessionType.BEHINDER_PHP_AES)
-def php_behinderaes(session_conn: dict):
-    """将冰蝎PHP AES的info转换成对象"""
-    return sessions.PHPWebshellBehinderAES(session_conn=session_conn)
-
-
-@session_conn_converter(SessionType.BEHINDER_PHP_XOR)
-def php_behinderxor(session_conn: dict):
-    """将冰蝎PHP Xor的info转换成对象"""
-    return sessions.PHPWebshellBehinderXor(session_conn=session_conn)
 
 
 def session_info_to_session(session_info: SessionInfo) -> sessions.SessionInterface:
@@ -54,8 +22,12 @@ def session_info_to_session(session_info: SessionInfo) -> sessions.SessionInterf
     Returns:
         session.Session: session对象
     """
-    f = session_con_converters[session_info.session_type]
-    return f(session_info.connection)
+    # TODO: make it tolerant, when session type not found the program shouldn't break
+    # instead, it should tell user that it cannot find the session type
+    if session_info.session_type not in session_type_info:
+        raise ValueError(f"Session type {session_info.session_type} is not supported!")
+    constructor = session_type_info[session_info.session_type]["constructor"]
+    return constructor(session_info.connection)
 
 
 def get_session_info_by_id(
@@ -104,9 +76,7 @@ def list_sessions_readable() -> t.List[t.Dict[str, t.Any]]:
         results.append(
             {
                 "type": sess.session_type,
-                "readable_type": session_type_readable.get(
-                    sess.session_type, "未知类型"
-                ),
+                "readable_type": session_type_info[sess.session_type]["readable_name"],
                 "id": sess.session_id,
                 "name": sess.name,
                 "note": sess.note,

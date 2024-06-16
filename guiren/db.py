@@ -7,7 +7,6 @@ from uuid import uuid4, UUID
 import sqlalchemy as sa
 from sqlalchemy_utils import ChoiceType, UUIDType  # type: ignore
 from .session_types import (
-    SessionType,
     SessionInfo,
 )
 
@@ -39,7 +38,7 @@ class SessionInfoModel(Base):  # type: ignore
 
     __tablename__ = "session_info"
     record_id = sa.Column(sa.Integer, primary_key=True)
-    session_type = sa.Column(ChoiceType(SessionType, impl=sa.String()))  # type: ignore
+    session_type = sa.Column(sa.String)  # type: ignore
     session_id = sa.Column(UUIDType(binary=False), default=uuid4)  # type: ignore
     name = sa.Column(sa.String)
     note = sa.Column(sa.String)
@@ -52,7 +51,7 @@ class SessionInfoModelTypeHint():
     """SessionInfoModel的type hint
     解决pylint不能正确识别SQLAlchemy属性类型的问题"""
     record_id: int
-    session_type: SessionType
+    session_type: str
     session_id: UUID
     name: str
     note: str

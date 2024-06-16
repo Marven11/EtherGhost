@@ -3,6 +3,21 @@
 import typing as t
 from dataclasses import dataclass
 
+session_type_info = {}
+
+
+def register_session(session_type, readable_name=None):
+    def deco(cls):
+        session_type_info[session_type] = {
+            "constructor": cls,
+            "readable_name": (
+                readable_name if readable_name is not None else "Session类型名未填写"
+            ),
+        }
+        return cls
+
+    return deco
+
 
 @dataclass
 class DirectoryEntry:
@@ -24,6 +39,7 @@ class BasicInfoEntry:
 
 # Session对象会在处理一个请求的时候创建，请求结束时立即丢弃
 # 所以Session对象基本上是无状态的，状态会在请求结束后被丢弃
+
 
 class SessionInterface:
     """Session接口"""
