@@ -1,6 +1,6 @@
 <script setup>
 
-import { reactive, ref, shallowRef } from "vue";
+import { reactive, ref, shallowRef, watch } from "vue";
 import { getDataOrPopupError, postDataOrPopupError, addPopup, doAssert } from "@/assets/utils"
 import IconCross from './icons/iconCross.vue'
 import IconCheck from './icons/iconCheck.vue'
@@ -37,32 +37,40 @@ const basicOptionGroup = {
       id: "session_type",
       name: "类型",
       type: "select",
-      default_value: "ONELINE_PHP",
+      default_value: undefined,
       alternatives: [
         {
           name: "一句话PHP",
           value: "ONELINE_PHP"
-        }
+        },
+        {
+          name: "冰蝎AES",
+          value: "BEHINDER_PHP_AES"
+        },
+        {
+          name: "冰蝎XOR",
+          value: "BEHINDER_PHP_XOR"
+        },
       ]
     },
   ]
 }
 
-const currentWebshellType = ref(null)
-
 const optionValues = reactive({
-  name: ""
+  name: "",
+  session_type: "ONELINE_PHP"
 })
 const optionsGroups = shallowRef([])
 
 
 async function updateOption(sessionType) {
-  currentWebshellType.value = sessionType
   let options = await getDataOrPopupError(`/sessiontype/${sessionType}/conn_options`)
   optionsGroups.value = [basicOptionGroup, ...options]
   for (let group of optionsGroups.value) {
     for (let option of group.options) {
-      optionValues[option.id] = option.default_value
+      if(option.default_value) {
+        optionValues[option.id] = option.default_value
+      }
     }
   }
 }
@@ -153,6 +161,17 @@ setTimeout(async () => {
     updateOption("ONELINE_PHP")
   }
 }, 0)
+
+watch(
+  () => optionValues.session_type,
+  (newValue, oldValue) => {
+    if(newValue == oldValue) {
+      return
+    }
+    console.log(newValue)
+    updateOption(newValue)
+  }
+)
 
 </script>
 
