@@ -488,10 +488,10 @@ class PHPWebshell(PHPSessionInterface):
                 f"受控端返回404, 没有这个webshell: {status_code}"
             )
         if status_code != 200:
-            raise exceptions.UnexpectedError(f"不正确的HTTP状态: {status_code}")
+            raise exceptions.UnexpectedError(f"受控端返回了不正确的HTTP状态码: {status_code}")
         if "POSTEXEC_FAILED" in text:
             raise exceptions.UnexpectedError(
-                "POSTEXEC_FAILED found, payload run failed"
+                "payload被执行，但运行失败"
             )
         idx_start = text.find(start)
         if idx_start == -1:
@@ -643,9 +643,9 @@ class PHPWebshellOneliner(PHPWebshell):
             return response.status_code, response.text
 
         except httpx.TimeoutException as exc:
-            raise exceptions.NetworkError("HTTP请求超时") from exc
+            raise exceptions.NetworkError("HTTP请求受控端超时") from exc
         except httpx.HTTPError as exc:
-            raise exceptions.NetworkError("发送HTTP请求失败") from exc
+            raise exceptions.NetworkError("发送HTTP请求到受控端失败") from exc
 
 
 @register_session
@@ -716,9 +716,9 @@ class PHPWebshellBehinderAES(PHPWebshell):
             response = await self.client.request(method="POST", url=self.url, content=data)
             return response.status_code, response.text
         except httpx.TimeoutException as exc:
-            raise exceptions.NetworkError("HTTP请求超时") from exc
+            raise exceptions.NetworkError("HTTP请求受控端超时") from exc
         except httpx.HTTPError as exc:
-            raise exceptions.NetworkError("发送HTTP请求失败") from exc
+            raise exceptions.NetworkError("发送HTTP请求到受控端失败") from exc
 
 
 @register_session
@@ -789,6 +789,6 @@ class PHPWebshellBehinderXor(PHPWebshell):
             response = await self.client.request(method="POST", url=self.url, content=data)
             return response.status_code, response.text
         except httpx.TimeoutException as exc:
-            raise exceptions.NetworkError("HTTP请求超时") from exc
+            raise exceptions.NetworkError("HTTP请求受控端超时") from exc
         except httpx.HTTPError as exc:
-            raise exceptions.NetworkError("发送HTTP请求失败") from exc
+            raise exceptions.NetworkError("发送HTTP请求到受控端失败") from exc
