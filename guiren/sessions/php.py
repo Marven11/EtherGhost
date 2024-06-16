@@ -475,7 +475,9 @@ class PHPWebshell(PHPSessionInterface):
         payload = self.encode(payload)
         status_code, text = await self.submit_raw(payload)
         if status_code == 404:
-            raise exceptions.UnexpectedError(f"受控端返回404, 没有这个webshell: {status_code}")
+            raise exceptions.UnexpectedError(
+                f"受控端返回404, 没有这个webshell: {status_code}"
+            )
         if status_code != 200:
             raise exceptions.UnexpectedError(f"不正确的HTTP状态: {status_code}")
         if "POSTEXEC_FAILED" in text:
@@ -489,9 +491,7 @@ class PHPWebshell(PHPSessionInterface):
             )
         idx_stop_r = text[idx_start:].find(stop)
         if idx_stop_r == -1:
-            raise exceptions.UnexpectedError(
-                "找不到输出文本的结尾"
-            )
+            raise exceptions.UnexpectedError("找不到输出文本的结尾")
         idx_stop = idx_stop_r + idx_start
         return text[idx_start + len(start) : idx_stop]
 
@@ -528,23 +528,19 @@ class PHPWebshell(PHPSessionInterface):
 class PHPWebshellOneliner(PHPWebshell):
     """一句话的php webshell"""
 
-    def __init__(
-        self,
-        method: str,
-        url: str,
-        password: str,
-        params: t.Union[t.Dict, None] = None,
-        data: t.Union[t.Dict, None] = None,
-        http_params_obfs: bool = False,
-        options: t.Union[PHPWebshellOptions, None] = None,
-    ) -> None:
-        super().__init__(options)
-        self.method = method.upper()
-        self.url = url
-        self.password = password
-        self.params = {} if params is None else params
-        self.data = {} if data is None else data
-        self.http_params_obfs = http_params_obfs
+    def __init__(self, session_conn: dict) -> None:
+        super().__init__(
+            PHPWebshellOptions(
+                encoder=session_conn["encoder"],
+                sessionize_payload=session_conn["sessionize_payload"],
+            )
+        )
+        self.method = session_conn["method"].upper()
+        self.url = session_conn["url"]
+        self.password = session_conn["password"]
+        self.params = {}
+        self.data = {}
+        self.http_params_obfs = session_conn["http_params_obfs"]
         self.client = httpx.AsyncClient(headers={"User-Agent": user_agent})
 
     async def submit_raw(self, payload: str) -> t.Tuple[int, str]:
@@ -575,15 +571,15 @@ class PHPWebshellOneliner(PHPWebshell):
 
 
 class PHPWebshellBehinderAES(PHPWebshell):
-    def __init__(
-        self,
-        url: str,
-        password: str,  # "rebeyond"
-        options: t.Union[PHPWebshellOptions, None] = None,
-    ):
-        super().__init__(options)
-        self.url = url
-        self.key = md5_encode(password)[:16].encode()
+    def __init__(self, session_conn: dict):
+        super().__init__(
+            PHPWebshellOptions(
+                encoder=session_conn["encoder"],
+                sessionize_payload=session_conn["sessionize_payload"],
+            )
+        )
+        self.url = session_conn["url"]
+        self.key = md5_encode(session_conn["password"])[:16].encode()
         self.client = httpx.AsyncClient(headers={"User-Agent": user_agent})
 
     async def submit_raw(self, payload):
@@ -598,15 +594,15 @@ class PHPWebshellBehinderAES(PHPWebshell):
 
 
 class PHPWebshellBehinderXor(PHPWebshell):
-    def __init__(
-        self,
-        url: str,
-        password: str,  # "rebeyond"
-        options: t.Union[PHPWebshellOptions, None] = None,
-    ):
-        super().__init__(options)
-        self.url = url
-        self.key = md5_encode(password)[:16].encode()
+    def __init__(self, session_conn: dict):
+        super().__init__(
+            PHPWebshellOptions(
+                encoder=session_conn["encoder"],
+                sessionize_payload=session_conn["sessionize_payload"],
+            )
+        )
+        self.url = session_conn["url"]
+        self.key = md5_encode(session_conn["password"])[:16].encode()
         self.client = httpx.AsyncClient(headers={"User-Agent": user_agent})
 
     async def submit_raw(self, payload):
