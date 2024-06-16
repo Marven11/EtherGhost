@@ -72,8 +72,20 @@ class PhpCodeRequest(BaseModel):
     code: str
 
 
+@app.get("/sessiontype")
+async def get_sessiontype():
+    """查找所有支持的session type"""
+    return {
+        "code": 0,
+        "data": [
+            {"id": type_id, "name": type_info["readable_name"]}
+            for type_id, type_info in session_type_info.items()
+        ],
+    }
+
+
 @app.get("/sessiontype/{sessiontype}/conn_options")
-async def get_sessiontype(sessiontype: str):
+async def get_sessiontype_conn_options(sessiontype: str):
     """查找session type对应的选项"""
     if sessiontype not in session_type_info:
         return {"code": -400, "msg": "没有这个session type"}
