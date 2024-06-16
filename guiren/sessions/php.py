@@ -474,8 +474,10 @@ class PHPWebshell(PHPSessionInterface):
         payload = compress_php_code(payload)
         payload = self.encode(payload)
         status_code, text = await self.submit_raw(payload)
+        if status_code == 404:
+            raise exceptions.UnexpectedError(f"受控端返回404, 没有这个webshell: {status_code}")
         if status_code != 200:
-            raise exceptions.UnexpectedError(f"status code error: {status_code}")
+            raise exceptions.UnexpectedError(f"不正确的HTTP状态: {status_code}")
         if "POSTEXEC_FAILED" in text:
             raise exceptions.UnexpectedError(
                 "POSTEXEC_FAILED found, payload run failed"
