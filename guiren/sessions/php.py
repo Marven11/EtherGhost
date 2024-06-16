@@ -536,6 +536,7 @@ class PHPWebshell(PHPSessionInterface):
 @register_session
 class PHPWebshellOneliner(PHPWebshell):
     """一句话的php webshell"""
+
     session_type = "ONELINE_PHP"
     readable_name = "PHP一句话"
     conn_options: t.List[ConnOptionGroup] = [
@@ -556,7 +557,10 @@ class PHPWebshellOneliner(PHPWebshell):
                     type="select",
                     placeholder="POST",
                     default_value="POST",
-                    alternatives=["POST", "GET"],
+                    alternatives=[
+                        {"name": "POST", "value": "POST"},
+                        {"name": "GET", "value": "GET"},
+                    ],
                 ),
                 ConnOption(
                     id="password",
@@ -577,7 +581,9 @@ class PHPWebshellOneliner(PHPWebshell):
                     type="select",
                     placeholder="base64",
                     default_value="base64",
-                    alternatives=["base64", "raw"],
+                    alternatives=[
+                        {"name": "base64", "value": "base64"},
+                    ],
                 ),
                 ConnOption(
                     id="http_params_obfs",
@@ -639,6 +645,7 @@ class PHPWebshellOneliner(PHPWebshell):
             raise exceptions.NetworkError("HTTP请求超时") from exc
         except httpx.HTTPError as exc:
             raise exceptions.NetworkError("发送HTTP请求失败") from exc
+
 
 # TODO: fix me
 # @register_session("BEHINDER_PHP_AES", readable_name="冰蝎AES")

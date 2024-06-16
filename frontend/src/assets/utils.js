@@ -58,7 +58,6 @@ export async function getDataOrPopupError(uri, config) {
     addPopup("red", "请求服务端失败", `无法请求${uri}，服务端是否正在运行？`)
     throw e
   }
-  console.log(resp)
   return parseDataOrPopupError(resp, popupsRef)
 }
 

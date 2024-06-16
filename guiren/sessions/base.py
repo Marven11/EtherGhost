@@ -5,6 +5,9 @@ from dataclasses import dataclass
 
 session_type_info = {}
 
+class ConnOptionAlternative(t.TypedDict):
+    name: str
+    value: str
 
 class ConnOption(t.TypedDict):
     id: str
@@ -12,7 +15,7 @@ class ConnOption(t.TypedDict):
     type: t.Literal["text", "select", "checkbox"]
     placeholder: t.Union[str, None]
     default_value: t.Any
-    alternatives: t.Union[t.List[str], None]
+    alternatives: t.Union[t.List[ConnOptionAlternative], None]
 
 
 class ConnOptionGroup(t.TypedDict):

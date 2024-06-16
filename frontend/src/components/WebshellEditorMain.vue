@@ -1,7 +1,7 @@
 <script setup>
 
 import { reactive, ref, shallowRef } from "vue";
-import { getDataOrPopupError, postDataOrPopupError, addPopup } from "@/assets/utils"
+import { getDataOrPopupError, postDataOrPopupError, addPopup, doAssert } from "@/assets/utils"
 import IconCross from './icons/iconCross.vue'
 import IconCheck from './icons/iconCheck.vue'
 import { store } from "@/assets/store";
@@ -16,209 +16,100 @@ if (props.session) {
   store.session = props.session
 }
 
-const webshellTypes = [
-  "ONELINE_PHP"
-]
-
-const webshellOptionGroups = {
-  ONELINE_PHP: [
+const basicOptionGroup = {
+  name: "基本配置",
+  options: [
     {
-      id: "basic_options",
-      name: "基本设置",
-      options: [
-        "name",
-        "session_type",
-        "note"
-      ]
+      id: "name",
+      name: "名称",
+      type: "text",
+      placeholder: "xxx",
+      default_value: undefined
     },
     {
-      id: "php_webshell_basic_options",
-      name: "PHP Webshell 基本配置",
-      options: [
-        "url",
-        "method",
-        "password",
-      ]
+      id: "note",
+      name: "备注",
+      type: "text",
+      placeholder: "xxx...",
+      default_value: "并没有备注"
     },
     {
-      id: "php_webshell_advanced_options",
-      name: "PHP Webshell 高级配置",
-      options: [
-        "encoder",
-        "http_params_obfs",
-        "sessionize_payload"
+      id: "session_type",
+      name: "类型",
+      type: "select",
+      default_value: "ONELINE_PHP",
+      alternatives: [
+        {
+          name: "一句话PHP",
+          value: "ONELINE_PHP"
+        }
       ]
     },
-  ]
-}
-
-const webshellConnectionOptions = {
-  ONELINE_PHP: [
-    "url",
-    "method",
-    "password",
-    "encoder",
-    "http_params_obfs",
-    "sessionize_payload"
   ]
 }
 
 const currentWebshellType = ref(null)
 
-
+const optionValues = reactive({
+  name: ""
+})
 const optionsGroups = shallowRef([])
 
-const options = reactive([
-  {
-    id: "name",
-    name: "名称",
-    type: "text",
-    placeholder: "xxx",
-    value: undefined
-  },
-  {
-    id: "url",
-    name: "地址",
-    type: "text",
-    placeholder: "http://xxx.com",
-    value: undefined
-  },
-  {
-    id: "note",
-    name: "备注",
-    type: "text",
-    placeholder: "xxx...",
-    value: "并没有备注"
-  },
-  {
-    id: "session_type",
-    name: "类型",
-    type: "select",
-    value: "ONELINE_PHP",
-    alternatives: [
-      {
-        name: "PHP一句话",
-        value: "ONELINE_PHP"
-      }
-    ]
-  },
-  {
-    id: "method",
-    name: "Webshell请求方式",
-    type: "select",
-    value: "POST",
-    alternatives: [
-      {
-        name: "POST",
-        value: "POST"
-      },
-      {
-        name: "GET",
-        value: "GET"
-      },
-    ]
-  },
-  {
-    id: "password",
-    name: "Webshell密码",
-    type: "text",
-    placeholder: "data",
-    value: undefined
-  },
-  {
-    id: "encoder",
-    name: "类型",
-    type: "select",
-    value: "base64",
-    alternatives: [
-      {
-        name: "base64",
-        value: "base64"
-      }
-    ]
-  },
-  {
-    id: "http_params_obfs",
-    name: "HTTP参数混淆",
-    type: "checkbox",
-    value: true,
-  },
-  {
-    id: "sessionize_payload",
-    name: "Session暂存payload",
-    type: "checkbox",
-    value: false,
-  },
 
-])
-
-
-
-
-function updateOption(webshellType) {
-  currentWebshellType.value = webshellType
-  optionsGroups.value = webshellOptionGroups[webshellType]
-}
-
-function getOption(id) {
-  let optionFound = options.filter(option => option.id == id)
-  if (optionFound.length == 0) {
-    throw Error(`Option ${id} not found`)
+async function updateOption(sessionType) {
+  currentWebshellType.value = sessionType
+  let options = await getDataOrPopupError(`/sessiontype/${sessionType}/conn_options`)
+  optionsGroups.value = [basicOptionGroup, ...options]
+  for (let group of optionsGroups.value) {
+    for (let option of group.options) {
+      optionValues[option.id] = option.default_value
+    }
   }
-  if (optionFound.length > 1) {
-    throw Error(`There's multiple options for ${id}`)
-  }
-  return optionFound[0]
 }
 
 function changeClickboxOption(optionId) {
-  getOption(optionId).value = !getOption(optionId).value
+  optionValues[optionId] = !optionValues[optionId]
 }
 
 async function fetchCurrentSession() {
   const session = await getDataOrPopupError(`/session/${props.session}`)
 
-  updateOption(session.session_type)
-  for (const key of ["name", "session_type", "note"]) {
-    const option = getOption(key)
-    if (["text", "checkbox", "select"].includes(option.type)) {
-      option.value = session[key]
+  await updateOption(session.session_type)
+  for (const group of optionsGroups.value) {
+    for (const option of group.options) {
+      doAssert(["text", "checkbox", "select"].includes(option.type), "内部错误：没有这类选项")
+      if (["name", "session_type", "note"].includes(option.id)) {
+        optionValues[option.id] = session[option.id]
+      } else {
+        optionValues[option.id] = session.connection[option.id]
+      }
     }
   }
-  for (const key of Object.keys(session.connection)) {
-    const option = getOption(key)
-    if (["text", "checkbox", "select"].includes(option.type)) {
-      option.value = session.connection[key]
-    }
-  }
+
+
 }
 
 function getCurrentSession() {
   let session = { connection: {} }
-  if (!getOption("session_type").value) {
+  if (!optionValues["session_type"]) {
     return undefined;
   }
-  for (const key of ["name", "session_type", "note"]) {
-    const option = getOption(key)
-    if (["text", "checkbox", "select"].includes(option.type)) {
-      if (option.value == undefined) {
-        addPopup("red", `选项${key}未填写`, `选项${key}仍未填写，无法获取当前配置！`)
+
+  for (const group of optionsGroups.value) {
+    for (const option of group.options) {
+      doAssert(["text", "checkbox", "select"].includes(option.type), "内部错误：没有这类选项")
+      if (optionValues[option.id] == undefined) {
+        addPopup("red", `选项${option.name}未填写`, `选项${option.name}仍未填写，无法获取当前配置！`)
         return undefined
       }
-      session[key] = option.value
-    }
-  }
-  for (const key of webshellConnectionOptions[session.session_type]) {
-    const option = getOption(key)
-    if (["text", "checkbox", "select"].includes(option.type)) {
-      if (option.value == undefined) {
-        addPopup("red", `选项${key}未填写`, `选项${key}仍未填写，无法获取当前配置！`)
-        return undefined
+      if (["name", "session_type", "note"].includes(option.id)) {
+        session[option.id] = optionValues[option.id]
+      } else {
+        session.connection[option.id] = optionValues[option.id]
       }
-      session.connection[key] = option.value
     }
   }
-  if(store.session) {
+  if (store.session) {
     session.session_id = store.session;
   }
   return session
@@ -255,9 +146,9 @@ async function saveSession() {
 
 }
 
-setTimeout(() => {
+setTimeout(async () => {
   if (props.session) {
-    fetchCurrentSession(props.session)
+    await fetchCurrentSession(props.session)
   } else {
     updateOption("ONELINE_PHP")
   }
@@ -270,22 +161,23 @@ setTimeout(() => {
     <p class="group-title">
       {{ group.name }}
     </p>
-    <div class="option" v-for="option in group.options.map(getOption)">
+    <div class="option" v-for="option in group.options">
       <div class="option-name">
         {{ option.name }}
       </div>
-      <input v-if="option.type == 'text'" :type="option.type" :name="option.id" v-model="option.value"
+      <input v-if="option.type == 'text'" :type="option.type" :name="option.id" v-model="optionValues[option.id]"
         :placeholder="option.placeholder" :id="'option-' + option.id">
-      <select v-else-if="option.type == 'select'" :name="option.id" :id="'option-' + option.id" v-model="option.value">
+      <select v-else-if="option.type == 'select'" :name="option.id" :id="'option-' + option.id"
+        v-model="optionValues[option.id]">
         <option disabled value="">选择一个</option>
         <option v-for="alternative in option.alternatives" :value="alternative.value">
           {{ alternative.name }}
         </option>
       </select>
       <div v-else-if="option.type == 'checkbox'" class="input-checkbox" :id="'option-' + option.id"
-        :checked="option.value" @click="changeClickboxOption(option.id)">
-        <input type="hidden" :name="option.id" :id="'option-' + option.id" v-model="option.value">
-        <IconCheck v-if="option.value" />
+        :checked="optionValues[option.id]" @click="changeClickboxOption(option.id)">
+        <input type="hidden" :name="option.id" :id="'option-' + option.id" v-model="optionValues[option.id]">
+        <IconCheck v-if="optionValues[option.id]" />
         <IconCross v-else />
       </div>
       <p v-else>内部错误：未知选项类型 {{ option.type }}</p>
