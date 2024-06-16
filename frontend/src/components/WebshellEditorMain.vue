@@ -43,14 +43,6 @@ const basicOptionGroup = {
           name: "一句话PHP",
           value: "ONELINE_PHP"
         },
-        {
-          name: "冰蝎AES",
-          value: "BEHINDER_PHP_AES"
-        },
-        {
-          name: "冰蝎XOR",
-          value: "BEHINDER_PHP_XOR"
-        },
       ]
     },
   ]
@@ -68,7 +60,7 @@ async function updateOption(sessionType) {
   optionsGroups.value = [basicOptionGroup, ...options]
   for (let group of optionsGroups.value) {
     for (let option of group.options) {
-      if(option.default_value !== undefined) {
+      if (option.default_value !== undefined) {
         optionValues[option.id] = option.default_value
       }
     }
@@ -77,6 +69,17 @@ async function updateOption(sessionType) {
 
 function changeClickboxOption(optionId) {
   optionValues[optionId] = !optionValues[optionId]
+}
+
+async function fetchSupportedSessionTypes() {
+  const sessionTypes = await getDataOrPopupError("/sessiontype")
+  let optionIdx = basicOptionGroup.options.findIndex(option => option.id == 'session_type')
+  basicOptionGroup.options[optionIdx].alternatives = sessionTypes.map(sessionType => {
+    return {
+      name: sessionType.name,
+      value: sessionType.id
+    }
+  })
 }
 
 async function fetchCurrentSession() {
@@ -155,21 +158,21 @@ async function saveSession() {
 }
 
 setTimeout(async () => {
+  await fetchSupportedSessionTypes();
   if (props.session) {
     await fetchCurrentSession(props.session)
   } else {
-    updateOption("ONELINE_PHP")
+    await updateOption("ONELINE_PHP")
   }
 }, 0)
 
 watch(
   () => optionValues.session_type,
-  (newValue, oldValue) => {
-    if(newValue == oldValue) {
+  async (newValue, oldValue) => {
+    if (newValue == oldValue) {
       return
     }
-    console.log(newValue)
-    updateOption(newValue)
+    await updateOption(newValue)
   }
 )
 
