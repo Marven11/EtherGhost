@@ -485,12 +485,12 @@ class PHPWebshell(PHPSessionInterface):
         idx_start = text.find(start)
         if idx_start == -1:
             raise exceptions.UnexpectedError(
-                f"idx error: start={idx_start}, text={repr(text)}"
+                "找不到输出文本的开头，也许webshell没有执行代码？"
             )
         idx_stop_r = text[idx_start:].find(stop)
         if idx_stop_r == -1:
             raise exceptions.UnexpectedError(
-                f"idx error: start={idx_start}, stop_r={idx_stop_r}, text={text!r}"
+                "找不到输出文本的结尾"
             )
         idx_stop = idx_stop_r + idx_start
         return text[idx_start + len(start) : idx_stop]
