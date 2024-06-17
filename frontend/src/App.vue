@@ -1,8 +1,16 @@
 <script setup>
 import Header from "./components/Header.vue"
-import { store, popupsRef } from "./assets/store"
+import { store, popupsRef, currentSettings } from "./assets/store"
 import Popups from "@/components/Popups.vue"
+import { getDataOrPopupError } from "./assets/utils";
 
+
+setTimeout(async () => {
+  let settings = await getDataOrPopupError("/settings")
+  for(let key of Object.keys(settings)) {
+    currentSettings[key] = settings[key]
+  }
+}, 0)
 
 </script>
 

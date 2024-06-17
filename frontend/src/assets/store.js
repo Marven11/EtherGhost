@@ -9,10 +9,21 @@ export const store = reactive({
   theme: "green"
 })
 
+export const currentSettings = reactive({
+  theme: "green"
+})
+
 watch(
   () => store.session,
   async newSession => {
     let sessionInfo = await getDataOrPopupError(`/session/${newSession}/`)
     store.sessionName = sessionInfo.name
+  }
+)
+
+watch(
+  () => currentSettings.theme,
+  (newValue, oldValue) => {
+    store.theme = newValue
   }
 )
