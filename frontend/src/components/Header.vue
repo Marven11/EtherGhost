@@ -10,6 +10,7 @@ import IconSetting from "./icons/iconSetting.vue"
 import { useRouter } from "vue-router"
 import { store } from "@/assets/store.js"
 import IconCode from "./icons/iconCode.vue"
+import { addPopup } from "@/assets/utils"
 
 const router = useRouter()
 const iconSpecs = [
@@ -68,7 +69,7 @@ function fillSession(icons, session) {
     if (session) {
       clone.uri = icon.uri.replace("SESSION", session)
     } else {
-      clone.uri = "/page_404/no_session"
+      clone.uri = "/popup/no_session"
     }
     return clone
   })
@@ -81,7 +82,11 @@ watch(() => store.session, (newSession, _) => {
 })
 
 function clickIcon(icon) {
-  router.push(icon.uri)
+  if (icon.uri == "/popup/no_session") {
+    addPopup("red", "没有选中WebShell", "请先在主页选中Webshell")
+  } else {
+    router.push(icon.uri)
+  }
 }
 
 </script>
@@ -100,7 +105,7 @@ function clickIcon(icon) {
       </div>
     </nav>
     <div class="header-setting">
-      <div class="icon">
+      <div class="icon" @click="router.push('/settings/')">
         <IconSetting />
       </div>
 
