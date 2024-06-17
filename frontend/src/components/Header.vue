@@ -92,7 +92,7 @@ function clickIcon(icon) {
 </script>
 
 <template>
-  <header>
+  <header :data-bg-transition="store.header_background_transition">
     <div class="header-title">
       <h1>
         鬼刃
@@ -125,6 +125,10 @@ header {
   width: 90%;
   height: 12vh;
   min-height: 130px;
+}
+
+header[data-bg-transition="true"] {
+  transition: background 0.8s ease;
 }
 
 .header-title {
@@ -163,6 +167,7 @@ nav {
   width: 50px;
   height: 50px;
   border-radius: 200px;
+  transition: background 0.3s ease;
 }
 
 .icon:hover {

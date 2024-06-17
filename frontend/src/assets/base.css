@@ -12,7 +12,6 @@ html {
 * {
     box-sizing: border-box;
     font-family: 'FiraCode', 'Courier New', Courier, monospace;
-    transition: background 0.3s ease;
 }
 
 :root {

@@ -6,7 +6,8 @@ export const popupsRef = ref(null)
 export const store = reactive({
   session: "",
   sessionName: "",
-  theme: "white"
+  theme: "white",
+  header_background_transition: false,
 })
 
 export const currentSettings = reactive({
