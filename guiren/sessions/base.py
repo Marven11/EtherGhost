@@ -85,6 +85,10 @@ class SessionInterface:
         """移动文件到新的目录"""
         raise NotImplementedError()
 
+    async def upload_file(self, filepath: str, content: bytes) -> bool:
+        """上传文件，内容是一个字节序列，不是已经解码的字符串"""
+        raise NotImplementedError()
+
     async def get_pwd(self) -> str:
         """获取当前的目录"""
         raise NotImplementedError()

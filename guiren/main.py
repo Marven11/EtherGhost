@@ -3,6 +3,7 @@
 import logging
 import typing as t
 import re
+import base64
 import secrets
 from contextlib import asynccontextmanager
 from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
@@ -268,6 +269,30 @@ async def session_put_file_contents(session_id: UUID, request: FileContentReques
         path = remote_path(request.current_dir) / request.filename
         content = request.text.encode(request.encoding)
         success = await session.put_file_contents(str(path), content)
+        return {"code": 0, "data": success}
+    except sessions.NetworkError as exc:
+        return {"code": -500, "msg": "网络错误: " + str(exc)}
+    except sessions.FileError as exc:
+        return {"code": -500, "msg": "文件写入错误: " + str(exc)}
+    except sessions.UnexpectedError as exc:
+        return {"code": -500, "msg": "未知错误: " + str(exc)}
+
+
+@app.post("/session/{session_id}/upload_file")
+async def session_upload_file(session_id: UUID, request: FileContentRequest):
+    """使用session写入文件内容"""
+    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(
+        session_id
+    )
+    if session is None:
+        return {"code": -400, "msg": "没有这个session"}
+    try:
+        path = remote_path(request.current_dir) / request.filename
+        if request.encoding == "base64":
+            content = base64.b64decode(request.text)
+        else:
+            content = request.text.encode(request.encoding)
+        success = await session.upload_file(str(path), content)
         return {"code": 0, "data": success}
     except sessions.NetworkError as exc:
         return {"code": -500, "msg": "网络错误: " + str(exc)}

