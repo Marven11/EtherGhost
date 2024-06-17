@@ -53,21 +53,37 @@ const userInterfaceOptionGroup = {
   ]
 }
 
-const optionValues = reactive({
+const settingsValues = reactive({
   theme: "green"
 })
 const optionsGroups = shallowRef([userInterfaceOptionGroup])
 
 function changeClickboxOption(optionId) {
-  optionValues[optionId] = !optionValues[optionId]
+  settingsValues[optionId] = !settingsValues[optionId]
+}
+
+async function saveSettings() {
+  let settings = {...settingsValues}
+  console.log(settings)
+  await postDataOrPopupError("/settings", settings)
+  addPopup("green", "保存成功", "新的设置已经保存到本地数据库")
 }
 
 watch(
-  () => optionValues.theme,
+  () => settingsValues.theme,
   (newValue, oldValue) => {
     store.theme = newValue
   }
 )
+
+setTimeout(async () => {
+  let settings = await getDataOrPopupError("/settings")
+  for(let key of Object.keys(settings)) {
+    settingsValues[key] = settings[key]
+  }
+  console.log(settings)
+  console.log(settingsValues)
+}, 0)
 
 </script>
 
@@ -80,19 +96,19 @@ watch(
       <div class="option-name">
         {{ option.name }}
       </div>
-      <input v-if="option.type == 'text'" :type="option.type" :name="option.id" v-model="optionValues[option.id]"
+      <input v-if="option.type == 'text'" :type="option.type" :name="option.id" v-model="settingsValues[option.id]"
         :placeholder="option.placeholder" :id="'option-' + option.id">
       <select v-else-if="option.type == 'select'" :name="option.id" :id="'option-' + option.id"
-        v-model="optionValues[option.id]">
+        v-model="settingsValues[option.id]">
         <option disabled value="">选择一个</option>
         <option v-for="alternative in option.alternatives" :value="alternative.value">
           {{ alternative.name }}
         </option>
       </select>
       <div v-else-if="option.type == 'checkbox'" class="input-checkbox" :id="'option-' + option.id"
-        :checked="optionValues[option.id]" @click="changeClickboxOption(option.id)">
-        <input type="hidden" :name="option.id" :id="'option-' + option.id" v-model="optionValues[option.id]">
-        <IconCheck v-if="optionValues[option.id]" />
+        :checked="settingsValues[option.id]" @click="changeClickboxOption(option.id)">
+        <input type="hidden" :name="option.id" :id="'option-' + option.id" v-model="settingsValues[option.id]">
+        <IconCheck v-if="settingsValues[option.id]" />
         <IconCross v-else />
       </div>
       <p v-else>内部错误：未知选项类型 {{ option.type }}</p>
@@ -102,7 +118,7 @@ watch(
     <div class="submit-button" @click="() => router.go(-1)">
       丢弃
     </div>
-    <div class="submit-button" @click="saveSession">
+    <div class="submit-button" @click="saveSettings">
       保存
     </div>
   </div>
