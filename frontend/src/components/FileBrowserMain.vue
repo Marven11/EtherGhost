@@ -2,6 +2,7 @@
 import IconRun from "./icons/iconRun.vue"
 import IconDirectory from "./icons/iconDirectory.vue"
 import IconFile from "./icons/iconFile.vue"
+import IconLoad from "./icons/iconLoad.vue"
 import IconSymlinkFile from "./icons/iconSymlinkFile.vue"
 import IconSymlinkDirectory from "./icons/iconSymlinkDirectory.vue"
 import IconUnknownFile from "./icons/iconUnknownFile.vue"
@@ -49,7 +50,7 @@ async function initFetch() {
 
 setTimeout(initFetch, 0)
 
-async function onUserInputPwd(event) {
+function onUserInputPwd(event) {
   event.preventDefault()
   pwd.value = userPwd.value
 }
@@ -76,6 +77,24 @@ async function changeDir(entry) {
   })
   pwd.value = newPwd
 }
+
+async function listDir(newPwd) {
+  let newEntries = await getDataOrPopupError(`/session/${props.session}/list_dir`, {
+    params: {
+      current_dir: newPwd
+    }
+  })
+  entries.value = newEntries.map(entry => {
+    return {
+      name: entry.name,
+      entryType: entry.entry_type,
+      icon: entryIcons[entry.entry_type],
+      permission: entry.permission,
+      filesize: entry.filesize,
+    }
+  })
+}
+
 
 async function viewFile(newFilename) {
   let { text: fileContent, encoding: encoding } = await getDataOrPopupError(`/session/${props.session}/get_file_contents`, {
@@ -110,25 +129,8 @@ async function onDoubleClickEntry(event) {
   }
 }
 
-async function refreshNewPwd(newPwd) {
-  let newEntries = await getDataOrPopupError(`/session/${props.session}/list_dir`, {
-    params: {
-      current_dir: newPwd
-    }
-  })
-  entries.value = newEntries.map(entry => {
-    return {
-      name: entry.name,
-      entryType: entry.entry_type,
-      icon: entryIcons[entry.entry_type],
-      permission: entry.permission,
-      filesize: entry.filesize,
-    }
-  })
-}
-
 watch(pwd, async (newPwd, oldPwd) => {
-  refreshNewPwd(newPwd)
+  listDir(newPwd)
   userPwd.value = newPwd
 })
 
@@ -216,7 +218,7 @@ function confirmNewFile() {
     } else {
       addPopup("red", "新建失败", `文件${filename}新建失败`)
     }
-    await refreshNewPwd(pwd.value)
+    await listDir(pwd.value)
 
     viewNewFile(filename)
     showInputBox.value = false
@@ -241,7 +243,7 @@ function confirmRenameFile(filename) {
       } else {
         addPopup("red", "重命名失败", `文件${filename}重命名失败`)
       }
-      refreshNewPwd(pwd.value)
+      listDir(pwd.value)
     }
     showInputBox.value = false
   }
@@ -266,7 +268,7 @@ function confirmDeleteFile(filename) {
       } else {
         addPopup("red", "删除失败", `文件${filename}删除失败`)
       }
-      refreshNewPwd(pwd.value)
+      listDir(pwd.value)
     }
     showInputBox.value = false
   }
@@ -381,7 +383,7 @@ async function saveFile() {
   } else {
     addPopup("red", "保存失败", `文件${filename.value}保存失败`)
   }
-  await refreshNewPwd(pwd.value)
+  await listDir(pwd.value)
 
 }
 
@@ -431,8 +433,14 @@ function readableFilePerm(filePerm) {
 <template>
   <form action="" class="filepath-input" @submit="onUserInputPwd">
     <input v-model="userPwd" id="filepath-input" type="text" placeholder="/var/www/html">
-    <div class="icon-run" @click="onUserInputPwd">
+    <div class="filepath-icon" @click="onUserInputPwd">
       <IconRun />
+    </div>
+    <div class="filepath-icon" @click="() => {
+      listDir(pwd);
+      userPwd = pwd;
+    }">
+      <IconLoad />
     </div>
   </form>
   <div class="file-panel">
@@ -502,13 +510,13 @@ input[type="text"] {
 
 .filepath-input input {
   background-color: var(--background-color-2);
-  margin-right: 20px;
   flex-grow: 1;
 }
 
-.icon-run {
+.filepath-icon {
   height: 60px;
   width: 60px;
+  margin-left: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -518,7 +526,7 @@ input[type="text"] {
   opacity: 1;
 }
 
-.icon-run:hover {
+.filepath-icon:hover {
   background-color: var(--background-color-3);
   outline: 2px solid var(--font-color-grey);
 }
