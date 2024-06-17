@@ -15,7 +15,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from . import session_manager, session_types, sessions
+from . import session_manager, session_types, sessions, db
 from .sessions import SessionInterface, PHPSessionInterface, session_type_info
 
 token = secrets.token_bytes(16).hex()
@@ -384,6 +384,22 @@ async def join_path(folder: str, entry: str):
     else:
         result = remote_path(folder) / entry
     return {"code": 0, "data": result}
+
+
+@app.get("/settings")
+async def get_settings():
+    """获取当前配置"""
+    settings = db.get_settings()
+    if not settings:
+        return {"code": 0, "data": {}}
+    return {"code": 0, "data": settings}
+
+
+@app.post("/settings")
+async def set_settings(settings: t.Dict[str, t.Any]):
+    """设置当前配置"""
+    db.set_settings(settings)
+    return {"code": 0, "data": True}
 
 
 @app.get("/")

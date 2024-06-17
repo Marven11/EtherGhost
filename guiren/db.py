@@ -1,4 +1,5 @@
 """数据库管理，管理session info等信息"""
+
 import os
 import typing as t
 from dataclasses import dataclass
@@ -10,6 +11,7 @@ from .session_types import (
     SessionInfo,
 )
 
+SETTINGS_VERSION = "0.0.1"
 DB_FILENAME = "guiren.db"
 
 
@@ -46,10 +48,20 @@ class SessionInfoModel(Base):  # type: ignore
     connection = sa.Column(sa.JSON)
 
 
+class SettingsModel(Base):  # type: ignore
+    """sqlalchemy的Model，用于在数据库中保存设置"""
+
+    __tablename__ = "settings"
+    record_id = sa.Column(sa.Integer, primary_key=True)
+    version = sa.Column(sa.String)
+    settings = sa.Column(sa.JSON)
+
+
 @dataclass
-class SessionInfoModelTypeHint():
+class SessionInfoModelTypeHint:
     """SessionInfoModel的type hint
     解决pylint不能正确识别SQLAlchemy属性类型的问题"""
+
     record_id: int
     session_type: str
     session_id: UUID
@@ -131,3 +143,23 @@ def delete_session_info_by_id(
     orm_session.delete(model)
     orm_session.commit()
     return True
+
+
+def get_settings() -> t.Union[None, dict]:
+    """查询当前设置"""
+    model = orm_session.query(SettingsModel).first()
+    if model is None:
+        return None
+    assert model.version == SETTINGS_VERSION, (
+        "The version of the settings is not supported!"
+        + " Did you load a newer settings?"
+    )
+    return model.settings
+
+
+def set_settings(settings: dict):
+    model = orm_session.query(SettingsModel).first()
+    if model:
+        orm_session.delete(model)
+    orm_session.add(SettingsModel(version=SETTINGS_VERSION, settings=settings))
+    orm_session.commit()
