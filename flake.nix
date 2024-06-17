@@ -32,6 +32,7 @@
         devShells.default = pkgs.mkShell {
           inputsFrom = [ self.packages.${system}.myapp ];
           buildInputs = [
+            pkgs.poetry
             pythonPackages.notebook
             pythonPackages.ipython
             pythonPackages.pydantic
@@ -44,6 +45,10 @@
             pythonPackages.httpx
             pythonPackages.chardet
           ];
+          shellHook = ''
+            poetry install
+            exec poetry shell
+          '';
 
         };
 
