@@ -33,6 +33,10 @@ const userInterfaceOptionGroup = {
       default_value: store.theme,
       alternatives: [
         {
+          name: "灰白色",
+          value: "white"
+        },
+        {
           name: "红色",
           value: "red"
         },
@@ -61,7 +65,7 @@ function changeClickboxOption(optionId) {
 }
 
 async function saveSettings() {
-  let settings = {...currentSettings}
+  let settings = { ...currentSettings }
   console.log(settings)
   await postDataOrPopupError("/settings", settings)
   addPopup("green", "保存成功", "新的设置已经保存到本地数据库")
