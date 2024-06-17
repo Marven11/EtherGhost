@@ -6,11 +6,11 @@ export const popupsRef = ref(null)
 export const store = reactive({
   session: "",
   sessionName: "",
-  theme: "green"
+  theme: "white"
 })
 
 export const currentSettings = reactive({
-  theme: "green"
+  theme: "white"
 })
 
 watch(

@@ -32,6 +32,10 @@ html {
     --background-color-4: #1c212b;
 }
 
+[data-theme="white"] {
+    --primary-color: var(--white);
+}
+
 [data-theme="red"] {
     --primary-color: var(--red);
 }
