@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from uuid import uuid4, UUID
 import sqlalchemy as sa
-from sqlalchemy_utils import ChoiceType, UUIDType  # type: ignore
+from sqlalchemy_utils import UUIDType  # type: ignore
 from .session_types import (
     SessionInfo,
 )
