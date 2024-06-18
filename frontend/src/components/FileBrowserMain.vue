@@ -159,13 +159,13 @@ function sleep(time) {
 
 const showUploadFileHoverForm = ref(false)
 
-async function checkUploadStatus() {
-  while (true) {
+async function checkUploadStatus(stopSignal) {
+  while (!stopSignal.signal) {
     await sleep(300)
     let result = await getDataOrPopupError(`/session/${props.session}/file_upload_status`)
     uploadingFiles.value = result
     console.log(result)
-    if (!result) {
+    if (result.length == 0) {
       return;
     }
   }
@@ -175,13 +175,19 @@ async function submitUploadFile(form) {
   if (form == undefined) {
     return;
   }
+  let stopSignal = { signal: false }
   let uploadFileCoro = postDataOrPopupError(`/session/${props.session}/upload_file`, form, {
     headers: {
       'Content-Type': 'multipart/form-data'
     }
   })
-  let checkUploadsCoro = checkUploadStatus()
-  let resp = await Promise.all([uploadFileCoro, checkUploadsCoro])
+  let checkUploadsCoro = checkUploadStatus(stopSignal)
+  let resp
+  try {
+    [resp, _] = await Promise.all([uploadFileCoro, checkUploadsCoro])
+  } catch (e) {
+    stopSignal.signal = true;
+  }
   if (!resp) {
     addPopup("red", "上传失败", "因未知原因上传失败")
   }
