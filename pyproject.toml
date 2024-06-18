@@ -16,6 +16,7 @@ uvicorn = "*"
 sqlalchemy-utils = "*"
 httpx = "*"
 chardet = "^5.2.0"
+python-multipart = "^0.0.9"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.0"
