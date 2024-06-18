@@ -1,8 +1,10 @@
 <script setup>
 import Header from "./components/Header.vue"
+import HoverForm from "./components/HoverForm.vue"
 import { store, popupsRef, currentSettings } from "./assets/store"
 import Popups from "@/components/Popups.vue"
 import { getDataOrPopupError } from "./assets/utils";
+import { ref } from "vue";
 
 
 setTimeout(async () => {
@@ -14,6 +16,8 @@ setTimeout(async () => {
   setTimeout(() => store.header_background_transition = true, 100)
 }, 0)
 
+const showHoverForm = ref(true)
+
 </script>
 
 <template>
@@ -21,7 +25,18 @@ setTimeout(async () => {
     <!-- modified button from https://www.svgrepo.com/collection/dazzle-line-icons/ -->
     <Header />
     <main>
-      <router-view></router-view>
+      <!-- <router-view></router-view> -->
+      <HoverForm :callback="(result) => { console.log(result); showHoverForm = false }" v-if="showHoverForm">
+        <div class="input-box-line">
+          <input type="text" name="text" id="text">
+        </div>
+        <div class="input-box-line">
+          <p>上传文件</p>
+          <div class="input-file">
+            <input type="file" name="file" id="file">
+          </div>
+        </div>
+      </HoverForm>
       <!-- <WebshellEditorMain session="b9ffbeaa-2906-4865-ad7f-1818896dfe8c" /> -->
     </main>
   </div>
