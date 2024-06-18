@@ -11,6 +11,7 @@ import IconDelete from "./icons/iconDelete.vue"
 import { ref, shallowRef, watch } from "vue";
 import ClickMenu from "./ClickMenu.vue"
 import HoverForm from "./HoverForm.vue"
+import HoverStatus from "./HoverBox.vue"
 import InputBox from "./InputBox.vue"
 import { Codemirror } from 'vue-codemirror'
 import { getDataOrPopupError, postDataOrPopupError, addPopup, joinPath } from "@/assets/utils"
@@ -540,6 +541,25 @@ function readableFilePerm(filePerm) {
     </HoverForm>
   </transition>
 
+  <transition>
+    <HoverStatus>
+      <div class="upload-progress">
+        <h1>上传进度</h1>
+        <div class="upload-progress-file">
+          <div class="upload-progress-percentage">
+            <p>
+              90%
+            </p>
+          </div>
+
+          <p class="upload-progress-filename">
+            a.txt
+          </p>
+        </div>
+      </div>
+    </HoverStatus>
+  </transition>
+
 </template>
 
 <style scoped>
@@ -695,6 +715,40 @@ input[type="text"] {
   color: var(--font-color-white);
 }
 
+.upload-progress {
+  padding: 20px;
+  color: var(--font-color-white);
+}
+
+.upload-progress p {
+  margin: 0;
+}
+
+.upload-progress-file {
+  background-color: #00000015;
+  height: 100px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 20px;
+}
+
+.upload-progress-filename {
+  font-size: 24px;
+}
+
+.upload-progress-percentage {
+  margin-right: 20px;
+  font-size: 36px;
+  width: 130px;
+  background-color: #00000015;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 70px;
+  border-radius: 20px;  
+}
 
 svg {
   width: 40px;
