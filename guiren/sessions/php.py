@@ -438,6 +438,7 @@ class PHPWebshell(PHPSessionInterface):
                 "BASE64_CONTENT", base64_encode(chunk)
             )
             async with sem:
+                await asyncio.sleep(0.001) # we don't ddos
                 result = await self.submit(code)
                 done_count += 1
                 if callback:
