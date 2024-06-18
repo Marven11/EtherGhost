@@ -61,11 +61,11 @@ export async function getDataOrPopupError(uri, config) {
   return parseDataOrPopupError(resp, popupsRef)
 }
 
-export async function postDataOrPopupError(uri, config) {
+export async function postDataOrPopupError(uri, data, config = undefined) {
   let url = `${getCurrentApiUrl()}${uri}`
   let resp
   try {
-    resp = await axios.post(url, config)
+    resp = await axios.post(url, data, config)
   } catch (e) {
     addPopup("red", "请求服务端失败", `无法请求${uri}，服务端是否正在运行？`)
     throw e

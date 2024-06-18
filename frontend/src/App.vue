@@ -25,8 +25,8 @@ const showHoverForm = ref(true)
     <!-- modified button from https://www.svgrepo.com/collection/dazzle-line-icons/ -->
     <Header />
     <main>
-      <!-- <router-view></router-view> -->
-      <HoverForm :callback="(result) => { console.log(result); showHoverForm = false }" v-if="showHoverForm">
+      <router-view></router-view>
+      <!-- <HoverForm :callback="(result) => { console.log(result); showHoverForm = false }" v-if="showHoverForm">
         <div class="input-box-line">
           <input type="text" name="text" id="text">
         </div>
@@ -36,8 +36,7 @@ const showHoverForm = ref(true)
             <input type="file" name="file" id="file">
           </div>
         </div>
-      </HoverForm>
-      <!-- <WebshellEditorMain session="b9ffbeaa-2906-4865-ad7f-1818896dfe8c" /> -->
+      </HoverForm> -->
     </main>
   </div>
   <Popups ref="popupsRef" />

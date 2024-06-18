@@ -2,6 +2,7 @@
 import IconRun from "./icons/iconRun.vue"
 import IconDirectory from "./icons/iconDirectory.vue"
 import IconFile from "./icons/iconFile.vue"
+import IconFileUpload from "./icons/iconFileUpload.vue"
 import IconLoad from "./icons/iconLoad.vue"
 import IconSymlinkFile from "./icons/iconSymlinkFile.vue"
 import IconSymlinkDirectory from "./icons/iconSymlinkDirectory.vue"
@@ -9,6 +10,7 @@ import IconUnknownFile from "./icons/iconUnknownFile.vue"
 import IconDelete from "./icons/iconDelete.vue"
 import { ref, shallowRef, watch } from "vue";
 import ClickMenu from "./ClickMenu.vue"
+import HoverForm from "./HoverForm.vue"
 import InputBox from "./InputBox.vue"
 import { Codemirror } from 'vue-codemirror'
 import { getDataOrPopupError, postDataOrPopupError, addPopup, joinPath } from "@/assets/utils"
@@ -146,6 +148,27 @@ const entries = shallowRef([
 
 ])
 
+// ##############################
+// --- Upload File Hover Form ---
+// ##############################
+
+const showUploadFileHoverForm = ref(false)
+
+async function submitUploadFile(form) {
+  if (form == undefined) {
+    return;
+  }
+  let resp = await postDataOrPopupError(`/session/${props.session}/upload_file`, form, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
+  if (!resp) {
+    addPopup("red", "上传失败", "因未知原因上传失败")
+  }
+  await listDir(pwd.value)
+}
+
 // ###############################
 // --- Folder entry click menu ---
 // ###############################
@@ -164,9 +187,16 @@ const menuItemsAll = [
   {
     "name": "new_file",
     "text": "新建文件",
-    "icon": IconFile,
+    "icon": IconFile, // TODO: 改善图标
     "color": "white",
     "entry_type": ["empty", "file", "link-file"]
+  },
+  {
+    "name": "upload_file",
+    "text": "上传文件",
+    "icon": IconFileUpload,
+    "color": "white",
+    "entry_type": ["empty", "file", "link-file", "dir", "link-dir"]
   },
   {
     "name": "rename_file",
@@ -223,6 +253,10 @@ function confirmNewFile() {
     viewNewFile(filename)
     showInputBox.value = false
   }
+}
+
+function confirmUploadFile() {
+  showUploadFileHoverForm.value = true
 }
 
 function confirmRenameFile(filename) {
@@ -282,6 +316,8 @@ function onClickMenuItem(item) {
     changeDir(clickMenuEntry.name)
   } else if (item.name == "new_file") {
     confirmNewFile()
+  } else if (item.name == "upload_file") {
+    confirmUploadFile()
   } else if (item.name == "rename_file") {
     confirmRenameFile(clickMenuEntry.name)
   } else if (item.name == "delete_file") {
@@ -491,6 +527,19 @@ function readableFilePerm(filePerm) {
     <InputBox v-if="showInputBox" :title="inputBoxTitle" :note="inputBoxNote" :requireInput="inputBoxRequireInput"
       @result="inputBoxCallback" />
   </transition>
+
+  <transition>
+    <HoverForm title="上传文件" :callback="(result) => { submitUploadFile(result); showUploadFileHoverForm = false }"
+      v-if="showUploadFileHoverForm">
+      <input type="hidden" name="folder" :value="pwd">
+      <div class="input-box-line">
+        <div class="input-file">
+          <input type="file" name="file" id="file">
+        </div>
+      </div>
+    </HoverForm>
+  </transition>
+
 </template>
 
 <style scoped>

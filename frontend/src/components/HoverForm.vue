@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 
-const props = defineProps(["callback"])
+const props = defineProps(["callback", "title"])
 
 const emit = defineEmits(["result"])
 const form = ref(null)
@@ -33,9 +33,9 @@ function onClickBackground(event) {
 </script>
 
 <template>
-  <div class="input-box-main" @click="onClickBackground">
+  <div class="input-box-main" @click.self="onClickBackground">
     <div class="input-box">
-      <h1 class="input-box-title">标题</h1>
+      <h1 class="input-box-title">{{ props.title }}</h1>
       <form action="" class="input-box-form" ref="form">
         <slot></slot>
         <div class="input-box-line">
