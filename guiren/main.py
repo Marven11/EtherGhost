@@ -10,7 +10,7 @@ from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
 from uuid import UUID
 
 import chardet
-from fastapi import FastAPI, Response
+from fastapi import FastAPI, Response, File, Form, UploadFile
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -279,19 +279,23 @@ async def session_put_file_contents(session_id: UUID, request: FileContentReques
 
 
 @app.post("/session/{session_id}/upload_file")
-async def session_upload_file(session_id: UUID, request: FileContentRequest):
+async def session_upload_file(
+    session_id: UUID,
+    file: UploadFile = File(),
+    folder: str = Form(),
+):
     """使用session写入文件内容"""
     session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(
         session_id
     )
     if session is None:
         return {"code": -400, "msg": "没有这个session"}
+    filename = file.filename
+    content = await file.read()
+    if filename is None:
+        return {"code": -400, "msg": "错误: 没有文件名"}
     try:
-        path = remote_path(request.current_dir) / request.filename
-        if request.encoding == "base64":
-            content = base64.b64decode(request.text)
-        else:
-            content = request.text.encode(request.encoding)
+        path = remote_path(folder) / filename
         success = await session.upload_file(str(path), content)
         return {"code": 0, "data": success}
     except sessions.NetworkError as exc:
