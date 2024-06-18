@@ -703,7 +703,6 @@ class PHPWebshellOneliner(PHPWebshell):
             response = await self.client.request(
                 method=self.method, url=self.url, params=params, data=data
             )
-            print(response.text)
             return response.status_code, response.text
 
         except httpx.TimeoutException as exc:
