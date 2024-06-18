@@ -308,19 +308,6 @@ def to_sessionize_payload(payload: str, chunk: int = PAYLOAD_SESSIONIZE_CHUNK) -
     return payloads
 
 
-def compress_php_code(source: str) -> str:
-    """去除php payload中的注释和换行
-
-    Args:
-        source (str): 原PHP payload
-
-    Returns:
-        str: 去除结果
-    """
-    source = re.sub("(#|//).+\n", "\n", source)
-    return re.sub(r"(?<=[\{\};])\n? *", "", source)
-
-
 @dataclass
 class PHPWebshellOptions:
     """除了submit_raw之外的函数需要的各类选项"""
@@ -336,7 +323,7 @@ class PHPWebshell(PHPSessionInterface):
         self.options = options if options else PHPWebshellOptions()
         self.session_id = "".join(random.choices("1234567890abcdef", k=32))
         # for upload file
-        self.chunk_size = 32 ** 1024
+        self.chunk_size = 32 * 1024
         self.max_coro = 4
 
     def encode(self, payload: str) -> str:
@@ -430,9 +417,7 @@ class PHPWebshell(PHPSessionInterface):
         if result != "SUCCESS":
             raise exceptions.UnexpectedError("目标没有反馈移动成功")
 
-    async def upload_file(
-        self, filepath: str, content: bytes
-    ) -> bool:
+    async def upload_file(self, filepath: str, content: bytes) -> bool:
         sem = asyncio.Semaphore(self.max_coro)
         chunk_size = self.chunk_size
 
@@ -453,7 +438,7 @@ class PHPWebshell(PHPSessionInterface):
 
         uploaded_chunks = await asyncio.gather(
             *[
-                upload_chunk(content[i * chunk_size : i * chunk_size + chunk_size])
+                upload_chunk(content[i : i + chunk_size])
                 for i in range(0, len(content), chunk_size)
             ]
         )
@@ -551,7 +536,6 @@ class PHPWebshell(PHPSessionInterface):
             payload_raw=payload,
             session_id=self.session_id,
         )
-        payload = compress_php_code(payload)
         payload = self.encode(payload)
         status_code, text = await self.submit_raw(payload)
         if status_code == 404:
@@ -711,6 +695,7 @@ class PHPWebshellOneliner(PHPWebshell):
             response = await self.client.request(
                 method=self.method, url=self.url, params=params, data=data
             )
+            print(response.text)
             return response.status_code, response.text
 
         except httpx.TimeoutException as exc:
