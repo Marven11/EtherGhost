@@ -417,11 +417,16 @@ class PHPWebshell(PHPSessionInterface):
         if result != "SUCCESS":
             raise exceptions.UnexpectedError("目标没有反馈移动成功")
 
-    async def upload_file(self, filepath: str, content: bytes) -> bool:
+    async def upload_file(
+        self, filepath: str, content: bytes, callback: t.Union[t.Callable, None] = None
+    ) -> bool:
         sem = asyncio.Semaphore(self.max_coro)
         chunk_size = self.chunk_size
+        done_count = 0
+        coros = []
 
         async def upload_chunk(chunk: bytes):
+            nonlocal done_count
             code = """
             $file = tempnam("", "");
             $content = base64_decode('BASE64_CONTENT');
@@ -434,14 +439,16 @@ class PHPWebshell(PHPSessionInterface):
             )
             async with sem:
                 result = await self.submit(code)
+                done_count += 1
+                if callback:
+                    callback(done_count / len(coros))
             return result
 
-        uploaded_chunks = await asyncio.gather(
-            *[
-                upload_chunk(content[i : i + chunk_size])
-                for i in range(0, len(content), chunk_size)
-            ]
-        )
+        coros = [
+            upload_chunk(content[i : i + chunk_size])
+            for i in range(0, len(content), chunk_size)
+        ]
+        uploaded_chunks = await asyncio.gather(*coros)
         code = """
         $files = json_decode(FILES);
         $content = "";

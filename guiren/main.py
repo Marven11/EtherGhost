@@ -16,7 +16,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from . import session_manager, session_types, sessions, db
+from . import session_manager, session_types, sessions, db, upload_file_status
 from .sessions import SessionInterface, PHPSessionInterface, session_type_info
 
 token = secrets.token_bytes(16).hex()
@@ -296,7 +296,12 @@ async def session_upload_file(
         return {"code": -400, "msg": "错误: 没有文件名"}
     try:
         path = remote_path(folder) / filename
-        success = await session.upload_file(str(path), content)
+        with upload_file_status.record_upload_file(
+            session_id, folder, filename
+        ) as status_changer:
+            success = await session.upload_file(
+                str(path), content, callback=status_changer
+            )
         return {"code": 0, "data": success}
     except sessions.NetworkError as exc:
         return {"code": -500, "msg": "网络错误: " + str(exc)}
@@ -324,6 +329,13 @@ async def session_delete_file(session_id: UUID, current_dir: str, filename: str)
         return {"code": -500, "msg": "文件删除错误: " + str(exc)}
     except sessions.UnexpectedError as exc:
         return {"code": -500, "msg": "未知错误: " + str(exc)}
+
+
+@app.get("/session/{session_id}/file_upload_status")
+async def session_get_file_upload_status(session_id: UUID):
+    """读取session正在上传的文件"""
+    result = upload_file_status.get_session_uploading_file(session_id)
+    return {"code": 0, "data": result}
 
 
 @app.get("/session/{session_id}/basicinfo")

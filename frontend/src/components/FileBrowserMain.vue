@@ -153,17 +153,35 @@ const entries = shallowRef([
 // --- Upload File Hover Form ---
 // ##############################
 
+function sleep(time) {
+  return new Promise((resolve) => setTimeout(resolve, time));
+}
+
 const showUploadFileHoverForm = ref(false)
+
+async function checkUploadStatus() {
+  while (true) {
+    await sleep(300)
+    let result = await getDataOrPopupError(`/session/${props.session}/file_upload_status`)
+    uploadingFiles.value = result
+    console.log(result)
+    if (!result) {
+      return;
+    }
+  }
+}
 
 async function submitUploadFile(form) {
   if (form == undefined) {
     return;
   }
-  let resp = await postDataOrPopupError(`/session/${props.session}/upload_file`, form, {
+  let uploadFileCoro = postDataOrPopupError(`/session/${props.session}/upload_file`, form, {
     headers: {
       'Content-Type': 'multipart/form-data'
     }
   })
+  let checkUploadsCoro = checkUploadStatus()
+  let resp = await Promise.all([uploadFileCoro, checkUploadsCoro])
   if (!resp) {
     addPopup("red", "上传失败", "因未知原因上传失败")
   }
@@ -432,6 +450,12 @@ const inputBoxNote = ref("")
 const inputBoxRequireInput = ref(false)
 let inputBoxCallback = ref(undefined)
 
+// uploadProgress
+
+const uploadingFiles = ref([])
+
+console.log(uploadingFiles.value)
+
 // #################
 // --- Utilities ---
 // #################
@@ -542,18 +566,18 @@ function readableFilePerm(filePerm) {
   </transition>
 
   <transition>
-    <HoverStatus>
+    <HoverStatus v-if="uploadingFiles.length != 0">
       <div class="upload-progress">
         <h1>上传进度</h1>
-        <div class="upload-progress-file">
+        <div class="upload-progress-file" v-for="file in uploadingFiles">
           <div class="upload-progress-percentage">
             <p>
-              90%
+              {{ Math.floor(file.percentage * 100) }}%
             </p>
           </div>
 
           <p class="upload-progress-filename">
-            a.txt
+            {{ file.file }}
           </p>
         </div>
       </div>
@@ -747,7 +771,7 @@ input[type="text"] {
   justify-content: center;
   align-items: center;
   height: 70px;
-  border-radius: 20px;  
+  border-radius: 20px;
 }
 
 svg {

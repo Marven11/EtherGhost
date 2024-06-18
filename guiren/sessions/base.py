@@ -85,7 +85,9 @@ class SessionInterface:
         """移动文件到新的目录"""
         raise NotImplementedError()
 
-    async def upload_file(self, filepath: str, content: bytes) -> bool:
+    async def upload_file(
+        self, filepath: str, content: bytes, callback: t.Union[t.Callable, None] = None
+    ) -> bool:
         """上传文件，内容是一个字节序列，不是已经解码的字符串"""
         raise NotImplementedError()
 
