@@ -32,6 +32,8 @@ logger = logging.getLogger("sessions.php")
 
 user_agent = random_user_agent()
 
+DEFAULT_SESSION_ID = "".join(random.choices("1234567890abcdef", k=32))
+
 # session id was specified to avoid session
 # forget to save session id in cookie
 
@@ -321,7 +323,6 @@ class PHPWebshell(PHPSessionInterface):
 
     def __init__(self, options: t.Union[None, PHPWebshellOptions]):
         self.options = options if options else PHPWebshellOptions()
-        self.session_id = "".join(random.choices("1234567890abcdef", k=32))
         # for upload file
         self.chunk_size = 32 * 1024
         self.max_coro = 4
@@ -438,7 +439,7 @@ class PHPWebshell(PHPSessionInterface):
                 "BASE64_CONTENT", base64_encode(chunk)
             )
             async with sem:
-                await asyncio.sleep(0.001) # we don't ddos
+                await asyncio.sleep(0.01) # we don't ddos
                 result = await self.submit(code)
                 done_count += 1
                 if callback:
@@ -542,7 +543,7 @@ class PHPWebshell(PHPSessionInterface):
             delimiter_start_2=start[3:],
             delimiter_stop=stop,
             payload_raw=payload,
-            session_id=self.session_id,
+            session_id=DEFAULT_SESSION_ID,
         )
         payload = self.encode(payload)
         status_code, text = await self.submit_raw(payload)
