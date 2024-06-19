@@ -1,5 +1,7 @@
 import random
 import typing as t
+import json
+
 import httpx
 
 from .. import exceptions
@@ -62,6 +64,22 @@ class PHPWebshellOneliner(PHPWebshell):
                     type="checkbox",
                     placeholder=None,
                     default_value=True,
+                    alternatives=None,
+                ),
+                ConnOption(
+                    id="extra_get_params",
+                    name="额外的GET参数",
+                    type="text",
+                    placeholder='保存着额外参数的JSON对象，如{"passwd": "123"}',
+                    default_value="{}",
+                    alternatives=None,
+                ),
+                ConnOption(
+                    id="extra_post_params",
+                    name="额外的POST参数",
+                    type="text",
+                    placeholder='保存着额外参数的JSON对象，如{"passwd": "123"}',
+                    default_value="{}",
                     alternatives=None,
                 ),
             ]
