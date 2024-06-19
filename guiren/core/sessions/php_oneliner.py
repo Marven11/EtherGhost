@@ -11,8 +11,7 @@ from ..base import (
     ConnOptionGroup,
     get_http_client,
 )
-from ..php import PHPWebshell, PHPWebshellOptions
-
+from ..php import PHPWebshell, php_webshell_conn_options
 
 
 @register_session
@@ -58,16 +57,6 @@ class PHPWebshellOneliner(PHPWebshell):
             "name": "高级连接配置",
             "options": [
                 ConnOption(
-                    id="encoder",
-                    name="编码器",
-                    type="select",
-                    placeholder="base64",
-                    default_value="base64",
-                    alternatives=[
-                        {"name": "base64", "value": "base64"},
-                    ],
-                ),
-                ConnOption(
                     id="http_params_obfs",
                     name="HTTP参数混淆",
                     type="checkbox",
@@ -75,24 +64,14 @@ class PHPWebshellOneliner(PHPWebshell):
                     default_value=True,
                     alternatives=None,
                 ),
-                ConnOption(
-                    id="sessionize_payload",
-                    name="Session暂存payload",
-                    type="checkbox",
-                    placeholder=None,
-                    default_value=False,
-                    alternatives=None,
-                ),
-            ],
+            ]
+            + php_webshell_conn_options,
         },
     ]
 
     def __init__(self, session_conn: dict) -> None:
         super().__init__(
-            PHPWebshellOptions(
-                encoder=session_conn["encoder"],
-                sessionize_payload=session_conn["sessionize_payload"],
-            )
+            session_conn
         )
         self.method = session_conn["method"].upper()
         self.url = session_conn["url"]
@@ -121,6 +100,7 @@ class PHPWebshellOneliner(PHPWebshell):
             response = await self.client.request(
                 method=self.method, url=self.url, params=params, data=data
             )
+            print(response.text)
             return response.status_code, response.text
 
         except httpx.TimeoutException as exc:
