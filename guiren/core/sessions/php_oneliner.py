@@ -1,6 +1,7 @@
 import random
 import typing as t
 import json
+import urllib
 
 import httpx
 
@@ -24,6 +25,20 @@ def get_obfs_data(exclude_keys: t.Iterable[str]):
         }
         if all(k not in obfs_data for k in excludes):
             return obfs_data
+
+
+def user_json_loads(data: str, types: t.Union[type, t.Iterable[type]]):
+    if not isinstance(types, type):
+        types = tuple(types)
+    try:
+        parsed = json.loads(data)
+        if not isinstance(parsed, types):
+            raise exceptions.UserError(
+                f"无效的JSON数据：需要的数据类型为{types}，输入的是{type(parsed)}，数据为{parsed!r}"
+            )
+        return parsed
+    except json.JSONDecodeError as exc:
+        raise exceptions.UserError(f"解码JSON失败: {data!r}") from exc
 
 
 @register_session
@@ -76,6 +91,12 @@ class PHPWebshellOneliner(PHPWebshell):
                     default_value=True,
                     alternatives=None,
                 ),
+            ]
+            + php_webshell_conn_options,
+        },
+        {
+            "name": "自定义HTTP参数",
+            "options": [
                 ConnOption(
                     id="extra_get_params",
                     name="额外的GET参数",
@@ -92,8 +113,23 @@ class PHPWebshellOneliner(PHPWebshell):
                     default_value="{}",
                     alternatives=None,
                 ),
-            ]
-            + php_webshell_conn_options,
+                ConnOption(
+                    id="extra_headers",
+                    name="额外的headers",
+                    type="text",
+                    placeholder='保存着额外参数的JSON对象或null，如{"passwd": "123"}',
+                    default_value="{}",
+                    alternatives=None,
+                ),
+                ConnOption(
+                    id="extra_cookies",
+                    name="额外的cookies",
+                    type="text",
+                    placeholder='保存着额外参数的JSON对象或null，如{"passwd": "123"}',
+                    default_value="{}",
+                    alternatives=None,
+                ),
+            ],
         },
     ]
 
@@ -102,8 +138,14 @@ class PHPWebshellOneliner(PHPWebshell):
         self.method = session_conn["method"].upper()
         self.url = session_conn["url"]
         self.password = session_conn["password"]
-        self.params = json.loads(session_conn.get("extra_get_params", "{}"))
-        self.data = json.loads(session_conn.get("extra_post_params", "{}"))
+        self.params = user_json_loads(session_conn.get("extra_get_params", "{}"), str)
+        self.data = user_json_loads(session_conn.get("extra_post_params", "{}"), str)
+        self.headers = user_json_loads(
+            session_conn.get("extra_headers", "null"), (str, type(None))
+        )
+        self.cookies = user_json_loads(
+            session_conn.get("extra_cookies", "null"), (str, type(None))
+        )
         self.http_params_obfs = session_conn["http_params_obfs"]
         self.client = get_http_client()
 
@@ -120,7 +162,12 @@ class PHPWebshellOneliner(PHPWebshell):
                 data.update(get_obfs_data(data.keys()))
         try:
             response = await self.client.request(
-                method=self.method, url=self.url, params=params, data=data
+                method=self.method,
+                url=self.url,
+                params=params,
+                data=data,
+                headers=self.headers,
+                cookies=self.cookies,
             )
             return response.status_code, response.text
 
