@@ -16,6 +16,16 @@ from ..base import (
 from ..php import PHPWebshell, php_webshell_conn_options
 
 
+def get_obfs_data(exclude_keys: t.Iterable[str]):
+    excludes = set(exclude_keys)
+    while True:
+        obfs_data = {
+            random_english_words(): random_data() for _ in range(random.randint(8, 12))
+        }
+        if all(k not in obfs_data for k in excludes):
+            return obfs_data
+
+
 @register_session
 class PHPWebshellOneliner(PHPWebshell):
     """一句话的php webshell"""
@@ -92,26 +102,22 @@ class PHPWebshellOneliner(PHPWebshell):
         self.method = session_conn["method"].upper()
         self.url = session_conn["url"]
         self.password = session_conn["password"]
-        self.params = {}
-        self.data = {}
+        self.params = json.loads(session_conn.get("extra_get_params", "{}"))
+        self.data = json.loads(session_conn.get("extra_post_params", "{}"))
         self.http_params_obfs = session_conn["http_params_obfs"]
         self.client = get_http_client()
 
     async def submit_raw(self, payload: str) -> t.Tuple[int, str]:
         params = self.params.copy()
         data = self.data.copy()
-        obfs_data = {}
-        if self.http_params_obfs:
-            obfs_data = {
-                random_english_words(): random_data()
-                for _ in range(random.randint(8, 12))
-            }
         if self.method in ["GET", "HEAD"]:
             params[self.password] = payload
-            params.update(obfs_data)
+            if self.http_params_obfs:
+                params.update(get_obfs_data(params.keys()))
         else:
             data[self.password] = payload
-            data.update(obfs_data)
+            if self.http_params_obfs:
+                data.update(get_obfs_data(data.keys()))
         try:
             response = await self.client.request(
                 method=self.method, url=self.url, params=params, data=data
