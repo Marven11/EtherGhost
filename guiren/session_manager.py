@@ -2,8 +2,8 @@
 
 import typing as t
 from uuid import UUID
-from . import db, sessions
-from .sessions.base import session_type_info
+from . import db, core
+from .core.base import session_type_info
 from .session_types import (
     SessionInfo,
 )
@@ -13,7 +13,7 @@ location_readable = {"US": "🇺🇸"}
 session_con_converters = {}
 
 
-def session_info_to_session(session_info: SessionInfo) -> sessions.SessionInterface:
+def session_info_to_session(session_info: SessionInfo) -> core.SessionInterface:
     """将session info转成session对象
 
     Args:
@@ -48,7 +48,7 @@ def get_session_info_by_id(
 
 def get_session_by_id(
     session_id: t.Union[str, UUID]
-) -> t.Union[None, sessions.SessionInterface]:
+) -> t.Union[None, core.SessionInterface]:
     """根据id返回session对象，优先返回缓存的对象
 
     Args:

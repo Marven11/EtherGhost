@@ -16,8 +16,8 @@ from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from . import session_manager, session_types, sessions, db, upload_file_status
-from .sessions import SessionInterface, PHPSessionInterface, session_type_info
+from . import session_manager, session_types, core, db, upload_file_status
+from .core import SessionInterface, PHPSessionInterface, session_type_info
 
 token = secrets.token_bytes(16).hex()
 logger = logging.getLogger("main")
@@ -127,7 +127,7 @@ async def test_webshell(session_info: session_types.SessionInfo):
         if not result:
             return {"code": 0, "data": {"success": False, "msg": "Webshell无法使用"}}
         return {"code": 0, "data": {"success": True, "msg": "Webshell可以使用"}}
-    except sessions.UnexpectedError as exc:
+    except core.UnexpectedError as exc:
         return {
             "code": 0,
             "data": {
@@ -135,7 +135,7 @@ async def test_webshell(session_info: session_types.SessionInfo):
                 "msg": "未知错误，Webshell不可以使用：" + str(exc),
             },
         }
-    except sessions.NetworkError as exc:
+    except core.NetworkError as exc:
         return {
             "code": 0,
             "data": {
@@ -165,9 +165,9 @@ async def session_execute_cmd(session_id: UUID, cmd: str):
     try:
         result = await session.execute_cmd(cmd)
         return {"code": 0, "data": result}
-    except sessions.NetworkError as exc:
+    except core.NetworkError as exc:
         return {"code": -500, "msg": "网络错误: " + str(exc)}
-    except sessions.UnexpectedError as exc:
+    except core.UnexpectedError as exc:
         return {"code": -500, "msg": "未知错误: " + str(exc)}
 
 
@@ -182,9 +182,9 @@ async def session_get_pwd(session_id: UUID):
     try:
         result = await session.get_pwd()
         return {"code": 0, "data": result}
-    except sessions.NetworkError as exc:
+    except core.NetworkError as exc:
         return {"code": -500, "msg": "网络错误: " + str(exc)}
-    except sessions.UnexpectedError as exc:
+    except core.UnexpectedError as exc:
         return {"code": -500, "msg": "未知错误: " + str(exc)}
 
 
@@ -199,9 +199,9 @@ async def session_list_dir(session_id: UUID, current_dir: str):
     try:
         result = await session.list_dir(current_dir)
         return {"code": 0, "data": result}
-    except sessions.NetworkError as exc:
+    except core.NetworkError as exc:
         return {"code": -500, "msg": "网络错误: " + str(exc)}
-    except sessions.UnexpectedError as exc:
+    except core.UnexpectedError as exc:
         return {"code": -500, "msg": "未知错误: " + str(exc)}
 
 
@@ -216,11 +216,11 @@ async def session_move_file(session_id: UUID, filepath: str, new_filepath):
     try:
         await session.move_file(filepath, new_filepath)
         return {"code": 0, "data": True}
-    except sessions.FileError as exc:
+    except core.FileError as exc:
         return {"code": -500, "msg": "文件错误: " + str(exc)}
-    except sessions.NetworkError as exc:
+    except core.NetworkError as exc:
         return {"code": -500, "msg": "网络错误: " + str(exc)}
-    except sessions.UnexpectedError as exc:
+    except core.UnexpectedError as exc:
         return {"code": -500, "msg": "未知错误: " + str(exc)}
 
 
@@ -236,11 +236,11 @@ async def session_get_file_contents(session_id: UUID, current_dir: str, filename
     try:
         path = remote_path(current_dir) / filename
         content = await session.get_file_contents(str(path))
-    except sessions.NetworkError as exc:
+    except core.NetworkError as exc:
         return {"code": -500, "msg": "网络错误: " + str(exc)}
-    except sessions.FileError as exc:
+    except core.FileError as exc:
         return {"code": -500, "msg": "文件读取错误: " + str(exc)}
-    except sessions.UnexpectedError as exc:
+    except core.UnexpectedError as exc:
         return {"code": -500, "msg": "未知错误: " + str(exc)}
     try:
         detected_encoding = chardet.detect(content)["encoding"]
@@ -270,11 +270,11 @@ async def session_put_file_contents(session_id: UUID, request: FileContentReques
         content = request.text.encode(request.encoding)
         success = await session.put_file_contents(str(path), content)
         return {"code": 0, "data": success}
-    except sessions.NetworkError as exc:
+    except core.NetworkError as exc:
         return {"code": -500, "msg": "网络错误: " + str(exc)}
-    except sessions.FileError as exc:
+    except core.FileError as exc:
         return {"code": -500, "msg": "文件写入错误: " + str(exc)}
-    except sessions.UnexpectedError as exc:
+    except core.UnexpectedError as exc:
         return {"code": -500, "msg": "未知错误: " + str(exc)}
 
 
@@ -303,11 +303,11 @@ async def session_upload_file(
                 str(path), content, callback=status_changer
             )
         return {"code": 0, "data": success}
-    except sessions.NetworkError as exc:
+    except core.NetworkError as exc:
         return {"code": -500, "msg": "网络错误: " + str(exc)}
-    except sessions.FileError as exc:
+    except core.FileError as exc:
         return {"code": -500, "msg": "文件写入错误: " + str(exc)}
-    except sessions.UnexpectedError as exc:
+    except core.UnexpectedError as exc:
         return {"code": -500, "msg": "未知错误: " + str(exc)}
 
 
@@ -323,11 +323,11 @@ async def session_delete_file(session_id: UUID, current_dir: str, filename: str)
         path = remote_path(current_dir) / filename
         result = await session.delete_file(str(path))
         return {"code": 0, "data": result}
-    except sessions.NetworkError as exc:
+    except core.NetworkError as exc:
         return {"code": -500, "msg": "网络错误: " + str(exc)}
-    except sessions.FileError as exc:
+    except core.FileError as exc:
         return {"code": -500, "msg": "文件删除错误: " + str(exc)}
-    except sessions.UnexpectedError as exc:
+    except core.UnexpectedError as exc:
         return {"code": -500, "msg": "未知错误: " + str(exc)}
 
 
@@ -349,9 +349,9 @@ async def session_get_basicinfo(session_id: UUID):
     try:
         result = await session.get_basicinfo()
         return {"code": 0, "data": result}
-    except sessions.NetworkError as exc:
+    except core.NetworkError as exc:
         return {"code": -500, "msg": "网络错误: " + str(exc)}
-    except sessions.UnexpectedError as exc:
+    except core.UnexpectedError as exc:
         return {"code": -500, "msg": "未知错误: " + str(exc)}
 
 
@@ -375,9 +375,9 @@ async def session_download_phpinfo(session_id: UUID):
         return Response(
             content=content, media_type="application/octet-stream", headers=headers
         )
-    except sessions.NetworkError as exc:
+    except core.NetworkError as exc:
         return {"code": -500, "msg": "网络错误: " + str(exc)}
-    except sessions.UnexpectedError as exc:
+    except core.UnexpectedError as exc:
         return {"code": -500, "msg": "未知错误: " + str(exc)}
 
 
@@ -396,9 +396,9 @@ async def session_php_eval(session_id: UUID, request: PhpCodeRequest):
         code = request.code
         result = await session.php_eval(code)
         return {"code": 0, "data": result}
-    except sessions.NetworkError as exc:
+    except core.NetworkError as exc:
         return {"code": -500, "msg": "网络错误: " + str(exc)}
-    except sessions.UnexpectedError as exc:
+    except core.UnexpectedError as exc:
         return {"code": -500, "msg": "未知错误: " + str(exc)}
 
 
