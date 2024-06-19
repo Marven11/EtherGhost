@@ -64,6 +64,7 @@ function onClickItem(itemName) {
   padding-right: 20px;
   color: var(--font-color-white);
   user-select: none;
+  transition: background 0.3s ease;
 }
 
 .click-menu-item:hover {
