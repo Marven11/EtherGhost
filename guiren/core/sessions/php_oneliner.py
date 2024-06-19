@@ -2,16 +2,16 @@ import random
 import typing as t
 import httpx
 
-from . import exceptions
+from .. import exceptions
 
-from ..utils import random_english_words, random_data
-from .base import (
+from ...utils import random_english_words, random_data
+from ..base import (
     register_session,
     ConnOption,
     ConnOptionGroup,
     get_http_client,
 )
-from .php import PHPWebshell, PHPWebshellOptions
+from ..php import PHPWebshell, PHPWebshellOptions
 
 
 
