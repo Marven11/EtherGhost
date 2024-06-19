@@ -80,9 +80,7 @@ class PHPWebshellBehinderAES(PHPWebshell):
     ]
 
     def __init__(self, session_conn: dict):
-        super().__init__(
-            session_conn
-        )
+        super().__init__(session_conn)
         self.url = session_conn["url"]
         self.key = md5_encode(session_conn["password"])[:16].encode()
         self.client = get_http_client()
@@ -133,9 +131,7 @@ class PHPWebshellBehinderXor(PHPWebshell):
     ]
 
     def __init__(self, session_conn: dict):
-        super().__init__(
-            session_conn
-        )
+        super().__init__(session_conn)
         self.url = session_conn["url"]
         self.key = md5_encode(session_conn["password"])[:16].encode()
         self.client = get_http_client()

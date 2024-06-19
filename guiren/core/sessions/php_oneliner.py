@@ -70,9 +70,7 @@ class PHPWebshellOneliner(PHPWebshell):
     ]
 
     def __init__(self, session_conn: dict) -> None:
-        super().__init__(
-            session_conn
-        )
+        super().__init__(session_conn)
         self.method = session_conn["method"].upper()
         self.url = session_conn["url"]
         self.password = session_conn["password"]
@@ -100,7 +98,6 @@ class PHPWebshellOneliner(PHPWebshell):
             response = await self.client.request(
                 method=self.method, url=self.url, params=params, data=data
             )
-            print(response.text)
             return response.status_code, response.text
 
         except httpx.TimeoutException as exc:

