@@ -433,6 +433,7 @@ watch(filename, (newFilename, _) => {
 })
 
 async function saveFile() {
+  filename.value = userFilename.value
   let success = await postDataOrPopupError(`/session/${props.session}/put_file_contents`, {
     text: codeMirrorContent.value,
     encoding: fileEncoding.value,
