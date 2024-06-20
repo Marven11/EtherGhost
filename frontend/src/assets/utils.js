@@ -60,7 +60,7 @@ export async function getDataOrPopupError(uri, config) {
     addPopup("red", "请求服务端失败", `无法请求${uri}，服务端是否正在运行？`)
     throw e
   }
-  return parseDataOrPopupError(resp, popupsRef)
+  return parseDataOrPopupError(resp)
 }
 
 export async function postDataOrPopupError(uri, data, config = undefined) {
@@ -72,6 +72,6 @@ export async function postDataOrPopupError(uri, data, config = undefined) {
     addPopup("red", "请求服务端失败", `无法请求${uri}，服务端是否正在运行？`)
     throw e
   }
-  return parseDataOrPopupError(resp, popupsRef)
+  return parseDataOrPopupError(resp)
 }
 

@@ -5,8 +5,10 @@ import { php } from '@codemirror/lang-php'
 import { oneDark } from '@codemirror/theme-one-dark'
 import { EditorView } from "@codemirror/view"
 
-import { addPopup, postDataOrPopupError } from "@/assets/utils";
+import { addPopup, getCurrentApiUrl, postDataOrPopupError } from "@/assets/utils";
 import { store } from "@/assets/store";
+import { parseDataOrPopupError } from "@/assets/utils";
+import axios from "axios";
 
 const props = defineProps({
   session: String,
@@ -81,11 +83,23 @@ async function onPhpEval() {
   if (!phpPlain.value) {
     addPopup("yellow", "代码可能无法执行", "代码中含有<?, 可能导致代码无法被正常解析，请使用include功能执行")
   }
-  const url = `/session/${props.session}/php_eval`
   const code = codeMirrorContent.value;
-  const data = await postDataOrPopupError(url, {
-    code: code
-  })
+  const url = `${getCurrentApiUrl()}/session/${props.session}/php_eval`
+  let resp
+  try {
+    resp = await axios.post(url, {
+      code: code
+    })
+  } catch (e) {
+    addPopup("red", "请求服务端失败", `无法请求/session/${props.session}/php_eval，服务端是否正在运行？`)
+    throw e
+  }
+  if(resp.data.code == -500 || resp.data.code == -400) {
+    setTimeout(() => {
+      addPopup("blue", "代码没有执行？", `你可能需要检查一下你的代码是否正确`)
+    }, 300)
+  }
+  const data = parseDataOrPopupError(resp)
   terminalOutput.value = data
 }
 
