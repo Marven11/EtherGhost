@@ -91,6 +91,14 @@ class PHPWebshellOneliner(PHPWebshell):
                     default_value=True,
                     alternatives=None,
                 ),
+                ConnOption(
+                    id="chunked_request",
+                    name="分块传输request",
+                    type="text",
+                    placeholder="使用Chunked Transfer encoding分块编码请求，指定分块大小，0表示不分块",
+                    default_value="0",
+                    alternatives=None,
+                ),
             ]
             + php_webshell_conn_options,
         },
@@ -138,16 +146,47 @@ class PHPWebshellOneliner(PHPWebshell):
         self.method = session_conn["method"].upper()
         self.url = session_conn["url"]
         self.password = session_conn["password"]
-        self.params = user_json_loads(session_conn.get("extra_get_params", "{}"), str)
-        self.data = user_json_loads(session_conn.get("extra_post_params", "{}"), str)
+        self.params = user_json_loads(session_conn.get("extra_get_params", "{}"), dict)
+        self.data = user_json_loads(session_conn.get("extra_post_params", "{}"), dict)
         self.headers = user_json_loads(
-            session_conn.get("extra_headers", "null"), (str, type(None))
+            session_conn.get("extra_headers", "null"), (dict, type(None))
         )
         self.cookies = user_json_loads(
-            session_conn.get("extra_cookies", "null"), (str, type(None))
+            session_conn.get("extra_cookies", "null"), (dict, type(None))
         )
         self.http_params_obfs = session_conn["http_params_obfs"]
+        self.chunked_request = int(session_conn.get("chunked_request", 0))
         self.client = get_http_client()
+
+    def build_chunked_request(self, params: dict, data: dict):
+        data_bytes = urllib.parse.urlencode(data).encode()
+
+        async def yield_data():
+            for i in range(0, len(data_bytes), self.chunked_request):
+                yield data_bytes[i : i + self.chunked_request]
+
+        return self.client.build_request(
+            method=self.method,
+            url=self.url,
+            params=params,
+            # data=data,
+            content=yield_data(),
+            headers={
+                "Transfer-Encoding": "chunked",
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            cookies=self.cookies,
+        )
+
+    def build_normal_request(self, params: dict, data: dict):
+        return self.client.build_request(
+            method=self.method,
+            url=self.url,
+            params=params,
+            data=data,
+            headers=self.headers,
+            cookies=self.cookies,
+        )
 
     async def submit_raw(self, payload: str) -> t.Tuple[int, str]:
         params = self.params.copy()
@@ -161,14 +200,12 @@ class PHPWebshellOneliner(PHPWebshell):
             if self.http_params_obfs:
                 data.update(get_obfs_data(data.keys()))
         try:
-            response = await self.client.request(
-                method=self.method,
-                url=self.url,
-                params=params,
-                data=data,
-                headers=self.headers,
-                cookies=self.cookies,
+            request = (
+                self.build_normal_request(params, data)
+                if self.chunked_request == 0
+                else self.build_chunked_request(params, data)
             )
+            response = await self.client.send(request)
             return response.status_code, response.text
 
         except httpx.TimeoutException as exc:
