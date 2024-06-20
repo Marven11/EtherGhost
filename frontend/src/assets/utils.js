@@ -40,6 +40,8 @@ export function parseDataOrPopupError(resp) {
       title = "客户端错误"
     } else if (resp.data.code == -500) {
       title = "服务端错误"
+    }else if (resp.data.code == -600) {
+      title = "受控端错误"
     }
     addPopup("red", title, resp.data.msg)
     doAssert(false, `${title}: ${resp.data.msg}`)

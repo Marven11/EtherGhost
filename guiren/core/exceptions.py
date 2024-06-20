@@ -7,15 +7,19 @@ class SessionException(Exception):
 
 class UnknownError(SessionException):
     """未知错误"""
+    code=-500
 
 
 class NetworkError(SessionException):
     """网络错误"""
+    code=-600
 
 
 class FileError(SessionException):
     """文件错误"""
+    code=-600
 
 
 class UserError(SessionException):
     """用户操作失误"""
+    code=-400

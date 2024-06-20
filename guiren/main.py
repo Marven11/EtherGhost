@@ -80,7 +80,7 @@ def catch_user_error(fn):
             return await fn(*args, **kwargs)
         except core.SessionException as exc:
             return {
-                "code": -400 if isinstance(exc, core.UserError) else -500,
+                "code": type(exc).code,
                 "msg": f"{type(exc).__doc__}: {str(exc)}",
             }
 
