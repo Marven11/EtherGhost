@@ -181,6 +181,7 @@ async def session_execute_cmd(session_id: UUID, cmd: str):
 
 
 @app.get("/session/{session_id}/get_pwd")
+@catch_user_error
 async def session_get_pwd(session_id: UUID):
     """获取session的pwd"""
     session: SessionInterface = session_manager.get_session_by_id(session_id)
@@ -189,6 +190,7 @@ async def session_get_pwd(session_id: UUID):
 
 
 @app.get("/session/{session_id}/list_dir")
+@catch_user_error
 async def session_list_dir(session_id: UUID, current_dir: str):
     """使用session列出某个目录"""
     session: SessionInterface = session_manager.get_session_by_id(session_id)
@@ -197,6 +199,7 @@ async def session_list_dir(session_id: UUID, current_dir: str):
 
 
 @app.get("/session/{session_id}/move_file")
+@catch_user_error
 async def session_move_file(session_id: UUID, filepath: str, new_filepath):
     """使用session移动某个文件"""
     session: SessionInterface = session_manager.get_session_by_id(session_id)
@@ -205,6 +208,7 @@ async def session_move_file(session_id: UUID, filepath: str, new_filepath):
 
 
 @app.get("/session/{session_id}/get_file_contents")
+@catch_user_error
 async def session_get_file_contents(session_id: UUID, current_dir: str, filename: str):
     """使用session获取文件内容"""
     session: SessionInterface = session_manager.get_session_by_id(session_id)
@@ -227,6 +231,7 @@ async def session_get_file_contents(session_id: UUID, current_dir: str, filename
 
 
 @app.post("/session/{session_id}/put_file_contents")
+@catch_user_error
 async def session_put_file_contents(session_id: UUID, request: FileContentRequest):
     """使用session写入文件内容"""
     session: SessionInterface = session_manager.get_session_by_id(session_id)
@@ -237,6 +242,7 @@ async def session_put_file_contents(session_id: UUID, request: FileContentReques
 
 
 @app.post("/session/{session_id}/upload_file")
+@catch_user_error
 async def session_upload_file(
     session_id: UUID,
     file: UploadFile = File(),
@@ -257,6 +263,7 @@ async def session_upload_file(
 
 
 @app.get("/session/{session_id}/delete_file")
+@catch_user_error
 async def session_delete_file(session_id: UUID, current_dir: str, filename: str):
     """使用session获取文件内容"""
     session: SessionInterface = session_manager.get_session_by_id(session_id)
@@ -266,6 +273,7 @@ async def session_delete_file(session_id: UUID, current_dir: str, filename: str)
 
 
 @app.get("/session/{session_id}/file_upload_status")
+@catch_user_error
 async def session_get_file_upload_status(session_id: UUID):
     """读取session正在上传的文件"""
     result = upload_file_status.get_session_uploading_file(session_id)
@@ -273,6 +281,7 @@ async def session_get_file_upload_status(session_id: UUID):
 
 
 @app.get("/session/{session_id}/basicinfo")
+@catch_user_error
 async def session_get_basicinfo(session_id: UUID):
     """读取session的相关信息"""
     session: SessionInterface = session_manager.get_session_by_id(session_id)
@@ -281,6 +290,7 @@ async def session_get_basicinfo(session_id: UUID):
 
 
 @app.get("/session/{session_id}/download_phpinfo")
+@catch_user_error
 async def session_download_phpinfo(session_id: UUID):
     """下载phpinfo"""
     session: SessionInterface = session_manager.get_session_by_id(session_id)
@@ -295,6 +305,7 @@ async def session_download_phpinfo(session_id: UUID):
 
 
 @app.post("/session/{session_id}/php_eval")
+@catch_user_error
 async def session_php_eval(session_id: UUID, request: PhpCodeRequest):
     """下载phpinfo"""
     session: SessionInterface = session_manager.get_session_by_id(session_id)
