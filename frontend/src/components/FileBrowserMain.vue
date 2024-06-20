@@ -18,16 +18,22 @@ import { getDataOrPopupError, postDataOrPopupError, addPopup, joinPath } from "@
 import { store } from "@/assets/store"
 
 // --- CodeMirror Stuff
+import { EditorView } from "@codemirror/view"
+import { oneDark } from '@codemirror/theme-one-dark'
 
+import { css } from '@codemirror/lang-css'
+import { cpp } from '@codemirror/lang-cpp'
+import { html } from '@codemirror/lang-html'
+import { java } from '@codemirror/lang-java'
 import { javascript } from '@codemirror/lang-javascript'
+import { markdown } from '@codemirror/lang-markdown'
 import { php } from '@codemirror/lang-php'
 import { python } from '@codemirror/lang-python'
-import { html } from '@codemirror/lang-html'
-import { css } from '@codemirror/lang-css'
-import { oneDark } from '@codemirror/theme-one-dark'
-import { EditorView } from "@codemirror/view"
-import { StreamLanguage } from "@codemirror/language"
+import { yaml } from '@codemirror/lang-yaml'
+
+
 import { shell } from "@codemirror/legacy-modes/mode/shell"
+import { StreamLanguage } from "@codemirror/language"
 
 const props = defineProps({
   session: String,
@@ -401,25 +407,22 @@ function codeMirrorReady(payload) {
 
 watch(fileExtension, (newFileExtension, _) => {
   let extensions = [codeMirrorTheme, oneDark];
-  if (["js", "mjs"].includes(newFileExtension)) {
-    extensions.push(javascript())
-  }
-  else if (["html", "htm"].includes(newFileExtension)) {
-    extensions.push(html())
-  }
-  else if (["css"].includes(newFileExtension)) {
-    extensions.push(css())
-  }
-  else if (["php", "php7", "php5", "phar"].includes(newFileExtension)) {
-    extensions.push(php())
-  }
-  else if (["py"].includes(newFileExtension)) {
-    extensions.push(python())
-  }
-  else if (["sh"].includes(newFileExtension)) {
-    extensions.push(StreamLanguage.define(shell))
-  }
-  else {
+  let highlightings = [
+    { suffix: ["cpp"], extension: () => cpp() },
+    { suffix: ["css"], extension: () => css() },
+    { suffix: ["html", "htm"], extension: () => html() },
+    { suffix: ["java"], extension: () => java() },
+    { suffix: ["js", "mjs"], extension: () => javascript() },
+    { suffix: ["md"], extension: () => markdown() },
+    { suffix: ["sh"], extension: () => StreamLanguage.define(shell) },
+    { suffix: ["php", "php7", "php5", "phar"], extension: () => php() },
+    { suffix: ["py"], extension: () => python() },
+    { suffix: ["yaml"], extension: () => yaml() },
+  ]
+  let selectedHighlights = highlightings.filter(item => item.suffix.includes(newFileExtension))
+  if (selectedHighlights.length) {
+    extensions.push(selectedHighlights[0].extension())
+  } else {
     console.log("Extension not supported", newFileExtension)
   }
   codeMirrorExtensions.value = extensions
@@ -505,9 +508,9 @@ function readableFilePerm(filePerm) {
       <IconRun />
     </div>
     <div class="filepath-icon" @click="() => {
-      listDir(pwd);
-      userPwd = pwd;
-    }">
+    listDir(pwd);
+    userPwd = pwd;
+  }">
       <IconLoad />
     </div>
   </form>
