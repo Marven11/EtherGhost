@@ -5,16 +5,16 @@ class SessionException(Exception):
     """使用sessions时产生的错误"""
 
 
-class UnexpectedError(SessionException):
-    """意料之外的错误"""
+class UnknownError(SessionException):
+    """未知错误"""
 
 
-class NetworkError(Exception):
+class NetworkError(SessionException):
     """网络错误"""
 
 
 class FileError(SessionException):
-    """文件操作错误"""
+    """文件错误"""
 
 
 class UserError(SessionException):

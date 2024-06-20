@@ -48,7 +48,7 @@ def get_session_info_by_id(
 
 def get_session_by_id(
     session_id: t.Union[str, UUID]
-) -> t.Union[None, core.SessionInterface]:
+) -> core.SessionInterface:
     """根据id返回session对象，优先返回缓存的对象
 
     Args:
@@ -61,7 +61,7 @@ def get_session_by_id(
         session_id = UUID(session_id)
     session_info = get_session_info_by_id(session_id)
     if session_info is None:
-        return None
+        raise core.UserError("没有这个UUID对应的Session!")
     return session_info_to_session(session_info)
 
 

@@ -369,7 +369,7 @@ class PHPWebshell(PHPSessionInterface):
         try:
             result = json.loads(json_result)
         except json.JSONDecodeError as exc:
-            raise exceptions.UnexpectedError("JSON解析失败: " + json_result) from exc
+            raise exceptions.UnknownError("JSON解析失败: " + json_result) from exc
         result = [
             DirectoryEntry(
                 name=item["name"],
@@ -437,9 +437,9 @@ class PHPWebshell(PHPSessionInterface):
         if result == "WRONG_NO_PERMISSION":
             raise exceptions.FileError("没有权限移动这个文件")
         if result == "FAILED":
-            raise exceptions.UnexpectedError("因未知原因移动失败")
+            raise exceptions.UnknownError("因未知原因移动失败")
         if result != "SUCCESS":
-            raise exceptions.UnexpectedError("目标没有反馈移动成功")
+            raise exceptions.UnknownError("目标没有反馈移动成功")
 
     async def upload_file(
         self, filepath: str, content: bytes, callback: t.Union[t.Callable, None] = None
@@ -547,7 +547,7 @@ class PHPWebshell(PHPSessionInterface):
             ]
             return result
         except json.JSONDecodeError as exc:
-            raise exceptions.UnexpectedError("解析目标返回的JSON失败") from exc
+            raise exceptions.UnknownError("解析目标返回的JSON失败") from exc
 
     async def download_phpinfo(self) -> bytes:
         """获取当前的phpinfo文件"""
@@ -555,7 +555,7 @@ class PHPWebshell(PHPSessionInterface):
         try:
             return base64.b64decode(b64_result)
         except BinasciiError as exc:
-            raise exceptions.UnexpectedError("base64解码接收到的数据失败") from exc
+            raise exceptions.UnknownError("base64解码接收到的数据失败") from exc
 
     async def _submit(self, payload: str) -> str:
         """将php payload通过encoder编码后提交"""
@@ -574,23 +574,23 @@ class PHPWebshell(PHPSessionInterface):
         payload = self.encode(payload)
         status_code, text = await self.submit_raw(payload)
         if status_code == 404:
-            raise exceptions.UnexpectedError(
+            raise exceptions.UnknownError(
                 f"受控端返回404, 没有这个webshell: {status_code}"
             )
         if status_code != 200:
-            raise exceptions.UnexpectedError(
+            raise exceptions.UnknownError(
                 f"受控端返回了不正确的HTTP状态码: {status_code}"
             )
         if "POSTEXEC_FAILED" in text:
-            raise exceptions.UnexpectedError("payload被执行，但运行失败")
+            raise exceptions.UnknownError("payload被执行，但运行失败")
         idx_start = text.find(start)
         if idx_start == -1:
-            raise exceptions.UnexpectedError(
+            raise exceptions.UnknownError(
                 "找不到输出文本的开头，也许webshell没有执行代码？"
             )
         idx_stop_r = text[idx_start:].find(stop)
         if idx_stop_r == -1:
-            raise exceptions.UnexpectedError("找不到输出文本的结尾")
+            raise exceptions.UnknownError("找不到输出文本的结尾")
         idx_stop = idx_stop_r + idx_start
         output = text[idx_start + len(start) : idx_stop]
         output = self.decode(output)
@@ -605,7 +605,7 @@ class PHPWebshell(PHPSessionInterface):
         for payload_part in payloads:
             result = await self._submit(payload_part)
             if result == "PAYLOAD_SESSIONIZE_UNEXIST":
-                raise exceptions.UnexpectedError(
+                raise exceptions.UnknownError(
                     "Session中不存在payload，是不是不支持Session？"
                 )
         return result

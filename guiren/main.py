@@ -3,7 +3,7 @@
 import logging
 import typing as t
 import re
-import base64
+import functools
 import secrets
 from contextlib import asynccontextmanager
 from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
@@ -73,6 +73,20 @@ class PhpCodeRequest(BaseModel):
     code: str
 
 
+def catch_user_error(fn):
+    @functools.wraps(fn)
+    async def _wraps(*args, **kwargs):
+        try:
+            return await fn(*args, **kwargs)
+        except core.SessionException as exc:
+            return {
+                "code": -400 if isinstance(exc, core.UserError) else -500,
+                "msg": f"{type(exc).__doc__}: {str(exc)}",
+            }
+
+    return _wraps
+
+
 @app.get("/sessiontype")
 async def get_sessiontype():
     """查找所有支持的session type"""
@@ -86,6 +100,7 @@ async def get_sessiontype():
 
 
 @app.get("/sessiontype/{sessiontype}/conn_options")
+@catch_user_error
 async def get_sessiontype_conn_options(sessiontype: str):
     """查找session type对应的选项"""
     if sessiontype not in session_type_info:
@@ -95,6 +110,7 @@ async def get_sessiontype_conn_options(sessiontype: str):
 
 
 @app.get("/session")
+@catch_user_error
 async def get_sessions(session_id: t.Union[UUID, None] = None):
     """列出所有的session或者查找session"""
     if session_id is None:
@@ -108,6 +124,7 @@ async def get_sessions(session_id: t.Union[UUID, None] = None):
 
 
 @app.get("/session/{session_id}")
+@catch_user_error
 async def get_session(session_id: UUID):
     """查找session"""
     session: t.Union[session_types.SessionInfo, None] = (
@@ -127,7 +144,7 @@ async def test_webshell(session_info: session_types.SessionInfo):
         if not result:
             return {"code": 0, "data": {"success": False, "msg": "Webshell无法使用"}}
         return {"code": 0, "data": {"success": True, "msg": "Webshell可以使用"}}
-    except core.UnexpectedError as exc:
+    except core.UnknownError as exc:
         return {
             "code": 0,
             "data": {
@@ -155,93 +172,45 @@ async def update_webshell(session_info: session_types.SessionInfo):
 
 
 @app.get("/session/{session_id}/execute_cmd")
+@catch_user_error
 async def session_execute_cmd(session_id: UUID, cmd: str):
     """使用session执行shell命令"""
-    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(
-        session_id
-    )
-    if session is None:
-        return {"code": -400, "msg": "没有这个session"}
-    try:
-        result = await session.execute_cmd(cmd)
-        return {"code": 0, "data": result}
-    except core.NetworkError as exc:
-        return {"code": -500, "msg": "网络错误: " + str(exc)}
-    except core.UnexpectedError as exc:
-        return {"code": -500, "msg": "未知错误: " + str(exc)}
+    session: SessionInterface = session_manager.get_session_by_id(session_id)
+    result = await session.execute_cmd(cmd)
+    return {"code": 0, "data": result}
 
 
 @app.get("/session/{session_id}/get_pwd")
 async def session_get_pwd(session_id: UUID):
     """获取session的pwd"""
-    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(
-        session_id
-    )
-    if session is None:
-        return {"code": -400, "msg": "没有这个session"}
-    try:
-        result = await session.get_pwd()
-        return {"code": 0, "data": result}
-    except core.NetworkError as exc:
-        return {"code": -500, "msg": "网络错误: " + str(exc)}
-    except core.UnexpectedError as exc:
-        return {"code": -500, "msg": "未知错误: " + str(exc)}
+    session: SessionInterface = session_manager.get_session_by_id(session_id)
+    result = await session.get_pwd()
+    return {"code": 0, "data": result}
 
 
 @app.get("/session/{session_id}/list_dir")
 async def session_list_dir(session_id: UUID, current_dir: str):
     """使用session列出某个目录"""
-    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(
-        session_id
-    )
-    if session is None:
-        return {"code": -400, "msg": "没有这个session"}
-    try:
-        result = await session.list_dir(current_dir)
-        return {"code": 0, "data": result}
-    except core.NetworkError as exc:
-        return {"code": -500, "msg": "网络错误: " + str(exc)}
-    except core.UnexpectedError as exc:
-        return {"code": -500, "msg": "未知错误: " + str(exc)}
+    session: SessionInterface = session_manager.get_session_by_id(session_id)
+    result = await session.list_dir(current_dir)
+    return {"code": 0, "data": result}
 
 
 @app.get("/session/{session_id}/move_file")
 async def session_move_file(session_id: UUID, filepath: str, new_filepath):
-    """使用session列出某个目录"""
-    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(
-        session_id
-    )
-    if session is None:
-        return {"code": -400, "msg": "没有这个session"}
-    try:
-        await session.move_file(filepath, new_filepath)
-        return {"code": 0, "data": True}
-    except core.FileError as exc:
-        return {"code": -500, "msg": "文件错误: " + str(exc)}
-    except core.NetworkError as exc:
-        return {"code": -500, "msg": "网络错误: " + str(exc)}
-    except core.UnexpectedError as exc:
-        return {"code": -500, "msg": "未知错误: " + str(exc)}
+    """使用session移动某个文件"""
+    session: SessionInterface = session_manager.get_session_by_id(session_id)
+    await session.move_file(filepath, new_filepath)
+    return {"code": 0, "data": True}
 
 
 @app.get("/session/{session_id}/get_file_contents")
 async def session_get_file_contents(session_id: UUID, current_dir: str, filename: str):
     """使用session获取文件内容"""
-    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(
-        session_id
-    )
-    if session is None:
-        return {"code": -400, "msg": "没有这个session"}
+    session: SessionInterface = session_manager.get_session_by_id(session_id)
     content, detected_encoding = None, None
-    try:
-        path = remote_path(current_dir) / filename
-        content = await session.get_file_contents(str(path))
-    except core.NetworkError as exc:
-        return {"code": -500, "msg": "网络错误: " + str(exc)}
-    except core.FileError as exc:
-        return {"code": -500, "msg": "文件读取错误: " + str(exc)}
-    except core.UnexpectedError as exc:
-        return {"code": -500, "msg": "未知错误: " + str(exc)}
+    path = remote_path(current_dir) / filename
+    content = await session.get_file_contents(str(path))
     try:
         detected_encoding = chardet.detect(content)["encoding"]
         # TODO: Linux的编码一般是utf-8, windows的编码一般是utf-8
@@ -260,22 +229,11 @@ async def session_get_file_contents(session_id: UUID, current_dir: str, filename
 @app.post("/session/{session_id}/put_file_contents")
 async def session_put_file_contents(session_id: UUID, request: FileContentRequest):
     """使用session写入文件内容"""
-    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(
-        session_id
-    )
-    if session is None:
-        return {"code": -400, "msg": "没有这个session"}
-    try:
-        path = remote_path(request.current_dir) / request.filename
-        content = request.text.encode(request.encoding)
-        success = await session.put_file_contents(str(path), content)
-        return {"code": 0, "data": success}
-    except core.NetworkError as exc:
-        return {"code": -500, "msg": "网络错误: " + str(exc)}
-    except core.FileError as exc:
-        return {"code": -500, "msg": "文件写入错误: " + str(exc)}
-    except core.UnexpectedError as exc:
-        return {"code": -500, "msg": "未知错误: " + str(exc)}
+    session: SessionInterface = session_manager.get_session_by_id(session_id)
+    path = remote_path(request.current_dir) / request.filename
+    content = request.text.encode(request.encoding)
+    success = await session.put_file_contents(str(path), content)
+    return {"code": 0, "data": success}
 
 
 @app.post("/session/{session_id}/upload_file")
@@ -285,50 +243,26 @@ async def session_upload_file(
     folder: str = Form(),
 ):
     """使用session写入文件内容"""
-    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(
-        session_id
-    )
-    if session is None:
-        return {"code": -400, "msg": "没有这个session"}
+    session: SessionInterface = session_manager.get_session_by_id(session_id)
     filename = file.filename
     content = await file.read()
     if filename is None:
         return {"code": -400, "msg": "错误: 没有文件名"}
-    try:
-        path = remote_path(folder) / filename
-        with upload_file_status.record_upload_file(
-            session_id, folder, filename
-        ) as status_changer:
-            success = await session.upload_file(
-                str(path), content, callback=status_changer
-            )
-        return {"code": 0, "data": success}
-    except core.NetworkError as exc:
-        return {"code": -500, "msg": "网络错误: " + str(exc)}
-    except core.FileError as exc:
-        return {"code": -500, "msg": "文件写入错误: " + str(exc)}
-    except core.UnexpectedError as exc:
-        return {"code": -500, "msg": "未知错误: " + str(exc)}
+    path = remote_path(folder) / filename
+    with upload_file_status.record_upload_file(
+        session_id, folder, filename
+    ) as status_changer:
+        success = await session.upload_file(str(path), content, callback=status_changer)
+    return {"code": 0, "data": success}
 
 
 @app.get("/session/{session_id}/delete_file")
 async def session_delete_file(session_id: UUID, current_dir: str, filename: str):
     """使用session获取文件内容"""
-    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(
-        session_id
-    )
-    if session is None:
-        return {"code": -400, "msg": "没有这个session"}
-    try:
-        path = remote_path(current_dir) / filename
-        result = await session.delete_file(str(path))
-        return {"code": 0, "data": result}
-    except core.NetworkError as exc:
-        return {"code": -500, "msg": "网络错误: " + str(exc)}
-    except core.FileError as exc:
-        return {"code": -500, "msg": "文件删除错误: " + str(exc)}
-    except core.UnexpectedError as exc:
-        return {"code": -500, "msg": "未知错误: " + str(exc)}
+    session: SessionInterface = session_manager.get_session_by_id(session_id)
+    path = remote_path(current_dir) / filename
+    result = await session.delete_file(str(path))
+    return {"code": 0, "data": result}
 
 
 @app.get("/session/{session_id}/file_upload_status")
@@ -341,65 +275,34 @@ async def session_get_file_upload_status(session_id: UUID):
 @app.get("/session/{session_id}/basicinfo")
 async def session_get_basicinfo(session_id: UUID):
     """读取session的相关信息"""
-    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(
-        session_id
-    )
-    if session is None:
-        return {"code": -400, "msg": "没有这个session"}
-    try:
-        result = await session.get_basicinfo()
-        return {"code": 0, "data": result}
-    except core.NetworkError as exc:
-        return {"code": -500, "msg": "网络错误: " + str(exc)}
-    except core.UnexpectedError as exc:
-        return {"code": -500, "msg": "未知错误: " + str(exc)}
+    session: SessionInterface = session_manager.get_session_by_id(session_id)
+    result = await session.get_basicinfo()
+    return {"code": 0, "data": result}
 
 
 @app.get("/session/{session_id}/download_phpinfo")
 async def session_download_phpinfo(session_id: UUID):
     """下载phpinfo"""
-    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(
-        session_id
-    )
-    if session is None:
-        return {"code": -400, "msg": "没有这个session"}
+    session: SessionInterface = session_manager.get_session_by_id(session_id)
     if not isinstance(session, PHPSessionInterface):
         return {"code": -400, "msg": "指定的session不是PHP Session"}
-    content = None
-    try:
-        content = await session.download_phpinfo()
+    content = await session.download_phpinfo()
 
-        headers = {
-            "Content-Disposition": "attachment; filename=phpinfo.html"
-        }  # 设置文件名
-        return Response(
-            content=content, media_type="application/octet-stream", headers=headers
-        )
-    except core.NetworkError as exc:
-        return {"code": -500, "msg": "网络错误: " + str(exc)}
-    except core.UnexpectedError as exc:
-        return {"code": -500, "msg": "未知错误: " + str(exc)}
+    headers = {"Content-Disposition": "attachment; filename=phpinfo.html"}  # 设置文件名
+    return Response(
+        content=content, media_type="application/octet-stream", headers=headers
+    )
 
 
 @app.post("/session/{session_id}/php_eval")
 async def session_php_eval(session_id: UUID, request: PhpCodeRequest):
     """下载phpinfo"""
-    session: t.Union[SessionInterface, None] = session_manager.get_session_by_id(
-        session_id
-    )
-    if session is None:
-        return {"code": -400, "msg": "没有这个session"}
+    session: SessionInterface = session_manager.get_session_by_id(session_id)
     if not isinstance(session, PHPSessionInterface):
         return {"code": -400, "msg": "指定的session不是PHP Session"}
-    result = None
-    try:
-        code = request.code
-        result = await session.php_eval(code)
-        return {"code": 0, "data": result}
-    except core.NetworkError as exc:
-        return {"code": -500, "msg": "网络错误: " + str(exc)}
-    except core.UnexpectedError as exc:
-        return {"code": -500, "msg": "未知错误: " + str(exc)}
+    code = request.code
+    result = await session.php_eval(code)
+    return {"code": 0, "data": result}
 
 
 @app.delete("/session/{session_id}")
@@ -421,7 +324,7 @@ async def join_path(folder: str, entry: str):
     if entry == "..":
         result = remote_path(folder).parent
     elif entry == ".":
-        result = folder
+        result = remote_path(folder)
     else:
         result = remote_path(folder) / entry
     return {"code": 0, "data": result}
