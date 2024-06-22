@@ -1,5 +1,6 @@
 """webui的后台部分"""
 
+import base64
 import logging
 import typing as t
 import re
@@ -260,6 +261,23 @@ async def session_upload_file(
     ) as status_changer:
         success = await session.upload_file(str(path), content, callback=status_changer)
     return {"code": 0, "data": success}
+
+
+@app.get("/session/{session_id}/download_file")
+@catch_user_error
+async def session_download_file(
+    session_id: UUID,
+    filepath: str,
+):
+    """使用session写入文件内容"""
+    # 直接把下载的文件通过HTTP发到用户浏览器上
+    # 一个文件最多只有几十兆，浏览器应该可以轻松处理
+    # 如果用户想要用webshell下载几百兆的文件。。。那应该是用户自己的问题
+    session: SessionInterface = session_manager.get_session_by_id(session_id)
+    return {
+        "code": 0,
+        "data": base64.b64encode(await session.download_file(filepath))
+    }
 
 
 @app.get("/session/{session_id}/delete_file")

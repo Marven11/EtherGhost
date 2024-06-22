@@ -91,6 +91,12 @@ class SessionInterface:
         """上传文件，内容是一个字节序列，不是已经解码的字符串"""
         raise NotImplementedError()
 
+    async def download_file(
+        self, filepath: str, callback: t.Union[t.Callable, None] = None
+    ) -> bytes:
+        """下载，内容是一个字节序列，不是已经解码的字符串"""
+        raise NotImplementedError()
+
     async def get_pwd(self) -> str:
         """获取当前的目录"""
         raise NotImplementedError()

