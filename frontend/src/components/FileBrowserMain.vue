@@ -261,7 +261,7 @@ const menuItemsAll = [
   },
   {
     "name": "rename_file",
-    "text": "重命名文件",
+    "text": "重命名",
     "icon": IconPenSquare,
     "color": "white",
     "entry_type": ["file", "link-file", "dir", "link-dir"]
