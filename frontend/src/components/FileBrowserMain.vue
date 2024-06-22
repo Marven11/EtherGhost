@@ -2,12 +2,16 @@
 import IconRun from "./icons/iconRun.vue"
 import IconDirectory from "./icons/iconDirectory.vue"
 import IconFile from "./icons/iconFile.vue"
+import IconFileDownload from "./icons/iconFileDownload.vue"
+import IconFileNew from "./icons/iconFileNew.vue"
 import IconFileUpload from "./icons/iconFileUpload.vue"
+import IconFileUnknown from "./icons/iconFileUnknown.vue"
+import IconPenSquare from "./icons/iconPenSquare.vue"
 import IconLoad from "./icons/iconLoad.vue"
 import IconSymlinkFile from "./icons/iconSymlinkFile.vue"
 import IconSymlinkDirectory from "./icons/iconSymlinkDirectory.vue"
-import IconUnknownFile from "./icons/iconUnknownFile.vue"
 import IconDelete from "./icons/iconDelete.vue"
+
 import { ref, shallowRef, watch } from "vue";
 import ClickMenu from "./ClickMenu.vue"
 import HoverForm from "./HoverForm.vue"
@@ -74,7 +78,7 @@ const entryIcons = {
   "file": IconFile,
   "link-dir": IconSymlinkDirectory,
   "link-file": IconSymlinkFile,
-  "unknown": IconUnknownFile
+  "unknown": IconFileUnknown
 }
 
 async function changeDir(entry) {
@@ -237,7 +241,7 @@ const menuItemsAll = [
   {
     "name": "new_file",
     "text": "新建文件",
-    "icon": IconFile, // TODO: 改善图标
+    "icon": IconFileNew,
     "color": "white",
     "entry_type": ["empty", "file", "link-file"]
   },
@@ -251,14 +255,14 @@ const menuItemsAll = [
   {
     "name": "download_file",
     "text": "下载文件",
-    "icon": IconFile, // TODO: 改善图标
+    "icon": IconFileDownload,
     "color": "white",
     "entry_type": ["file", "link-file"]
   },
   {
     "name": "rename_file",
     "text": "重命名文件",
-    "icon": IconFile,
+    "icon": IconPenSquare,
     "color": "white",
     "entry_type": ["file", "link-file", "dir", "link-dir"]
   },
