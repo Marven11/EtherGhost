@@ -126,6 +126,25 @@ async function viewNewFile(newFilename) {
   fileEncoding.value = "utf-8"
 }
 
+async function downloadFile(folder, filename) {
+  let filepath = await getDataOrPopupError("/utils/join_path", {
+    params: {
+      folder: folder,
+      entry: filename
+    }
+  })
+  let content = await getDataOrPopupError(`/session/${props.session}/download_file`, {
+    params: {
+      filepath: filepath
+    }
+  })
+  let url = window.URL.createObjectURL(new Blob([atob(content)], { type: 'application/octet-stream' }));
+  let fileLink = document.createElement('a');
+  fileLink.href = url;
+  fileLink.download = filename;
+  fileLink.click();
+}
+
 async function onDoubleClickEntry(event) {
   const element = event.currentTarget
   const entry = entries.value[element.dataset.entryIndex]
@@ -228,6 +247,13 @@ const menuItemsAll = [
     "icon": IconFileUpload,
     "color": "white",
     "entry_type": ["empty", "file", "link-file", "dir", "link-dir"]
+  },
+  {
+    "name": "download_file",
+    "text": "下载文件",
+    "icon": IconFile, // TODO: 改善图标
+    "color": "white",
+    "entry_type": ["file", "link-file"]
   },
   {
     "name": "rename_file",
@@ -349,6 +375,8 @@ function onClickMenuItem(item) {
     confirmNewFile()
   } else if (item.name == "upload_file") {
     confirmUploadFile()
+  } else if (item.name == "download_file") {
+    downloadFile(pwd.value, clickMenuEntry.name)
   } else if (item.name == "rename_file") {
     confirmRenameFile(clickMenuEntry.name)
   } else if (item.name == "delete_file") {
