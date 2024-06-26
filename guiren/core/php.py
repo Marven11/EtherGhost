@@ -258,7 +258,7 @@ if(!$_SESSION['PAYLOAD_STORE']) {
 unset($_SESSION['PAYLOAD_STORE']);
 """
 
-PAYLOAD_SESSIONIZE_CHUNK = 5000
+PAYLOAD_SESSIONIZE_CHUNK = 1024
 
 __all__ = [
     "PHPWebshell",
@@ -872,12 +872,12 @@ class PHPWebshell(PHPSessionInterface):
     async def submit(self, payload: str) -> str:
         # sessionize_payload
         submitter = self._submit
+        if self.sessionize_payload:
+            submitter = self.sessionize_payload_wrapper(submitter)
+        if self.antireplay:
+            submitter = self.antireplay_wrapper(submitter)
         if self.encryption:
             submitter = self.encryption_wrapper(submitter)
-        if self.sessionize_payload:
-            submitter = self.antireplay_wrapper(submitter)
-        if self.antireplay:
-            submitter = self.sessionize_payload_wrapper(submitter)
         return await submitter(payload)
 
     async def submit_raw(self, payload: str) -> t.Tuple[int, str]:
