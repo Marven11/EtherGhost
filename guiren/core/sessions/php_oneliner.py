@@ -93,7 +93,7 @@ class PHPWebshellOneliner(PHPWebshell):
                 ),
                 ConnOption(
                     id="chunked_request",
-                    name="分块传输request",
+                    name="分块传输编码",
                     type="text",
                     placeholder="使用Chunked Transfer encoding分块编码请求，指定分块大小，0表示不分块",
                     default_value="0",
