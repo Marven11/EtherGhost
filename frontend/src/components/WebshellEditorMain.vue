@@ -338,6 +338,7 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background 0.3s ease;
 }
 
 .submit-button:hover {

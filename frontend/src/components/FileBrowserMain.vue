@@ -682,7 +682,7 @@ input[type="text"] {
   border-radius: 20px;
   background-color: var(--background-color-2);
   padding-top: 20px;
-  overflow: scroll;
+  overflow: overlay;
   flex-shrink: 0;
 }
 
@@ -694,6 +694,7 @@ input[type="text"] {
   flex-direction: row;
   user-select: none;
   font-variant-ligatures: none;
+  transition: background 0.3s ease;
 }
 
 .folder-entry:hover {

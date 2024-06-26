@@ -137,6 +137,7 @@ function onClickBackground(event) {
   border-radius: 20px;
   color: var(--font-color-white);
   font-size: 16px;
+  transition: background 0.3s ease;
 }
 
 .input-box-main .input-box input[type="button"]:hover {

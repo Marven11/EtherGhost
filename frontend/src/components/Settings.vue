@@ -188,6 +188,7 @@ input {
   display: flex;
   justify-content: center;
   align-items: center;
+  transition: background 0.3s ease;
 }
 
 .input-checkbox:hover {
@@ -232,6 +233,7 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: opacity 0.3s ease;
 }
 
 .submit-button:hover {

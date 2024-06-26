@@ -141,6 +141,7 @@ function onClickBackground(event) {
   border: none;
   border-radius: 20px;
   margin-bottom: 30px;
+  transition: background 0.3s ease;
 }
 
 .input-box-button:hover {
