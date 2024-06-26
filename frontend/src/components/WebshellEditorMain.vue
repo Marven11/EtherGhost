@@ -194,7 +194,7 @@ function onSelectElementChange(option) {
         </option>
       </select>
       <div v-else-if="option.type == 'checkbox'" class="input-checkbox" :id="'option-' + option.id"
-        :checked="optionValues[option.id]" @click="changeClickboxOption(option.id)">
+        :checked="optionValues[option.id]" @click="changeClickboxOption(option.id)" :title="option.placeholder">
         <input type="hidden" :name="option.id" :id="'option-' + option.id" v-model="optionValues[option.id]">
         <IconCheck v-if="optionValues[option.id]" />
         <IconCross v-else />
