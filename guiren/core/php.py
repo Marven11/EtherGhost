@@ -772,6 +772,8 @@ class PHPWebshell(PHPSessionInterface):
                 .replace("    ", "")
                 .strip()
             )
+            if key_encrypted == "WRONG_NO_OPENSSL":
+                raise exceptions.UnknownError("目标不支持OpenSSL扩展！")
             try:
                 key = private_decrypt_rsa(key_encrypted)
             except Exception as exc:
