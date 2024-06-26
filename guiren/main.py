@@ -143,27 +143,11 @@ async def get_session(session_id: UUID):
 async def test_webshell(session_info: session_types.SessionInfo):
     """测试webshell"""
     session = session_manager.session_info_to_session(session_info)
-    try:
-        result = await session.test_usablility()
-        if not result:
-            return {"code": 0, "data": {"success": False, "msg": "Webshell无法使用"}}
-        return {"code": 0, "data": {"success": True, "msg": "Webshell可以使用"}}
-    except core.UnknownError as exc:
-        return {
-            "code": 0,
-            "data": {
-                "success": False,
-                "msg": "未知错误，Webshell不可以使用：" + str(exc),
-            },
-        }
-    except core.NetworkError as exc:
-        return {
-            "code": 0,
-            "data": {
-                "success": False,
-                "msg": "网络错误，Webshell不可以使用：" + str(exc),
-            },
-        }
+    result = await session.test_usablility()
+    if not result:
+        return {"code": 0, "data": {"success": False, "msg": "Webshell无法使用"}}
+    return {"code": 0, "data": {"success": True, "msg": "Webshell可以使用"}}
+
 
 
 @app.post("/update_webshell")

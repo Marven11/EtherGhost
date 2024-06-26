@@ -48,8 +48,7 @@ function decoder_echo_raw($s) {echo base64_encode($s);}
 
 
 def compress_phpcode_template(s):
-    return re.sub(r"\n +", " ", s, re.M)
-
+    return re.sub(r" *\n+ +", "", s, re.M)
 
 SUBMIT_WRAPPER_PHP = compress_phpcode_template(
     """\
@@ -796,12 +795,9 @@ class PHPWebshell(PHPSessionInterface):
             "".join(random.choices(string.ascii_lowercase, k=6)),
             "".join(random.choices(string.ascii_lowercase, k=6)),
         )
-        try:
-            result = await self.submit(
-                f"decoder_echo('{first_string}' . '{second_string}');"
-            )
-        except exceptions.TargetError:
-            return False
+        result = await self.submit(
+            f"decoder_echo('{first_string}' . '{second_string}');"
+        )
         return first_string + second_string == result
 
     async def get_basicinfo(self) -> t.List[BasicInfoEntry]:
