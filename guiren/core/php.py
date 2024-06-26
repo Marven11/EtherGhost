@@ -347,6 +347,14 @@ php_webshell_conn_options = [
         default_value=False,
         alternatives=None,
     ),
+    ConnOption(
+        id="encryption",
+        name="加密流量",
+        type="checkbox",
+        placeholder="使用RSA+AES256加密，有效避免流量分析和重放攻击",
+        default_value=False,
+        alternatives=None,
+    ),
 ]
 
 # TODO: fix string repr, php will parse `$` in quoted strings
@@ -365,6 +373,7 @@ class PHPWebshell(PHPSessionInterface):
         self.decoder = options.get("decoder", "raw")
         self.sessionize_payload = options.get("sessionize_payload", False)
         self.antireplay = options.get("antireplay", False)
+        self.encryption = options.get("encryption", False)
         # for upload file and download file
         self.chunk_size = 32 * 1024
         self.max_coro = 4
@@ -860,7 +869,8 @@ class PHPWebshell(PHPSessionInterface):
     async def submit(self, payload: str) -> str:
         # sessionize_payload
         submitter = self._submit
-        submitter = self.encryption_wrapper(submitter)
+        if self.encryption:
+            submitter = self.encryption_wrapper(submitter)
         if self.sessionize_payload:
             submitter = self.antireplay_wrapper(submitter)
         if self.antireplay:
