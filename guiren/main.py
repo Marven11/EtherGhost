@@ -137,6 +137,7 @@ async def get_session(session_id: UUID):
 
 
 @app.post("/test_webshell")
+@catch_user_error
 async def test_webshell(session_info: session_types.SessionInfo):
     """测试webshell"""
     session = session_manager.session_info_to_session(session_info)
