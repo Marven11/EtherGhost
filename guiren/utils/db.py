@@ -7,29 +7,13 @@ from pathlib import Path
 from uuid import uuid4, UUID
 import sqlalchemy as sa
 from sqlalchemy_utils import UUIDType  # type: ignore
-from .session_types import (
+from ..session_types import (
     SessionInfo,
 )
 
-SETTINGS_VERSION = "0.0.1"
-DB_FILENAME = "guiren.db"
+from .const import SETTINGS_VERSION, STORE_URL
 
-
-def get_file_uri() -> str:
-    """根据当前操作系统返回数据保存位置"""
-    if os.name == "posix":
-        data_path = Path("~/.local/share").expanduser() / DB_FILENAME
-    elif os.name == "nt":
-        data_path = Path("~/AppData/Roaming").expanduser() / DB_FILENAME
-    elif os.name == "darwin":
-        data_path = Path("~/Library/Containers").expanduser() / DB_FILENAME
-    else:
-        data_path = Path(os.path.abspath(".")) / DB_FILENAME
-
-    return "sqlite:///" + data_path.absolute().as_posix()
-
-
-engine = sa.create_engine(get_file_uri())
+engine = sa.create_engine(STORE_URL)
 OrmSession = sa.orm.sessionmaker(bind=engine)
 orm_session = OrmSession()
 Base = sa.orm.declarative_base()

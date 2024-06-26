@@ -17,7 +17,9 @@ from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from . import session_manager, session_types, core, db, upload_file_status
+from .utils import db
+
+from . import session_manager, session_types, core, upload_file_status
 from .core import SessionInterface, PHPSessionInterface, session_type_info
 
 token = secrets.token_bytes(16).hex()

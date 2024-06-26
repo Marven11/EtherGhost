@@ -2,7 +2,9 @@
 
 import typing as t
 from uuid import UUID
-from . import db, core
+
+from .utils import db
+from . import core
 from .core.base import session_type_info
 from .session_types import (
     SessionInfo,
