@@ -738,7 +738,7 @@ class PHPWebshell(PHPSessionInterface):
 
         @functools.wraps(submitter)
         async def wrap(payload: str) -> str:
-            payload = f"eval(base64_decode({base64_encode(payload)}));"
+            payload = f"eval(base64_decode({base64_encode(payload)!r}));"
             session_name = f"rsa_key_{uuid.uuid4()}"
             key_encrypted = await submitter(
                 """
