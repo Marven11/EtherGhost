@@ -91,8 +91,10 @@ async function fetchCurrentSession() {
       doAssert(["text", "checkbox", "select"].includes(option.type), "内部错误：没有这类选项")
       if (["name", "session_type", "note"].includes(option.id)) {
         optionValues[option.id] = session[option.id]
-      } else {
+      } else if (session.connection[option.id] !== undefined) {
         optionValues[option.id] = session.connection[option.id]
+      } else {
+        console.log(`缺少选项${option.id}，session可能来自于旧版，使用默认值`)
       }
     }
   }
@@ -107,7 +109,7 @@ function getCurrentSession() {
   for (const group of optionsGroups.value) {
     for (const option of group.options) {
       doAssert(["text", "checkbox", "select"].includes(option.type), "内部错误：没有这类选项")
-      if (optionValues[option.id] == undefined) {
+      if (optionValues[option.id] === undefined) {
         addPopup("red", `选项${option.name}未填写`, `选项${option.name}仍未填写，无法获取当前配置！`)
         return undefined
       }
@@ -165,7 +167,7 @@ setTimeout(async () => {
 }, 0)
 
 function onSelectElementChange(option) {
-  if(option.id != "session_type") {
+  if (option.id != "session_type") {
     return
   }
   updateOption(optionValues["session_type"])
