@@ -28,3 +28,13 @@
 .button:hover {
   background-color: #ffffff15;
 }
+
+.scrollbar::-webkit-scrollbar {
+  width: 3px;
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  transition: all 1s ease;
+  background-color: var(--font-color-grey);
+}

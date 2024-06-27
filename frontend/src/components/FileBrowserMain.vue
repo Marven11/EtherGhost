@@ -547,7 +547,7 @@ function readableFilePerm(filePerm) {
     </div>
   </form>
   <div class="file-panel">
-    <div class="folder-panel" @click.right.stop="onRightClickEmpty">
+    <div class="folder-panel scrollbar" @click.right.stop="onRightClickEmpty">
       <div class="folder-entry" v-for="[entryIndex, entry] in entries.entries()" @dblclick="onDoubleClickEntry"
         @click.right.stop="onRightClickEntry" :data-entry-index="entryIndex">
         <div class="folder-entry-icon">
@@ -568,7 +568,7 @@ function readableFilePerm(filePerm) {
       <div class="files-title">
         <input type="text" name="filename" id="files-title-filename" placeholder="passwd" v-model="userFilename">
       </div>
-      <div class="files-content">
+      <div class="files-content scrollbar">
         <codemirror v-model="codeMirrorContent" placeholder="Content goes here..." :autofocus="true"
           :indent-with-tab="true" :tab-size="4" :extensions="codeMirrorExtensions" @ready="codeMirrorReady" />
       </div>
@@ -684,6 +684,7 @@ input[type="text"] {
   padding-top: 20px;
   overflow: overlay;
   flex-shrink: 0;
+  transition: background 1s ease;
 }
 
 .folder-entry {
