@@ -29,8 +29,8 @@ const sessions = ref([
 
 
 const showClickMenu = ref(false)
-const clickMenuLeft = ref(0)
-const clickMenuTop = ref(0)
+const clickMenuX = ref(0)
+const clickMenuY = ref(0)
 const router = useRouter();
 let clickMenuSession = ""
 
@@ -90,8 +90,8 @@ const menuItems = [
 function onClickIconOthers(event, sessionId) {
   event.preventDefault()
   showClickMenu.value = true
-  clickMenuLeft.value = event.clientX;
-  clickMenuTop.value = event.clientY;
+  clickMenuX.value = event.clientX;
+  clickMenuY.value = event.clientY;
   clickMenuSession = sessionId;
 }
 
@@ -189,7 +189,7 @@ async function onDeleteSessionConfirm(userConfirm) {
   </div>
   <transition>
     <div v-if="showClickMenu">
-      <ClickMenu :top="clickMenuTop" :left="clickMenuLeft" :menuItems="menuItems" @remove="(_) => showClickMenu = false"
+      <ClickMenu :mouse_y="clickMenuY" :mouse_x="clickMenuX" :menuItems="menuItems" @remove="(_) => showClickMenu = false"
         @clickItem="onClickMenuItem" />
     </div>
   </transition>

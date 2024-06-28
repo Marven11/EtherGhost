@@ -227,8 +227,8 @@ async function submitUploadFile(form) {
 // --- Folder entry click menu ---
 // ###############################
 
-const clickMenuTop = ref(0)
-const clickMenuLeft = ref(0)
+const clickMenuY = ref(0)
+const clickMenuX = ref(0)
 const showClickMenu = ref(false)
 const menuItemsAll = [
   {
@@ -395,8 +395,8 @@ function onRightClickEntry(event) {
   event.preventDefault()
   const element = event.currentTarget
   const entry = entries.value[element.dataset.entryIndex]
-  clickMenuLeft.value = event.clientX;
-  clickMenuTop.value = event.clientY;
+  clickMenuX.value = event.clientX;
+  clickMenuY.value = event.clientY;
   menuItems.value = menuItemsAll.filter(item => item.entry_type.includes(entry.entryType))
   clickMenuEntry = entry
   showClickMenu.value = true
@@ -404,8 +404,8 @@ function onRightClickEntry(event) {
 
 function onRightClickEmpty(event) {
   event.preventDefault()
-  clickMenuLeft.value = event.clientX;
-  clickMenuTop.value = event.clientY;
+  clickMenuX.value = event.clientX;
+  clickMenuY.value = event.clientY;
   menuItems.value = menuItemsAll.filter(item => item.entry_type.includes("empty"))
   clickMenuEntry = undefined
   showClickMenu.value = true
@@ -585,7 +585,7 @@ function readableFilePerm(filePerm) {
   </div>
   <transition>
     <div v-if="showClickMenu">
-      <ClickMenu :top="clickMenuTop" :left="clickMenuLeft" :menuItems="menuItems" @remove="(_) => showClickMenu = false"
+      <ClickMenu :mouse_x="clickMenuX" :mouse_y="clickMenuY" :menuItems="menuItems" @remove="(_) => showClickMenu = false"
         @clickItem="onClickMenuItem" />
     </div>
   </transition>
