@@ -83,6 +83,7 @@ const showInputBox = ref(false)
   flex-grow: 1;
   font-size: 24px;
   text-indent: 10px;
+  width: 100px;
 }
 
 .icon-run {
@@ -105,12 +106,13 @@ const showInputBox = ref(false)
 .terminal-output {
   margin-top: 30px;
   height: 85%;
+  flex-grow: 1;
 }
 
 .terminal-output textarea {
   width: 100%;
   height: 100%;
-  background-color: #00000015;
+  background-color: var(--background-color-2);
   color: var(--font-color-white);
   border-radius: 20px;
   font-size: 24px;

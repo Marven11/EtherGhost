@@ -47,7 +47,7 @@ const showHoverForm = ref(true)
   display: flex;
   align-items: center;
   flex-direction: column;
-  height: 100vh;
+  height: 98vh;
 }
 
 
@@ -56,5 +56,7 @@ main {
   width: 90%;
   flex-grow: 1;
   margin-top: 50px;
+  display: flex;
+  flex-direction: column;
 }
 </style>

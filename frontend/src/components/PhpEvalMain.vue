@@ -152,11 +152,12 @@ include $temp_file;
   width: 100%;
   height: 100%;
   justify-content: space-between;
+  flex-grow: 1;
 }
 
 .left-panel {
   width: 48%;
-  height: 95%;
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -164,8 +165,9 @@ include $temp_file;
 .actions {
   display: flex;
   justify-content: left;
+  flex-wrap: wrap;
   width: 100%;
-  height: 60px;
+  min-height: 60px;
   margin-top: 20px;
   background-color: var(--background-color-2);
   border-radius: 20px;
@@ -177,7 +179,8 @@ include $temp_file;
 
 
 .actions button {
-  height: 40px;
+  min-height: 40px;
+  height: max-content;
 
 }
 
@@ -197,7 +200,7 @@ include $temp_file;
 
 .right-panel {
   width: 50%;
-  height: 95%;
+  height: 100%;
 }
 
 .php-output {
