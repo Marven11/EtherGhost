@@ -1,5 +1,5 @@
 <script setup>
-import { shallowRef, watch } from "vue"
+import { computed, shallowRef, watch } from "vue"
 import IconHome from "./icons/iconHome.vue"
 import IconTerminal from "./icons/iconTerminal.vue"
 import IconFileBrowser from "./icons/iconFileBrowser.vue"
@@ -56,9 +56,15 @@ const iconSpecs = [
     uri: "/",
     tooltip: "其他"
   },
+  {
+    type: "settings",
+    component: IconSetting,
+    uri: "/settings/",
+    tooltip: "设置"
+  },
 ]
 
-const icons = shallowRef({})
+const icons = shallowRef([])
 
 function fillSession(icons, session) {
   return icons.map(icon => {
@@ -81,6 +87,8 @@ watch(() => store.session, (newSession, _) => {
   icons.value = fillSession(iconSpecs, newSession)
 })
 
+const iconsCount = computed(() => icons.value.length)
+
 function clickIcon(icon) {
   if (icon.uri == "/popup/no_session") {
     addPopup("red", "没有选中WebShell", "请先在主页选中Webshell")
@@ -99,17 +107,15 @@ function clickIcon(icon) {
       </h1>
       <p>{{ store.sessionName }}</p>
     </div>
-    <nav>
-      <div v-for="icon in icons" @click="clickIcon(icon)" class="icon" :title="icon.tooltip">
-        <component :is="icon.component"></component>
-      </div>
-    </nav>
-    <div class="header-setting">
-      <div class="icon" @click="router.push('/settings/')">
-        <IconSetting />
-      </div>
-
+    <div class="nav-space">
+      <nav>
+        <div v-for="icon in icons" @click="clickIcon(icon)" class="icon" :title="icon.tooltip">
+          <component :is="icon.component"></component>
+        </div>
+      </nav>
     </div>
+
+
   </header>
 
 </template>
@@ -117,14 +123,15 @@ function clickIcon(icon) {
 <style scoped>
 header {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   flex-direction: row;
   margin-top: 30px;
   border-radius: 20px;
   background-color: var(--primary-color);
   width: 90%;
-  height: 12vh;
-  min-height: 130px;
+  min-height: 120px;
+  padding-left: 2%;
+  padding-right: 2%;
 }
 
 header[data-bg-transition="true"] {
@@ -132,12 +139,10 @@ header[data-bg-transition="true"] {
 }
 
 .header-title {
-  width: 30%;
   display: flex;
   align-items: left;
   justify-content: center;
   flex-direction: column;
-  padding-left: 50px;
 }
 
 .header-title h1 {
@@ -152,12 +157,27 @@ header[data-bg-transition="true"] {
   margin: 0;
 }
 
-nav {
+.nav-space {
+  flex-grow: 1;
+  max-width: 800px;
   display: flex;
-  justify-content: space-around;
   align-items: center;
-  width: 40%;
+  justify-content: center;
 }
+
+nav {
+  display: grid;
+  width: 100%;
+  justify-items: end;
+  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+}
+
+@media (min-width: 720px) {
+  nav {
+    grid-template-columns: repeat(v-bind(iconsCount), 1fr);
+  }
+}
+
 
 
 .icon {
@@ -178,14 +198,5 @@ svg {
   width: 35px;
   color: var(--font-color-black);
   stroke: var(--font-color-black);
-}
-
-
-.header-setting {
-  width: 30%;
-  display: flex;
-  flex-direction: row-reverse;
-  padding-right: 50px;
-  align-items: center;
 }
 </style>
