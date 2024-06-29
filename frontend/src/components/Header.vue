@@ -172,7 +172,7 @@ nav {
   grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
 }
 
-@media (min-width: 720px) {
+@media (min-width: 600px) {
   nav {
     grid-template-columns: repeat(v-bind(iconsCount), 1fr);
   }
