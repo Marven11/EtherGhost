@@ -15,7 +15,7 @@ export async function joinPath(folder, entry) {
 }
 
 export function getCurrentApiUrl() {
-  return window.location.origin.includes("5173") ? "http://127.0.0.1:8022" : window.location.origin
+  return window.location.origin.includes("5173") ? `http://${window.location.hostname}:8022` : window.location.origin
 }
 
 export function doAssert(result, msg) {
@@ -40,7 +40,7 @@ export function parseDataOrPopupError(resp) {
       title = "客户端错误"
     } else if (resp.data.code == -500) {
       title = "服务端错误"
-    }else if (resp.data.code == -600) {
+    } else if (resp.data.code == -600) {
       title = "受控端错误"
     }
     addPopup("red", title, resp.data.msg)

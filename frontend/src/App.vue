@@ -47,7 +47,7 @@ const showHoverForm = ref(true)
   display: flex;
   align-items: center;
   flex-direction: column;
-  height: 98vh;
+  height: 95vh;
 }
 
 

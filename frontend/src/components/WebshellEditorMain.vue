@@ -58,6 +58,7 @@ const optionsGroups = shallowRef([])
 async function updateOption(sessionType) {
   let options = await getDataOrPopupError(`/sessiontype/${sessionType}/conn_options`)
   optionsGroups.value = [basicOptionGroup, ...options]
+  console.log(optionsGroups)
   for (let group of optionsGroups.value) {
     for (let option of group.options) {
       if (option.default_value !== undefined) {
@@ -311,7 +312,7 @@ input {
 }
 
 .submit-buttons {
-  height: 100px;
+  min-height: 100px;
   width: 60%;
   border-radius: 20px;
   margin-left: 20%;
