@@ -81,7 +81,7 @@ function fillSession(icons, session) {
   })
 }
 
-icons.value = fillSession(iconSpecs, "")
+icons.value = fillSession(iconSpecs, store.session || "")
 
 watch(() => store.session, (newSession, _) => {
   icons.value = fillSession(iconSpecs, newSession)
