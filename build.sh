@@ -1,6 +1,6 @@
 cd frontend/
 npm run build
-rm ../guiren/public -rf
-mv dist ../guiren/public
-cd ../guiren
-# TODO: build guiren packages
+rm ../ether_ghost/public -rf
+mv dist ../ether_ghost/public
+cd ../ether_ghost
+# TODO: build etherGhost packages

@@ -324,4 +324,4 @@ coverage
 *.tsbuildinfo
 
 # build product, it should be generated during build
-guiren/public
+ether_ghost/public

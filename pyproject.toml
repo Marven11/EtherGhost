@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "guiren"
+name = "ether_ghost"
 version = "0.1.0"
 description = ""
 authors = ["Marven11 <110723864+Marven11@users.noreply.github.com>"]

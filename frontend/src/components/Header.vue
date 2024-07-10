@@ -103,7 +103,7 @@ function clickIcon(icon) {
   <header :data-bg-transition="store.header_background_transition">
     <div class="header-title">
       <h1>
-        鬼刃
+        游魂
       </h1>
       <p>{{ store.sessionName }}</p>
     </div>
