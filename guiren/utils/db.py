@@ -147,3 +147,10 @@ def set_settings(settings: dict):
         orm_session.delete(model)
     orm_session.add(SettingsModel(version=SETTINGS_VERSION, settings=settings))
     orm_session.commit()
+
+
+def ensure_settings():
+    """保证当前设置存在，如果不存在设置则将写入默认设置"""
+    default_settings = {"theme": "green"}
+    if get_settings() is None:
+        set_settings(default_settings)

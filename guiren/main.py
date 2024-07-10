@@ -28,7 +28,8 @@ logger = logging.getLogger("main")
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    logger.warning("Your token is %s", token)
+    # logger.warning("Your token is %s", token)
+    db.ensure_settings()
     yield
 
 
@@ -149,7 +150,6 @@ async def test_webshell(session_info: session_types.SessionInfo):
     return {"code": 0, "data": {"success": True, "msg": "Webshell可以使用"}}
 
 
-
 @app.post("/update_webshell")
 async def update_webshell(session_info: session_types.SessionInfo):
     """添加或更新webshell"""
@@ -261,10 +261,7 @@ async def session_download_file(
     # 一个文件最多只有几十兆，浏览器应该可以轻松处理
     # 如果用户想要用webshell下载几百兆的文件。。。那应该是用户自己的问题
     session: SessionInterface = session_manager.get_session_by_id(session_id)
-    return {
-        "code": 0,
-        "data": base64.b64encode(await session.download_file(filepath))
-    }
+    return {"code": 0, "data": base64.b64encode(await session.download_file(filepath))}
 
 
 @app.get("/session/{session_id}/delete_file")
