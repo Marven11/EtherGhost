@@ -61,7 +61,7 @@ async function updateOption(sessionType) {
   console.log(optionsGroups)
   for (let group of optionsGroups.value) {
     for (let option of group.options) {
-      if (option.default_value !== undefined) {
+      if (option.default_value !== undefined && option.default_value !== null) {
         optionValues[option.id] = option.default_value
       }
     }
@@ -92,7 +92,7 @@ async function fetchCurrentSession() {
       doAssert(["text", "checkbox", "select"].includes(option.type), "内部错误：没有这类选项")
       if (["name", "session_type", "note"].includes(option.id)) {
         optionValues[option.id] = session[option.id]
-      } else if (session.connection[option.id] !== undefined) {
+      } else if (session.connection[option.id] !== undefined && session.connection[option.id] !== null) {
         optionValues[option.id] = session.connection[option.id]
       } else {
         console.log(`缺少选项${option.id}，session可能来自于旧版，使用默认值`)
@@ -110,7 +110,7 @@ function getCurrentSession() {
   for (const group of optionsGroups.value) {
     for (const option of group.options) {
       doAssert(["text", "checkbox", "select"].includes(option.type), "内部错误：没有这类选项")
-      if (optionValues[option.id] === undefined) {
+      if (optionValues[option.id] === undefined || optionValues[option.id] == null ) {
         addPopup("red", `选项${option.name}未填写`, `选项${option.name}仍未填写，无法获取当前配置！`)
         return undefined
       }
