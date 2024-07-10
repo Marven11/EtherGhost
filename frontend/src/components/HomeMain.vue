@@ -157,40 +157,47 @@ async function onDeleteSessionConfirm(userConfirm) {
 </script>
 
 <template>
-  <div class="sessions">
-    <div class="session" v-for="session in sessions"  @click.right="event => onClickIconOthers(event, session.id)">
-      <div class="session-top">
-        <div class="session-name">
-          <p>
-            {{ session.name }}
-          </p>
-        </div>
-        <div>
-          <div class="session-icon-others" @click="event => onClickIconOthers(event, session.id)">
-            <IconOthers />
+  <div class="main-panel">
+    <div class="sessions" v-if="sessions.length != 0">
+      <div class="session" v-for="session in sessions" @click.right="event => onClickIconOthers(event, session.id)">
+        <div class="session-top">
+          <div class="session-name">
+            <p>
+              {{ session.name }}
+            </p>
+          </div>
+          <div>
+            <div class="session-icon-others" @click="event => onClickIconOthers(event, session.id)">
+              <IconOthers />
+            </div>
           </div>
         </div>
-      </div>
-      <div class="session-middle">
-        <div class="session-note">
-          {{ session.note }}
+        <div class="session-middle">
+          <div class="session-note">
+            {{ session.note }}
+          </div>
+        </div>
+        <div class="session-bottom">
+          <p>
+            {{ session.readable_type }}
+          </p>
+          <p>
+            {{ session.location }}
+
+          </p>
         </div>
       </div>
-      <div class="session-bottom">
-        <p>
-          {{ session.readable_type }}
-        </p>
-        <p>
-          {{ session.location }}
-
-        </p>
-      </div>
+    </div>
+    <div class="no-session-panel" v-else>
+      <IconTerminal></IconTerminal>
+      <p>现在就添加一个webshell吧</p>
     </div>
   </div>
+
   <transition>
     <div v-if="showClickMenu">
-      <ClickMenu :mouse_y="clickMenuY" :mouse_x="clickMenuX" :menuItems="menuItems" @remove="(_) => showClickMenu = false"
-        @clickItem="onClickMenuItem" />
+      <ClickMenu :mouse_y="clickMenuY" :mouse_x="clickMenuX" :menuItems="menuItems"
+        @remove="(_) => showClickMenu = false" @clickItem="onClickMenuItem" />
     </div>
   </transition>
 
@@ -204,11 +211,39 @@ async function onDeleteSessionConfirm(userConfirm) {
 </template>
 
 <style scoped>
+.main-panel {
+  display: flex;
+  height: 100%;
+  width: 100%;
+
+}
+
 .sessions {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   column-gap: 2%;
   justify-content: space-between;
+  height: 100%;
+}
+
+.no-session-panel {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.no-session-panel svg {
+  width: 24%;
+  height: 24%;
+  stroke: var(--font-color-grey);
+}
+
+.no-session-panel p {
+  font-size: 24px;
+  color: var(--font-color-grey);
 }
 
 .session {
@@ -256,7 +291,7 @@ async function onDeleteSessionConfirm(userConfirm) {
   justify-content: space-between;
 }
 
-.session-bottom p{
+.session-bottom p {
   margin: 0;
   color: var(--font-color-grey);
   font-size: 14px;
