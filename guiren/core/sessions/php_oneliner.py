@@ -156,6 +156,11 @@ class PHPWebshellOneliner(PHPWebshell):
         )
         self.http_params_obfs = session_conn["http_params_obfs"]
         self.chunked_request = int(session_conn.get("chunked_request", 0))
+        if self.chunked_request and self.method != "POST":
+            raise exceptions.UserError(
+                "使用Chunked Transfer Encoding时请求方法必须为POST"
+            )
+
         self.client = get_http_client()
 
     def build_chunked_request(self, params: dict, data: dict):
