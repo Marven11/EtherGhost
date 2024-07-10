@@ -12,18 +12,23 @@ const props = defineProps({
   session: String,
 })
 const terminalInput = ref("")
-const terminalOutput = ref("")
+const terminalOutput = ref("$")
 
 if (props.session) {
   store.session = props.session
 }
 
-function addOutput(command, output) {
-  let leading = ""
-  if (terminalOutput.value) {
-    leading = `${terminalOutput.value}\n`;
-  }
-  terminalOutput.value = `${leading}$ ${command}\n${output}`
+function addCommand(command) {
+  terminalOutput.value = `${terminalOutput.value} ${command}\n`
+  // change scroll position after text rendered.
+  setTimeout(() => {
+    let textarea = document.getElementById("command-output");
+    textarea.scrollTop = textarea.scrollHeight;
+  }, 0)
+}
+
+function addOutput(output) {
+  terminalOutput.value = `${terminalOutput.value}${output}\n$`
   // change scroll position after text rendered.
   setTimeout(() => {
     let textarea = document.getElementById("command-output");
@@ -35,12 +40,13 @@ async function onExecuteCommand(event) {
   const cmd = terminalInput.value;
   event.preventDefault()
   terminalInput.value = ""
+  addCommand(cmd)
   const result = await getDataOrPopupError(`/session/${props.session}/execute_cmd`, {
     params: {
       cmd: cmd
     }
   })
-  addOutput(cmd, result)
+  addOutput(result)
 }
 
 // ###########
