@@ -75,7 +75,17 @@ class PHPWebshellBehinderAES(PHPWebshell):
         },
         {
             "name": "高级连接配置",
-            "options": php_webshell_conn_options,
+            "options": php_webshell_conn_options
+            + [
+                ConnOption(
+                    id="https_verify",
+                    name="验证HTTPS证书",
+                    type="checkbox",
+                    placeholder=None,
+                    default_value=True,
+                    alternatives=None,
+                ),
+            ],
         },
     ]
 
@@ -83,7 +93,7 @@ class PHPWebshellBehinderAES(PHPWebshell):
         super().__init__(session_conn)
         self.url = session_conn["url"]
         self.key = md5_encode(session_conn["password"])[:16].encode()
-        self.client = get_http_client()
+        self.client = get_http_client(verify=session_conn.get("https_verify", False))
 
     async def submit_raw(self, payload):
         data = behinder_aes(payload, self.key)
@@ -126,7 +136,17 @@ class PHPWebshellBehinderXor(PHPWebshell):
         },
         {
             "name": "高级连接配置",
-            "options": php_webshell_conn_options,
+            "options": php_webshell_conn_options
+            + [
+                ConnOption(
+                    id="https_verify",
+                    name="验证HTTPS证书",
+                    type="checkbox",
+                    placeholder=None,
+                    default_value=True,
+                    alternatives=None,
+                ),
+            ],
         },
     ]
 
@@ -134,7 +154,7 @@ class PHPWebshellBehinderXor(PHPWebshell):
         super().__init__(session_conn)
         self.url = session_conn["url"]
         self.key = md5_encode(session_conn["password"])[:16].encode()
-        self.client = get_http_client()
+        self.client = get_http_client(verify=session_conn.get("https_verify", False))
 
     async def submit_raw(self, payload):
         data = behinder_xor(payload, self.key)

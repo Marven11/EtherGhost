@@ -141,5 +141,5 @@ def set_proxy(new_proxy=None):
     proxy = new_proxy
 
 
-def get_http_client():
-    return httpx.AsyncClient(headers={"User-Agent": USER_AGENT}, proxy=proxy)
+def get_http_client(**kwargs):
+    return httpx.AsyncClient(headers={"User-Agent": USER_AGENT}, proxy=proxy, **kwargs)
