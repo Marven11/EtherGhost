@@ -142,7 +142,7 @@ class PHPWebshellOneliner(PHPWebshell):
                     name="验证HTTPS证书",
                     type="checkbox",
                     placeholder=None,
-                    default_value=True,
+                    default_value=False,
                     alternatives=None,
                 ),
             ],
@@ -169,7 +169,7 @@ class PHPWebshellOneliner(PHPWebshell):
                 "使用Chunked Transfer Encoding时请求方法必须为POST"
             )
 
-        self.client = get_http_client(verify=session_conn.get("https_verify", True))
+        self.client = get_http_client(verify=session_conn.get("https_verify", False))
 
     def build_chunked_request(self, params: dict, data: dict):
         data_bytes = urllib.parse.urlencode(data).encode()
