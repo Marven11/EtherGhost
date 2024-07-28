@@ -61,7 +61,8 @@ $decoder_hooks = array();
 function decoder_echo($s) {{
     global $decoder_hooks;
     for($i = 0; $i < count($decoder_hooks); $i ++) {{
-        $s = ($decoder_hooks[$i])($s);
+        $f = $decoder_hooks[$i];
+        $s = $f($s);
     }}
     echo decoder_echo_raw($s);
 }}
