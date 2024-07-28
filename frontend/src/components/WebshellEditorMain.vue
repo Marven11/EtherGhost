@@ -151,6 +151,8 @@ async function saveSession() {
     addPopup("red", "保存失败", "保存webshell到本地数据库失败")
   } else {
     addPopup("green", "保存成功", "保存webshell到本地数据库成功")
+    let sessionInfo = await getDataOrPopupError(`/session/${session.session_id}/`)
+    store.sessionName = sessionInfo.name
     setTimeout(() => {
       router.push("/")
     }, 1000);
