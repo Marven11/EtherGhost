@@ -1,19 +1,19 @@
 """webui的后台部分"""
 
-import base64
 import logging
 import typing as t
+import tempfile
 import re
 import functools
 import secrets
 from contextlib import asynccontextmanager
 from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import chardet
-from fastapi import FastAPI, Response, File, Form, UploadFile
+from fastapi import FastAPI, Response, File, Form, UploadFile, HTTPException
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -25,12 +25,20 @@ from .core import SessionInterface, PHPSessionInterface, session_type_info
 token = secrets.token_bytes(16).hex()
 logger = logging.getLogger("main")
 
+# uuid: (filename, blob_path)
+
+temp_dir = Path(tempfile.gettempdir())
+temp_files: t.Dict[UUID, t.Tuple[str, Path]] = {}
+
 
 @asynccontextmanager
-async def lifespan(_: FastAPI):
+async def lifespan(api: FastAPI):
     # logger.warning("Your token is %s", token)
     db.ensure_settings()
     yield
+    for _, (_, filepath) in temp_files.items():
+        if filepath.exists():
+            filepath.unlink()
 
 
 DIR = Path(__file__).parent
@@ -44,6 +52,14 @@ app.add_middleware(
     allow_methods=["*"],  # 允许的 HTTP 方法
     allow_headers=["*"],  # 允许的头部信息
 )
+
+
+def write_temp_blob(filename: str, blob: bytes):
+    filepath = temp_dir / f"{str(uuid4())}.blob"
+    filepath.write_bytes(blob)
+    file_id = uuid4()
+    temp_files[file_id] = (filename, filepath)
+    return file_id
 
 
 def remote_path(filepath: str) -> PurePath:
@@ -254,14 +270,22 @@ async def session_upload_file(
 @catch_user_error
 async def session_download_file(
     session_id: UUID,
-    filepath: str,
+    folder: str,
+    filename: str,
 ):
     """使用session写入文件内容"""
-    # 直接把下载的文件通过HTTP发到用户浏览器上
     # 一个文件最多只有几十兆，浏览器应该可以轻松处理
     # 如果用户想要用webshell下载几百兆的文件。。。那应该是用户自己的问题
+    filepath = remote_path(folder) / filename
     session: SessionInterface = session_manager.get_session_by_id(session_id)
-    return {"code": 0, "data": base64.b64encode(await session.download_file(filepath))}
+    content = await session.download_file(str(filepath))
+    file_id = write_temp_blob(filename, content)
+    return {
+        "code": 0,
+        "data": {
+            "file_id": file_id,
+        },
+    }
 
 
 @app.get("/session/{session_id}/delete_file")
@@ -328,6 +352,14 @@ async def delete_session(session_id: UUID):
         return {"code": -400, "msg": "没有这个session"}
     session_manager.delete_session_info_by_id(session_id)
     return {"code": 0, "data": True}
+
+
+@app.get("/utils/fetch_downloaded_file/{file_id}")
+async def fetch_downloaded_file(file_id: UUID):
+    if file_id not in temp_files:
+        raise HTTPException(status_code=404, detail="File not found")
+    (filename, filepath) = temp_files[file_id]
+    return FileResponse(path=filepath, filename=filename)
 
 
 @app.get("/utils/join_path")

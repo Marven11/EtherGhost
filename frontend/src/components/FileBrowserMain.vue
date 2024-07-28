@@ -131,22 +131,14 @@ async function viewNewFile(newFilename) {
 }
 
 async function downloadFile(folder, filename) {
-  let filepath = await getDataOrPopupError("/utils/join_path", {
-    params: {
-      folder: folder,
-      entry: filename
-    }
-  })
   let content = await getDataOrPopupError(`/session/${props.session}/download_file`, {
     params: {
-      filepath: filepath
+      folder: folder,
+      filename: filename
     }
   })
-  let url = window.URL.createObjectURL(new Blob([atob(content)], { type: 'application/octet-stream' }));
-  let fileLink = document.createElement('a');
-  fileLink.href = url;
-  fileLink.download = filename;
-  fileLink.click();
+  let url = `/utils/fetch_downloaded_file/${content.file_id}`;
+  window.open(url, "_blank")
 }
 
 async function onDoubleClickEntry(event) {
