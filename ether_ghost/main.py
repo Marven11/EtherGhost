@@ -172,7 +172,7 @@ async def update_webshell(session_info: session_types.SessionInfo):
     if session_manager.get_session_info_by_id(session_info.session_id):
         session_manager.delete_session_info_by_id(session_info.session_id)
     session_manager.add_session_info(session_info)
-    return {"code": 0, "data": True}
+    return {"code": 0, "data": session_info.session_id}
 
 
 @app.get("/session/{session_id}/execute_cmd")
