@@ -223,7 +223,6 @@ async function onDeleteSessionConfirm(userConfirm) {
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   column-gap: 2%;
   justify-content: space-between;
-  height: 100%;
 }
 
 .no-session-panel {
