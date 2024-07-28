@@ -18,6 +18,7 @@ import InputBox from "./InputBox.vue"
 import axios from "axios"
 
 import { getCurrentApiUrl } from "@/assets/utils";
+import { store } from "@/assets/store";
 
 
 const sessions = ref([
@@ -102,7 +103,6 @@ function onClickMenuItem(item) {
   } else if (item.func) {
     item.func(clickMenuSession)
   }
-
 }
 
 async function fetchWebshell() {
@@ -201,7 +201,7 @@ async function onDeleteSessionConfirm(userConfirm) {
     </div>
   </transition>
 
-  <div class="add-webshell-button" @click="router.push('/webshell-editor/')">
+  <div class="add-webshell-button" @click="store.session = ''; router.push('/webshell-editor/')">
     <IconPlus />
   </div>
   <transition>

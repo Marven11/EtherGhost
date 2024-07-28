@@ -17,6 +17,10 @@ export const currentSettings = reactive({
 watch(
   () => store.session,
   async newSession => {
+    if (!newSession) {
+      store.sessionName = ""
+      return;
+    }
     let sessionInfo = await getDataOrPopupError(`/session/${newSession}/`)
     store.sessionName = sessionInfo.name
   }
