@@ -12,6 +12,7 @@ const props = defineProps({
   session: String,
 })
 const terminalInput = ref("")
+const terminalInputReadonly = ref(false)
 const terminalOutput = ref("$")
 
 if (props.session) {
@@ -40,13 +41,22 @@ async function onExecuteCommand(event) {
   const cmd = terminalInput.value;
   event.preventDefault()
   terminalInput.value = ""
-  addCommand(cmd)
-  const result = await getDataOrPopupError(`/session/${props.session}/execute_cmd`, {
-    params: {
-      cmd: cmd
-    }
-  })
-  addOutput(result)
+  terminalInputReadonly.value = true
+  try {
+    addCommand(cmd)
+    const result = await getDataOrPopupError(`/session/${props.session}/execute_cmd`, {
+      params: {
+        cmd: cmd
+      }
+    })
+    addOutput(result)
+  } catch (error) {
+    throw error
+  } finally {
+    terminalInputReadonly.value = false
+
+  }
+
 }
 
 // ###########
@@ -59,7 +69,8 @@ const showInputBox = ref(false)
 
 <template>
   <form action="" class="command-input" @submit="onExecuteCommand">
-    <input id="command-input" type="text" placeholder="cat /etc/passwd" v-model="terminalInput">
+    <input id="command-input" type="text" placeholder="cat /etc/passwd" v-model="terminalInput"
+      :readonly="terminalInputReadonly">
     <div class="icon-run" @click="onExecuteCommand">
       <IconRun />
     </div>
@@ -133,3 +144,4 @@ svg {
   stroke: var(--font-color-white);
 }
 </style>
+t.me
