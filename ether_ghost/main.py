@@ -5,6 +5,7 @@ import typing as t
 import tempfile
 import re
 import functools
+import base64
 import secrets
 from contextlib import asynccontextmanager
 from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
@@ -296,6 +297,28 @@ async def session_delete_file(session_id: UUID, current_dir: str, filename: str)
     path = remote_path(current_dir) / filename
     result = await session.delete_file(str(path))
     return {"code": 0, "data": result}
+
+
+@app.post("/session/{session_id}/send_bytes_tcp")
+@catch_user_error
+async def session_send_bytes_tcp(
+    session_id: UUID,
+    host: str = Form(),
+    port: int = Form(),
+    content_b64: str = Form(),
+    send_method: t.Union[str, None] = Form(),
+):
+    """使用session发送一段字节到某个TCP端口"""
+    session: SessionInterface = session_manager.get_session_by_id(session_id)
+    result = await session.send_bytes_over_tcp(
+        host, port, base64.b64decode(content_b64), send_method
+    )
+    if result is None:
+        return {"code": -600, "msg": "受控端发送TCP失败"}
+    return {
+        "code": 0,
+        "data": base64.b64encode(result),
+    }
 
 
 @app.get("/session/{session_id}/file_upload_status")

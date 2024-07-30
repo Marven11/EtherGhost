@@ -97,6 +97,20 @@ class SessionInterface:
         """下载，内容是一个字节序列，不是已经解码的字符串"""
         raise NotImplementedError()
 
+    async def send_bytes_over_tcp(
+        self,
+        host: str,
+        port: int,
+        content: bytes,
+        send_method: t.Union[str, None] = None,
+    ) -> t.Union[bytes, None]:
+        """把一串字节通过TCP发送到其他机器上，可以指定对应的发送方法"""
+        raise NotImplementedError()
+
+    async def get_send_tcp_support_methods(self) -> t.List[str]:
+        """得到发送字节支持的TCP方法"""
+        raise NotImplementedError()
+
     async def get_pwd(self) -> str:
         """获取当前的目录"""
         raise NotImplementedError()
