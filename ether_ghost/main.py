@@ -1,5 +1,6 @@
 """webui的后台部分"""
 
+import asyncio
 import logging
 import typing as t
 import tempfile
@@ -21,6 +22,7 @@ from pydantic import BaseModel
 from .utils import db
 
 from . import session_manager, session_types, core, upload_file_status
+from .tcp_proxies import start_psudo_tcp_proxy
 from .core import SessionInterface, PHPSessionInterface, session_type_info
 
 token = secrets.token_bytes(16).hex()
@@ -30,6 +32,7 @@ logger = logging.getLogger("main")
 
 temp_dir = Path(tempfile.gettempdir())
 temp_files: t.Dict[UUID, t.Tuple[str, Path]] = {}
+psudo_tcp_proxies: t.Dict[int, t.Tuple[str, int, str, int, asyncio.Task]] = {}
 
 
 @asynccontextmanager
@@ -37,9 +40,16 @@ async def lifespan(api: FastAPI):
     # logger.warning("Your token is %s", token)
     db.ensure_settings()
     yield
-    for _, (_, filepath) in temp_files.items():
+    for _, filepath in temp_files.values():
         if filepath.exists():
             filepath.unlink()
+    temp_files.clear()
+    for _, _, _, _, server in psudo_tcp_proxies.values():
+        try:
+            server.cancel()
+        except asyncio.exceptions.CancelledError:
+            pass
+    psudo_tcp_proxies.clear()
 
 
 DIR = Path(__file__).parent
@@ -374,6 +384,57 @@ async def delete_session(session_id: UUID):
     if session is None:
         return {"code": -400, "msg": "没有这个session"}
     session_manager.delete_session_info_by_id(session_id)
+    return {"code": 0, "data": True}
+
+
+@app.post("/forward_proxy/list")
+@catch_user_error
+async def forward_proxy_list():
+    return {
+        "code": 0,
+        "data": [
+            {
+                "type": "psudo_proxy",
+                "listen_host": listen_host,
+                "listen_port": listen_port,
+                "host": host,
+                "port": port,
+            }
+            for listen_host, listen_port, host, port, _ in psudo_tcp_proxies.values()
+        ],
+    }
+
+
+@app.post("/forward_proxy/create_psudo_proxy")
+@catch_user_error
+async def forward_proxy_create_psudo_proxy(
+    session_id: UUID,
+    listen_host: t.Union[str, None],
+    listen_port: int,
+    host: str,
+    port: int,
+    send_method: t.Union[str, None],
+):
+    if listen_port in psudo_tcp_proxies:
+        return {"code": -400, "msg": "端口已占用"}
+    if listen_host is None:
+        listen_host = "0.0.0.0"
+    session: SessionInterface = session_manager.get_session_by_id(session_id)
+    server_task = await start_psudo_tcp_proxy(
+        session, listen_host, listen_port, host, port, send_method
+    )
+    psudo_tcp_proxies[listen_port] = (listen_host, listen_port, host, port, server_task)
+    return {"code": 0, "data": True}
+
+
+@app.delete("/forward_proxy/{listen_port}/")
+@catch_user_error
+async def forward_proxy_delete(listen_port: int):
+    (_, _, _, _, server_task) = psudo_tcp_proxies[listen_port]
+    try:
+        server_task.cancel()
+    except asyncio.exceptions.CancelledError:
+        pass
     return {"code": 0, "data": True}
 
 
