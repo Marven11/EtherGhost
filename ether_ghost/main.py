@@ -30,13 +30,32 @@ logger = logging.getLogger("main")
 
 # uuid: (filename, blob_path)
 
+
+class FileContentRequest(BaseModel):
+    current_dir: str
+    filename: str
+    text: str
+    encoding: str
+
+
+class PhpCodeRequest(BaseModel):
+    code: str
+
+
+class ProxyRequest(BaseModel):
+    type: t.Literal["psudo_forward_proxy"]
+    session_id: UUID
+    listen_host: t.Union[str, None]
+    listen_port: int
+    host: str
+    port: int
+    send_method: t.Union[str, None]
+
+
 temp_dir = Path(tempfile.gettempdir())
 temp_files: t.Dict[UUID, t.Tuple[str, Path]] = {}
 
-# session UUID, listen_host, listen_port, host, port, send_method, coro
-psudo_tcp_proxies: t.Dict[
-    int, t.Tuple[UUID, str, int, str, int, t.Union[str, None], asyncio.Task]
-] = {}
+psudo_tcp_proxies: t.Dict[int, t.Tuple[ProxyRequest, asyncio.Task]] = {}
 
 
 @asynccontextmanager
@@ -96,17 +115,6 @@ async def set_no_cache(request, call_next) -> Response:
         "*"  # TODO: remove me, this is added for testing.
     )
     return response
-
-
-class FileContentRequest(BaseModel):
-    current_dir: str
-    filename: str
-    text: str
-    encoding: str
-
-
-class PhpCodeRequest(BaseModel):
-    code: str
 
 
 def catch_user_error(fn):
@@ -414,49 +422,44 @@ async def forward_proxy_list():
         if not sess_info:
             return "未知Session"
         return sess_info.name
+
     return {
         "code": 0,
         "data": [
-            {   
+            {
                 "type": "psudo_forward_proxy",
-                "session_id": session_id,
-                "session_name": get_session_name(session_id),
-                "listen_host": listen_host,
-                "listen_port": listen_port,
-                "host": host,
-                "port": port,
-                "send_method": send_method,
+                "session_id": proxy_request.session_id,
+                "session_name": get_session_name(proxy_request.session_id),
+                "listen_host": proxy_request.listen_host,
+                "listen_port": proxy_request.listen_port,
+                "host": proxy_request.host,
+                "port": proxy_request.port,
+                "send_method": proxy_request.send_method,
             }
-            for session_id, listen_host, listen_port, host, port, send_method, _ in psudo_tcp_proxies.values()
+            for proxy_request, _ in psudo_tcp_proxies.values()
         ],
     }
 
 
 @app.post("/forward_proxy/create_psudo_proxy")
 @catch_user_error
-async def forward_proxy_create_psudo_proxy(
-    session_id: UUID,
-    listen_host: t.Union[str, None],
-    listen_port: int,
-    host: str,
-    port: int,
-    send_method: t.Union[str, None],
-):
-    if listen_port in psudo_tcp_proxies:
+async def forward_proxy_create_psudo_proxy(request: ProxyRequest):
+    if request.listen_port in psudo_tcp_proxies:
         return {"code": -400, "msg": "端口已占用"}
-    if listen_host is None:
-        listen_host = "0.0.0.0"
-    session: SessionInterface = session_manager.get_session_by_id(session_id)
+    if request.listen_host is None:
+        request.listen_host = "0.0.0.0"
+    session: SessionInterface = session_manager.get_session_by_id(request.session_id)
+    # TODO: check request.type
     server_task = await start_psudo_tcp_proxy(
-        session, listen_host, listen_port, host, port, send_method
+        session,
+        request.listen_host,
+        request.listen_port,
+        request.host,
+        request.port,
+        request.send_method,
     )
-    psudo_tcp_proxies[listen_port] = (
-        session_id,
-        listen_host,
-        listen_port,
-        host,
-        port,
-        send_method,
+    psudo_tcp_proxies[request.listen_port] = (
+        request,
         server_task,
     )
     return {"code": 0, "data": True}
@@ -470,6 +473,7 @@ async def forward_proxy_delete(listen_port: int):
         server_task.cancel()
     except asyncio.exceptions.CancelledError:
         pass
+    del psudo_tcp_proxies[listen_port]
     return {"code": 0, "data": True}
 
 
