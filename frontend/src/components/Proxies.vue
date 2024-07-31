@@ -234,7 +234,7 @@ setTimeout(() => {
 .add-proxy input,
 .add-proxy select {
   height: 50px;
-  min-width: 100px;
+  min-width: 50px;
   border-radius: 20px;
   border: none;
   outline: 2px solid #ffffff00;
