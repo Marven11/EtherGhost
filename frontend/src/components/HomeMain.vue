@@ -62,7 +62,7 @@ const menuItems = [
     "text": "打开代理",
     "icon": IconProxy,
     "color": "white",
-    "link": "/page_404/SESSION"
+    "link": "/proxies/SESSION"
   },
   {
     "name": "get_info",

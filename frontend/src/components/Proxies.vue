@@ -6,11 +6,20 @@ import iconCross from "./icons/iconCross.vue";
 import { store } from "@/assets/store";
 import axios from "axios";
 
+const props = defineProps({
+  session: String,
+})
+
+if (props.session) {
+  store.session = props.session
+}
+
+
 const sessions = ref([])
 const supportedSendMethods = reactive({})
 
 const readableProxyType = {
-  psudo_forward_proxy: "伪正向代理"
+  psudo_forward_proxy: "伪正向代理（仅支持HTTP）"
 }
 
 // `openedProxies` is a list of objects like:
@@ -73,6 +82,9 @@ async function createProxy() {
     Object.keys(addProxyInput).forEach(key => {
       addProxyInput[key] = ""
     });
+    setTimeout(() => {
+      addPopup("yellow", "此功能仍不稳定", `伪正向代理仍在测试中，且仅支持HTTP！`)
+    }, 500)
   } else {
     addPopup("red", "不支持的代理类型", `当前还不支持以下代理类型${JSON.stringify(addProxyInput.type)}`)
   }

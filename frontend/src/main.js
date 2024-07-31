@@ -33,6 +33,7 @@ const routes = [
   { path: "/file-browser/:session", component: FileBrowserMain, props: true },
   { path: "/php-eval/:session", component: PhpEvalMain, props: true },
   { path: "/proxies", component: Proxies, props: true },
+  { path: "/proxies/:session", component: Proxies, props: true },
 ];
 
 const router = createRouter({
