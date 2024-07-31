@@ -309,6 +309,20 @@ async def session_delete_file(session_id: UUID, current_dir: str, filename: str)
     return {"code": 0, "data": result}
 
 
+@app.get("/session/{session_id}/supported_send_tcp_methods")
+@catch_user_error
+async def session_supported_send_tcp_methods(
+    session_id: UUID,
+):
+    """使用session发送一段字节到某个TCP端口"""
+    session: SessionInterface = session_manager.get_session_by_id(session_id)
+    result = await session.get_send_tcp_support_methods()
+    return {
+        "code": 0,
+        "data": result,
+    }
+
+
 @app.post("/session/{session_id}/send_bytes_tcp")
 @catch_user_error
 async def session_send_bytes_tcp(
