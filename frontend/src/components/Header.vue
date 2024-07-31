@@ -47,7 +47,7 @@ const iconSpecs = [
   {
     type: "proxy",
     component: IconProxy,
-    uri: "/",
+    uri: "/proxies",
     tooltip: "代理"
   },
   {

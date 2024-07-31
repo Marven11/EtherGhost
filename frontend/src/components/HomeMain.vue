@@ -142,6 +142,7 @@ async function onDeleteSessionConfirm(userConfirm) {
     return
   }
   if (userConfirm) {
+    // TODO: check this result handing method
     let result = await axios.delete(`${getCurrentApiUrl()}/session/${sessionToDelete}`)
     if (result) {
       addPopup("green", "删除成功", `已经删除指定session`)
