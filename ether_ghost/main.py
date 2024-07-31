@@ -32,7 +32,11 @@ logger = logging.getLogger("main")
 
 temp_dir = Path(tempfile.gettempdir())
 temp_files: t.Dict[UUID, t.Tuple[str, Path]] = {}
-psudo_tcp_proxies: t.Dict[int, t.Tuple[str, int, str, int, asyncio.Task]] = {}
+
+# session UUID, listen_host, listen_port, host, port, send_method, coro
+psudo_tcp_proxies: t.Dict[
+    int, t.Tuple[UUID, str, int, str, int, t.Union[str, None], asyncio.Task]
+] = {}
 
 
 @asynccontextmanager
@@ -44,7 +48,8 @@ async def lifespan(api: FastAPI):
         if filepath.exists():
             filepath.unlink()
     temp_files.clear()
-    for _, _, _, _, server in psudo_tcp_proxies.values():
+    for tpl in psudo_tcp_proxies.values():
+        server = tpl[-1]
         try:
             server.cancel()
         except asyncio.exceptions.CancelledError:
@@ -401,20 +406,28 @@ async def delete_session(session_id: UUID):
     return {"code": 0, "data": True}
 
 
-@app.post("/forward_proxy/list")
+@app.get("/forward_proxy/list")
 @catch_user_error
 async def forward_proxy_list():
+    def get_session_name(sess_id):
+        sess_info = session_manager.get_session_info_by_id(sess_id)
+        if not sess_info:
+            return "未知Session"
+        return sess_info.name
     return {
         "code": 0,
         "data": [
-            {
-                "type": "psudo_proxy",
+            {   
+                "type": "psudo_forward_proxy",
+                "session_id": session_id,
+                "session_name": get_session_name(session_id),
                 "listen_host": listen_host,
                 "listen_port": listen_port,
                 "host": host,
                 "port": port,
+                "send_method": send_method,
             }
-            for listen_host, listen_port, host, port, _ in psudo_tcp_proxies.values()
+            for session_id, listen_host, listen_port, host, port, send_method, _ in psudo_tcp_proxies.values()
         ],
     }
 
@@ -437,14 +450,22 @@ async def forward_proxy_create_psudo_proxy(
     server_task = await start_psudo_tcp_proxy(
         session, listen_host, listen_port, host, port, send_method
     )
-    psudo_tcp_proxies[listen_port] = (listen_host, listen_port, host, port, server_task)
+    psudo_tcp_proxies[listen_port] = (
+        session_id,
+        listen_host,
+        listen_port,
+        host,
+        port,
+        send_method,
+        server_task,
+    )
     return {"code": 0, "data": True}
 
 
 @app.delete("/forward_proxy/{listen_port}/")
 @catch_user_error
 async def forward_proxy_delete(listen_port: int):
-    (_, _, _, _, server_task) = psudo_tcp_proxies[listen_port]
+    server_task = psudo_tcp_proxies[listen_port][-1]
     try:
         server_task.cancel()
     except asyncio.exceptions.CancelledError:
