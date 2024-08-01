@@ -6,7 +6,7 @@ import App from "./App.vue";
 import Settings from "./components/Settings.vue";
 import WebshellEditorMain from "./components/WebshellEditorMain.vue";
 import HomeMain from "./components/HomeMain.vue";
-import TerminalMain from "./components/TerminalMain.vue";
+import ShellCommandMain from "./components/ShellCommandMain.vue";
 import FileBrowserMain from "./components/FileBrowserMain.vue";
 import PhpEvalMain from "./components/PhpEvalMain.vue";
 import Proxies from "./components/Proxies.vue";
@@ -29,7 +29,7 @@ const routes = [
     component: Settings,
     props: true,
   },
-  { path: "/terminal/:session", component: TerminalMain, props: true },
+  { path: "/shell-command/:session", component: ShellCommandMain, props: true },
   { path: "/file-browser/:session", component: FileBrowserMain, props: true },
   { path: "/php-eval/:session", component: PhpEvalMain, props: true },
   { path: "/proxies", component: Proxies, props: true },

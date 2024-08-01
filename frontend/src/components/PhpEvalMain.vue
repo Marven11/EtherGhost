@@ -59,7 +59,7 @@ watch(codeMirrorContent, (newValue, _) => {
 // --- Execute ---
 // ###############
 
-const terminalOutput = ref("")
+const codeOutput = ref("")
 
 async function onCtrlEnter() {
   let content = codeMirrorContent.value
@@ -100,7 +100,7 @@ async function onPhpEval() {
     }, 300)
   }
   const data = parseDataOrPopupError(resp)
-  terminalOutput.value = data
+  codeOutput.value = data
 }
 
 async function onPhpInclude() {
@@ -119,7 +119,7 @@ include $temp_file;
   const data = await postDataOrPopupError(url, {
     code: code
   })
-  terminalOutput.value = data
+  codeOutput.value = data
 }
 
 </script>
@@ -140,7 +140,7 @@ include $temp_file;
     </div>
     <div class="right-panel">
       <div class="php-output">
-        <textarea name="php-output" id="php-output" readonly :value="terminalOutput"></textarea>
+        <textarea name="php-output" id="php-output" readonly :value="codeOutput"></textarea>
       </div>
     </div>
   </div>

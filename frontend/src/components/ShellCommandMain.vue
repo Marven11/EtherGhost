@@ -11,16 +11,16 @@ import InputBox from "./InputBox.vue"
 const props = defineProps({
   session: String,
 })
-const terminalInput = ref("")
-const terminalInputReadonly = ref(false)
-const terminalOutput = ref("$")
+const commandInput = ref("")
+const commandInputReadonly = ref(false)
+const commandOutput = ref("$")
 
 if (props.session) {
   store.session = props.session
 }
 
 function addCommand(command) {
-  terminalOutput.value = `${terminalOutput.value} ${command}\n`
+  commandOutput.value = `${commandOutput.value} ${command}\n`
   // change scroll position after text rendered.
   setTimeout(() => {
     let textarea = document.getElementById("command-output");
@@ -29,7 +29,7 @@ function addCommand(command) {
 }
 
 function addOutput(output) {
-  terminalOutput.value = `${terminalOutput.value}${output}\n$`
+  commandOutput.value = `${commandOutput.value}${output}\n$`
   // change scroll position after text rendered.
   setTimeout(() => {
     let textarea = document.getElementById("command-output");
@@ -38,10 +38,10 @@ function addOutput(output) {
 }
 
 async function onExecuteCommand(event) {
-  const cmd = terminalInput.value;
+  const cmd = commandInput.value;
   event.preventDefault()
-  terminalInput.value = ""
-  terminalInputReadonly.value = true
+  commandInput.value = ""
+  commandInputReadonly.value = true
   try {
     addCommand(cmd)
     const result = await getDataOrPopupError(`/session/${props.session}/execute_cmd`, {
@@ -53,7 +53,7 @@ async function onExecuteCommand(event) {
   } catch (error) {
     throw error
   } finally {
-    terminalInputReadonly.value = false
+    commandInputReadonly.value = false
 
   }
 
@@ -69,14 +69,14 @@ const showInputBox = ref(false)
 
 <template>
   <form action="" class="command-input" @submit="onExecuteCommand">
-    <input id="command-input" type="text" placeholder="cat /etc/passwd" v-model="terminalInput"
-      :readonly="terminalInputReadonly">
+    <input id="command-input" type="text" placeholder="cat /etc/passwd" v-model="commandInput"
+      :readonly="commandInputReadonly">
     <div class="icon-run" @click="onExecuteCommand">
       <IconRun />
     </div>
   </form>
-  <div class="terminal-output">
-    <textarea name="command-output" id="command-output" readonly :value="terminalOutput"></textarea>
+  <div class="command-output">
+    <textarea name="command-output" id="command-output" readonly :value="commandOutput"></textarea>
   </div>
   <transition>
     <InputBox v-if="showInputBox" title="测试标题" note="测试测试，这是一个测试" :requireInput="true"
@@ -120,13 +120,13 @@ const showInputBox = ref(false)
   outline: 2px solid var(--font-color-grey);
 }
 
-.terminal-output {
+.command-output {
   margin-top: 30px;
   height: 85%;
   flex-grow: 1;
 }
 
-.terminal-output textarea {
+.command-output textarea {
   width: 100%;
   height: 100%;
   background-color: var(--background-color-2);

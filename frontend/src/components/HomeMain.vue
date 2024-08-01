@@ -37,11 +37,11 @@ let clickMenuSession = ""
 
 const menuItems = [
   {
-    "name": "open_terminal",
-    "text": "打开终端",
+    "name": "open_shell_command",
+    "text": "命令执行",
     "icon": IconTerminal,
     "color": "white",
-    "link": "/terminal/SESSION"
+    "link": "/shell-command/SESSION"
   },
   {
     "name": "browse_files",

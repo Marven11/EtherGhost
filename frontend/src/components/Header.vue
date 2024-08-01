@@ -21,9 +21,9 @@ const iconSpecs = [
     tooltip: "回到主页，打开其他webshell"
   },
   {
-    type: "terminal",
+    type: "shell-command",
     component: IconTerminal,
-    uri: "/terminal/SESSION",
+    uri: "/shell-command/SESSION",
     tooltip: "模拟终端"
   },
   {
