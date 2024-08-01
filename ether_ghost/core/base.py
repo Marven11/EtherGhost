@@ -131,6 +131,10 @@ class PHPSessionInterface(SessionInterface):
         """执行给定的代码，使用eval"""
         raise NotImplementedError()
 
+    async def php_eval_raw(self, code: str) -> t.Tuple[int, str]:
+        """eval代码，直接返回HTTP返回值和body"""
+        raise NotImplementedError()
+
 
 def register_session(cls):
     """装饰session class, 注册一个session

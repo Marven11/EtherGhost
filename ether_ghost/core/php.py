@@ -1076,3 +1076,6 @@ class PHPWebshell(PHPSessionInterface):
     async def php_eval(self, code: str) -> str:
         result = await self.submit(EVAL_PHP.format(code_b64=repr(base64_encode(code))))
         return result
+
+    async def php_eval_raw(self, code: str) -> t.Tuple[int, str]:
+        return await self.submit_raw(code)
