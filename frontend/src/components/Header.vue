@@ -49,7 +49,7 @@ const iconSpecs = [
     type: "proxy",
     component: IconProxy,
     uri: "/proxies",
-    tooltip: "代理"
+    tooltip: "打开代理"
   },
   {
     type: "shell-command",
