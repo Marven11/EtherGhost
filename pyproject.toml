@@ -14,7 +14,7 @@ pycryptodome = "*"
 sqlalchemy = "*"
 uvicorn = "*"
 sqlalchemy-utils = "*"
-httpx = "*"
+httpx = {extras = ["socks"], version = "^0.27.0"}
 chardet = "^5.2.0"
 python-multipart = "^0.0.9"
 
