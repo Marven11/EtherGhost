@@ -13,7 +13,7 @@ from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
 from uuid import UUID, uuid4
 
 import chardet
-from fastapi import FastAPI, Request, Response, File, Form, UploadFile, HTTPException
+from fastapi import FastAPI, Body, Request, Response, File, Form, UploadFile, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -341,10 +341,10 @@ async def session_supported_send_tcp_methods(
 @catch_user_error
 async def session_send_bytes_tcp(
     session_id: UUID,
-    host: str = Form(),
-    port: int = Form(),
-    content_b64: str = Form(),
-    send_method: t.Union[str, None] = Form(),
+    host: str = Body(),
+    port: int = Body(),
+    content_b64: str = Body(),
+    send_method: t.Union[str, None] = Body(),
 ):
     """使用session发送一段字节到某个TCP端口"""
     session: SessionInterface = session_manager.get_session_by_id(session_id)
@@ -393,7 +393,7 @@ async def session_download_phpinfo(session_id: UUID):
 
 @app.post("/session/{session_id}/php_eval")
 @catch_user_error
-async def session_php_eval(session_id: UUID, code: str = Form()):
+async def session_php_eval(session_id: UUID, code: str = Body()):
     """eval对应代码"""
     session: SessionInterface = session_manager.get_session_by_id(session_id)
     if not isinstance(session, PHPSessionInterface):
