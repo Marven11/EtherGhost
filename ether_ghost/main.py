@@ -523,12 +523,12 @@ async def test_proxy(proxy: str, site: str, timeout: int = 10):
     }
     if site not in sites:
         return {"code": -400, "msg": f"指定的服务器{site}未收录"}
-    async with httpx.AsyncClient(proxy=proxy) as client:
-        try:
+    try:
+        async with httpx.AsyncClient(proxy=proxy) as client:
             resp = await client.get(sites[site], timeout=timeout)
             return {"code": 0, "data": resp.status_code < 300}
-        except Exception:
-            return {"code": -500, "msg": f"代理无法连接{site}服务器"}
+    except Exception:
+        return {"code": -500, "msg": f"代理{repr(proxy)}无法连接{site}服务器"}
 
 
 @app.get("/settings")
