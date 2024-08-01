@@ -57,8 +57,21 @@ const userInterfaceOptionGroup = {
   ]
 }
 
+const connectionOptionGroup = {
+  name: "连接配置",
+  options: [
+    {
+      id: "proxy",
+      name: "代理",
+      type: "text",
+      placeholder: "http://127.0.0.1:7890",
+      default_value: "",
+    }
+  ]
+}
 
-const optionsGroups = shallowRef([userInterfaceOptionGroup])
+
+const optionsGroups = shallowRef([userInterfaceOptionGroup, connectionOptionGroup])
 
 function changeClickboxOption(optionId) {
   currentSettings[optionId] = !currentSettings[optionId]

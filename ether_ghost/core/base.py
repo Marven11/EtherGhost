@@ -3,12 +3,12 @@
 import typing as t
 from dataclasses import dataclass
 from ..utils import random_user_agent
+from ..utils.db import get_settings
 
 import httpx
 
 USER_AGENT = random_user_agent()
 session_type_info = {}
-proxy = None
 
 
 class ConnOptionAlternative(t.TypedDict):
@@ -154,10 +154,8 @@ def register_session(cls):
     return cls
 
 
-def set_proxy(new_proxy=None):
-    global proxy
-    proxy = new_proxy
-
-
 def get_http_client(**kwargs):
+    proxy = None
+    if get_settings().get("proxy", None):
+        proxy = get_settings().get("proxy", None)
     return httpx.AsyncClient(headers={"User-Agent": USER_AGENT}, proxy=proxy, **kwargs)

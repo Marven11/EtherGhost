@@ -129,11 +129,11 @@ def delete_session_info_by_id(
     return True
 
 
-def get_settings() -> t.Union[None, dict]:
+def get_settings() -> dict:
     """查询当前设置"""
     model = orm_session.query(SettingsModel).first()
     if model is None:
-        return None
+        return {}
     assert model.version == SETTINGS_VERSION, (
         "The version of the settings is not supported!"
         + " Did you load a newer settings?"
@@ -151,6 +151,6 @@ def set_settings(settings: dict):
 
 def ensure_settings():
     """保证当前设置存在，如果不存在设置则将写入默认设置"""
-    default_settings = {"theme": "green"}
+    default_settings = {"theme": "green", "proxy": ""}
     if get_settings() is None:
         set_settings(default_settings)
