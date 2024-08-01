@@ -849,7 +849,7 @@ class PHPWebshell(PHPSessionInterface):
         if send_method == "gopher_curl" or send_method is None:
             template = SEND_BYTES_OVER_TCP_GOPHER_CURL_PHP
         else:
-            raise exceptions.UserError(f"找不到TCP发送方法：{send_method}")
+            raise exceptions.UserError(f"找不到TCP发送方法：{repr(send_method)}")
         code = (
             template.replace("HOST", repr(host))
             .replace("PORT", str(port))
