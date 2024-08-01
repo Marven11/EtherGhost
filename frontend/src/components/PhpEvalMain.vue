@@ -94,7 +94,7 @@ async function onPhpEval() {
     addPopup("red", "请求服务端失败", `无法请求/session/${props.session}/php_eval，服务端是否正在运行？`)
     throw e
   }
-  if(resp.data.code == -500 || resp.data.code == -400) {
+  if (resp.data.code == -500 || resp.data.code == -400) {
     setTimeout(() => {
       addPopup("blue", "代码没有执行？", `你可能需要检查一下你的代码是否正确`)
     }, 300)
