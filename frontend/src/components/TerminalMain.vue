@@ -20,7 +20,7 @@ if (props.session) {
   store.session = props.session
 }
 
-const pwd = ref("/unknown_pwd")
+const pwd = ref("")
 
 function randomString(length) {
   let result = '';
@@ -32,6 +32,13 @@ function randomString(length) {
 
 
 async function psudoExec(command) {
+  if (pwd.value == "") {
+    pwd.value = (await getDataOrPopupError(`/session/${props.session}/execute_cmd`, {
+      params: {
+        cmd: "pwd"
+      }
+    })).trim()
+  }
   const result_text = await getDataOrPopupError(`/session/${props.session}/execute_cmd`, {
     params: {
       cmd: `cd ${pwd.value}; (${command}) 2>&1`
@@ -41,16 +48,20 @@ async function psudoExec(command) {
 }
 
 async function onExecCmd(key, command, success, failed) {
-  if (key == "cd") {
-    const result = await psudoExec(command)
+
+  // TODO: fix this regexp, it stop user cd to special directory
+  if (key == "cd" && /^cd +[-_a-zA-Z0-9\/]+$/.test(command)) {
+    const result = await psudoExec(command + "; pwd")
     // when `cd` success it produces no output
-    if (result.trim() == "") {
-      pwd.value = command.substring(2).trim()
+    if (!result.trim().includes("can't cd to")) {
+      pwd.value = result.trim()
+      success()
+    } else {
+      success({
+        type: "ansi",
+        content: result
+      })
     }
-    success({
-      type: "ansi",
-      content: result
-    })
   } else if (key == "clear") {
     TerminalApi.clearLog("my-terminal")
     success()
@@ -61,15 +72,6 @@ async function onExecCmd(key, command, success, failed) {
     })
   }
 }
-
-setTimeout(async () => {
-  const result = await getDataOrPopupError(`/session/${props.session}/execute_cmd`, {
-    params: {
-      cmd: "pwd"
-    }
-  })
-  pwd.value = result.trim()
-}, 0)
 </script>
 
 <template>
