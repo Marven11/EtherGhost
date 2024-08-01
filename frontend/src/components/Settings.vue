@@ -6,6 +6,7 @@ import IconCross from './icons/iconCross.vue'
 import IconCheck from './icons/iconCheck.vue'
 import { store, currentSettings } from "@/assets/store";
 import { useRouter } from "vue-router"
+import axios from "axios";
 
 const router = useRouter()
 const props = defineProps({
@@ -70,7 +71,6 @@ const connectionOptionGroup = {
   ]
 }
 
-
 const optionsGroups = shallowRef([userInterfaceOptionGroup, connectionOptionGroup])
 
 function changeClickboxOption(optionId) {
@@ -82,6 +82,24 @@ async function saveSettings() {
   console.log(settings)
   await postDataOrPopupError("/settings", settings)
   addPopup("green", "保存成功", "新的设置已经保存到本地数据库")
+}
+
+// actions
+
+const testProxySite = ref("apple")
+
+async function onTestProxy() {
+  const data = await getDataOrPopupError("/utils/test_proxy", {
+    params: {
+      proxy: currentSettings.proxy,
+      site: testProxySite.value
+    }
+  })
+  if (data) {
+    addPopup("green", "代理测试成功", `可以连接到${testProxySite.value}服务器`)
+  } else {
+    addPopup("yellow", "代理测试失败", `不可以连接到${testProxySite.value}服务器`)
+  }
 }
 
 </script>
@@ -120,6 +138,17 @@ async function saveSettings() {
     <div class="submit-button" @click="saveSettings">
       保存
     </div>
+  </div>
+  <div class="actions">
+    <button class="button" @click="onTestProxy">测试代理</button>
+    <select name="testProxySites" id="testProxySites" v-model="testProxySite">
+      <option value="apple">苹果服务器</option>
+      <option value="google">谷歌服务器</option>
+      <option value="cloudflare">CloudFlare服务器</option>
+      <option value="microsoft">微软服务器</option>
+      <option value="huawei">华为服务器</option>
+      <option value="xiaomi">小米服务器</option>
+    </select>
   </div>
 </template>
 
@@ -251,5 +280,41 @@ input {
 
 .submit-button:hover {
   background-color: color-mix(in lch, rgb(255, 255, 255) 10%, var(--background-color-3));
+}
+
+
+.actions {
+  width: 60%;
+  margin-top: 20px;
+  margin-left: 20%;
+  margin-right: 20%;
+  height: 70px;
+  background-color: var(--background-color-2);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: left;
+  padding-left: 5%;
+  padding-right: 5%;
+}
+
+.actions button,
+.actions input {
+  height: 50%;
+}
+
+.actions select {
+  height: 50%;
+  min-width: 50px;
+  border-radius: 20px;
+  border: none;
+  outline: 2px solid #ffffff00;
+  background-color: var(--background-color-3);
+  color: var(--font-color-white);
+  font-size: 18px;
+  padding-left: 10px;
+  padding-right: 10px;
+  transition: outline-color 0.3s ease;
 }
 </style>
