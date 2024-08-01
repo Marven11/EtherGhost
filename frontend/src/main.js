@@ -10,6 +10,7 @@ import TerminalMain from "./components/TerminalMain.vue";
 import ShellCommandMain from "./components/ShellCommandMain.vue";
 import FileBrowserMain from "./components/FileBrowserMain.vue";
 import PhpEvalMain from "./components/PhpEvalMain.vue";
+import EmulatedAntswordMain from "./components/EmulatedAntswordMain.vue";
 import Proxies from "./components/Proxies.vue";
 import { createRouter, createWebHashHistory } from "vue-router";
 import Terminal from 'vue-web-terminal'
@@ -38,6 +39,7 @@ const routes = [
   { path: "/shell-command/:session", component: ShellCommandMain, props: true },
   { path: "/file-browser/:session", component: FileBrowserMain, props: true },
   { path: "/php-eval/:session", component: PhpEvalMain, props: true },
+  { path: "/emulated-antsword/:session", component: EmulatedAntswordMain, props: true },
   { path: "/proxies", component: Proxies, props: true },
   { path: "/proxies/:session", component: Proxies, props: true },
 ];
