@@ -26,7 +26,8 @@
     "codemirror": "^6.0.1",
     "vue": "^3.4.21",
     "vue-codemirror": "^6.1.1",
-    "vue-router": "^4.3.0"
+    "vue-router": "^4.3.0",
+    "vue-web-terminal": "^3.3.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",
