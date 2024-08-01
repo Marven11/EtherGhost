@@ -12,6 +12,8 @@ class UserError(SessionException):
 
 
 class ServerError(SessionException):
+    """服务端运行错误"""
+
     code = -500
 
 

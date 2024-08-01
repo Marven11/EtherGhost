@@ -4,7 +4,7 @@ import re
 import typing as t
 
 
-from .core import SessionInterface
+from .core import SessionInterface, exceptions
 
 
 class PsudoTcpServeConnection:
@@ -64,9 +64,18 @@ class PsudoTcpServeConnection:
             traceback.print_exc()
 
     async def start_server(self) -> asyncio.Task:
-        server = await asyncio.start_server(
-            self.serve_connection, self.listen_host, self.listen_port
-        )
+        try:
+            server = await asyncio.start_server(
+                self.serve_connection, self.listen_host, self.listen_port
+            )
+        except OSError as exc:
+            if exc.errno == 98:
+                raise exceptions.ServerError(
+                    f"无法绑定{self.listen_host}:{self.listen_port}，是不是被占用了？"
+                )
+            raise exceptions.ServerError("无法启动代理") from exc
+        except Exception as exc:
+            raise exceptions.ServerError("无法启动代理") from exc
         task = asyncio.create_task(server.serve_forever())
         return task
 
