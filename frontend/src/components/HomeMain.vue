@@ -4,6 +4,7 @@ import IconCode from "./icons/iconCode.vue"
 import IconDelete from "./icons/iconDelete.vue"
 import IconEdit from "./icons/iconEdit.vue"
 import IconFileBrowser from "./icons/iconFileBrowser.vue"
+import IconHash from "./icons/iconHash.vue"
 import IconInfo from "./icons/iconInfo.vue"
 import IconOthers from "./icons/iconOthers.vue"
 import IconPlus from "./icons/iconPlus.vue"
@@ -37,11 +38,11 @@ let clickMenuSession = ""
 
 const menuItems = [
   {
-    "name": "open_shell_command",
-    "text": "命令执行",
+    "name": "terminal",
+    "text": "模拟终端",
     "icon": IconTerminal,
     "color": "white",
-    "link": "/shell-command/SESSION"
+    "link": "/terminal/SESSION"
   },
   {
     "name": "browse_files",
@@ -70,6 +71,13 @@ const menuItems = [
     "icon": IconInfo,
     "color": "white",
     "link": "/page_404/SESSION"
+  },
+  {
+    "name": "open_shell_command",
+    "text": "命令执行",
+    "icon": IconHash,
+    "color": "white",
+    "link": "/shell-command/SESSION"
   },
   {
     "name": "edit_session",

@@ -11,6 +11,7 @@ import { useRouter } from "vue-router"
 import { store } from "@/assets/store.js"
 import IconCode from "./icons/iconCode.vue"
 import { addPopup } from "@/assets/utils"
+import IconHash from "./icons/iconHash.vue"
 
 const router = useRouter()
 const iconSpecs = [
@@ -21,9 +22,9 @@ const iconSpecs = [
     tooltip: "回到主页，打开其他webshell"
   },
   {
-    type: "shell-command",
+    type: "terminal",
     component: IconTerminal,
-    uri: "/shell-command/SESSION",
+    uri: "/terminal/SESSION",
     tooltip: "模拟终端"
   },
   {
@@ -49,6 +50,12 @@ const iconSpecs = [
     component: IconProxy,
     uri: "/proxies",
     tooltip: "代理"
+  },
+  {
+    type: "shell-command",
+    component: IconHash,
+    uri: "/shell-command/SESSION",
+    tooltip: "命令执行"
   },
   {
     type: "others",
