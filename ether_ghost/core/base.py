@@ -131,8 +131,8 @@ class PHPSessionInterface(SessionInterface):
         """执行给定的代码，使用eval"""
         raise NotImplementedError()
 
-    async def php_eval_raw(self, code: str) -> t.Tuple[int, str]:
-        """eval代码，直接返回HTTP返回值和body"""
+    async def emulated_antsword(self, body: bytes) -> t.Tuple[int, str]:
+        """解析蚁剑给的body, 返回raw的HTTP返回码和内容"""
         raise NotImplementedError()
 
 

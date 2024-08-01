@@ -13,7 +13,7 @@ from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
 from uuid import UUID, uuid4
 
 import chardet
-from fastapi import FastAPI, Response, File, Form, UploadFile, HTTPException
+from fastapi import FastAPI, Request, Response, File, Form, UploadFile, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -392,24 +392,24 @@ async def session_download_phpinfo(session_id: UUID):
 
 @app.post("/session/{session_id}/php_eval")
 @catch_user_error
-async def session_php_eval(session_id: UUID, request: PhpCodeRequest):
+async def session_php_eval(session_id: UUID, code: str = Form()):
     """eval对应代码"""
     session: SessionInterface = session_manager.get_session_by_id(session_id)
     if not isinstance(session, PHPSessionInterface):
         return {"code": -400, "msg": "指定的session不是PHP Session"}
-    code = request.code
     result = await session.php_eval(code)
     return {"code": 0, "data": result}
 
 
-@app.post("/session/{session_id}/php_eval_raw")
+@app.post("/session/{session_id}/emulated_antsword")
 @catch_user_error
-async def session_php_eval_raw(session_id: UUID, request: PhpCodeRequest):
-    """eval对应代码，不使用wrapper，直接返回对应的响应码和body"""
+async def session_emulated_antsword(session_id: UUID, request: Request):
+    """对接蚁剑"""
     session: SessionInterface = session_manager.get_session_by_id(session_id)
     if not isinstance(session, PHPSessionInterface):
         return {"code": -400, "msg": "指定的session不是PHP Session"}
-    status_code, content = await session.php_eval_raw(request.code)
+    body: bytes = await request.body()
+    status_code, content = await session.emulated_antsword(body)
     return Response(status_code=status_code, content=content)
 
 

