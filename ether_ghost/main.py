@@ -393,12 +393,12 @@ async def session_download_phpinfo(session_id: UUID):
 
 @app.post("/session/{session_id}/php_eval")
 @catch_user_error
-async def session_php_eval(session_id: UUID, code: str = Body()):
+async def session_php_eval(session_id: UUID, req: PhpCodeRequest):
     """eval对应代码"""
     session: SessionInterface = session_manager.get_session_by_id(session_id)
     if not isinstance(session, PHPSessionInterface):
         return {"code": -400, "msg": "指定的session不是PHP Session"}
-    result = await session.php_eval(code)
+    result = await session.php_eval(req.code)
     return {"code": 0, "data": result}
 
 
