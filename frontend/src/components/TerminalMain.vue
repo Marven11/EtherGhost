@@ -8,28 +8,11 @@ const props = defineProps({
   session: String,
 })
 
-const dragConf = {
-  width: "90%",
-  height: "80%",
-  zIndex: 100,
-
-  pinned: false
-}
-
 if (props.session) {
   store.session = props.session
 }
 
 const pwd = ref("")
-
-function randomString(length) {
-  let result = '';
-  for (let i = 0; i < length; i++) {
-    result += String.fromCharCode(Math.floor(Math.random() * 26) + 97);
-  }
-  return result;
-}
-
 
 async function psudoExec(command) {
   if (pwd.value == "") {
@@ -77,14 +60,14 @@ async function onExecCmd(key, command, success, failed) {
 <template>
   <div class="terminal-main">
     <terminal name="my-terminal" :context="pwd" :show-header="false" :log-size-limit="500"
-      :enable-default-command="false" @exec-cmd="onExecCmd" :drag-conf="dragConf" />
+      :enable-default-command="false" @exec-cmd="onExecCmd" />
   </div>
-
 </template>
 
 <style scoped>
 .terminal-main {
   height: 100%;
   width: 100%;
+  z-index: 0;
 }
 </style>
