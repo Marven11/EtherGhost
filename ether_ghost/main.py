@@ -18,6 +18,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+import httpx
 
 from .utils import db
 
@@ -507,6 +508,27 @@ async def join_path(folder: str, entry: str):
     else:
         result = remote_path(folder) / entry
     return {"code": 0, "data": result}
+
+
+@app.get("/utils/test_proxy")
+async def test_proxy(proxy: str, site: str, timeout: int = 10):
+    """测试代理是否可以正常使用，为了杜绝SSRF使用了关键字指定URL的形式"""
+    sites = {
+        "google": "http://www.gstatic.com/generate_204",
+        "cloudflare": "http://cp.cloudflare.com/",
+        "microsoft": "http://www.msftconnecttest.com/connecttest.txt",
+        "apple": "http://www.apple.com/library/test/success.html",
+        "huawei": "http://connectivitycheck.platform.hicloud.com/generate_204",
+        "xiaomi": "http://connect.rom.miui.com/generate_204",
+    }
+    if site not in sites:
+        return {"code": -400, "msg": f"指定的服务器{site}未收录"}
+    async with httpx.AsyncClient(proxy=proxy) as client:
+        try:
+            resp = await client.get(sites[site], timeout=timeout)
+            return {"code": 0, "data": resp.status_code < 300}
+        except Exception:
+            return {"code": -500, "msg": f"代理无法连接{site}服务器"}
 
 
 @app.get("/settings")
