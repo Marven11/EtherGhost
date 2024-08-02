@@ -34,8 +34,6 @@ logger = logging.getLogger("sessions.php")
 
 user_agent = random_user_agent()
 
-DEFAULT_SESSION_ID = "".join(random.choices("1234567890abcdef", k=32))
-
 DECODER_RAW = """
 function decoder_echo_raw($s) {echo $s;}
 """.strip()
@@ -630,6 +628,16 @@ class PHPWebshell(PHPSessionInterface):
         self.chunk_size = 32 * 1024
         self.max_coro = 4
 
+        # specify session id here
+        # if we use the same session id for every task
+        # then one task would block the others due to php sticky session
+        # to avoid program freeze, we generate unique session id for each object
+
+        # and the reason why we don't use cookie to specify session id
+        # is that the underlying php webshell implementation might not use
+        # session or client to store cookies.
+        self.session_id = "".join(random.choices("1234567890abcdef", k=32))
+
     def encode(self, payload: str) -> str:
         """应用编码器"""
         if self.encoder == "raw":
@@ -1023,7 +1031,7 @@ class PHPWebshell(PHPSessionInterface):
             delimiter_start_2=start[3:],
             delimiter_stop=stop,
             payload_raw=payload,
-            session_id=DEFAULT_SESSION_ID,
+            session_id=self.session_id,
             decoder={"raw": DECODER_RAW, "base64": DECODER_BASE64}[self.decoder],
         )
         payload = self.encode(payload)
