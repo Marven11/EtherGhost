@@ -145,6 +145,14 @@ class PHPWebshellOneliner(PHPWebshell):
                     default_value=False,
                     alternatives=None,
                 ),
+                ConnOption(
+                    id="timeout",
+                    name="HTTP连接超时",
+                    type="text",
+                    placeholder="设置超时时间，单位为秒，0表示一直等待",
+                    default_value="10.0",
+                    alternatives=None,
+                ),
             ],
         },
     ]
@@ -168,8 +176,11 @@ class PHPWebshellOneliner(PHPWebshell):
             raise exceptions.UserError(
                 "使用Chunked Transfer Encoding时请求方法必须为POST"
             )
-
-        self.client = get_http_client(verify=session_conn.get("https_verify", False))
+        self.https_verify = session_conn.get("https_verify", False)
+        self.timeout = float(session_conn.get("timeout", 0))
+        if not self.timeout:
+            self.timeout = None
+        self.client = get_http_client(verify=self.https_verify)
 
     def build_chunked_request(self, params: dict, data: dict):
         data_bytes = urllib.parse.urlencode(data).encode()
@@ -185,10 +196,12 @@ class PHPWebshellOneliner(PHPWebshell):
             # data=data,
             content=yield_data(),
             headers={
+                **self.headers,
                 "Transfer-Encoding": "chunked",
                 "Content-Type": "application/x-www-form-urlencoded",
             },
             cookies=self.cookies,
+            timeout=self.timeout,
         )
 
     def build_normal_request(self, params: dict, data: dict):
@@ -199,6 +212,7 @@ class PHPWebshellOneliner(PHPWebshell):
             data=data,
             headers=self.headers,
             cookies=self.cookies,
+            timeout=self.timeout,
         )
 
     async def submit_raw(self, payload: str) -> t.Tuple[int, str]:
