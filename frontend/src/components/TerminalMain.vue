@@ -34,7 +34,13 @@ async function onExecCmd(key, command, success, failed) {
 
   // TODO: fix this regexp, it stop user cd to special directory
   if (key == "cd" && /^cd +[-_a-zA-Z0-9\/]+$/.test(command)) {
-    const result = await psudoExec(command + "; pwd")
+    let result
+    try {
+      result = await psudoExec(command + "; pwd")
+    } catch (error) {
+      failed()
+      return
+    }
     // when `cd` success it produces no output
     if (!result.trim().includes("can't cd to")) {
       pwd.value = result.trim()
@@ -49,9 +55,16 @@ async function onExecCmd(key, command, success, failed) {
     TerminalApi.clearLog("my-terminal")
     success()
   } else {
+    let result
+    try {
+      result = await psudoExec(command)
+    } catch (error) {
+      failed()
+      return
+    }
     success({
       type: 'ansi',
-      content: await psudoExec(command)
+      content: result
     })
   }
 }
