@@ -54,3 +54,10 @@
 .t-window {
   border-radius: 20px;
 }
+
+.t-window * {
+  /* font-family: Monaco, Lucida Console, monospace; */
+  font-family: 'FiraCode', 'Courier New', Courier, monospace !important;
+  /* font-variant-ligatures: none; */
+
+}
