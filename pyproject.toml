@@ -4,6 +4,13 @@ version = "0.1.0"
 description = ""
 authors = ["Marven11 <110723864+Marven11@users.noreply.github.com>"]
 readme = "README.md"
+include = [
+    { path = "public", format = ["sdist", "wheel"] }
+]
+
+
+[tool.poetry.scripts]
+ether_ghost = "ether_ghost.__main__:main"
 
 [tool.poetry.dependencies]
 python = "^3.8"

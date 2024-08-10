@@ -52,13 +52,5 @@
 
         };
 
-        # Shell for poetry.
-        #
-        #     nix develop .#poetry
-        #
-        # Use this shell for changes to pyproject.toml and poetry.lock.
-        devShells.poetry = pkgs.mkShell {
-          packages = [ pkgs.poetry ];
-        };
       });
 }
