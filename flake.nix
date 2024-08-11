@@ -19,10 +19,6 @@
         inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; }) mkPoetryApplication;
       in
       {
-        packages = {
-          myapp = mkPoetryApplication { projectDir = self; };
-          default = self.packages.${system}.myapp;
-        };
 
         # Shell for app dependencies.
         #
@@ -30,7 +26,6 @@
         #
         # Use this shell for developing your app.
         devShells.default = pkgs.mkShell {
-          inputsFrom = [ self.packages.${system}.myapp ];
           buildInputs = [
             pkgs.poetry
             pythonPackages.notebook
@@ -49,8 +44,34 @@
             poetry install
             exec poetry shell
           '';
-
         };
 
+        packages.default = with pkgs.python311Packages;
+          buildPythonPackage rec {
+            pname = "ether-ghost";
+            version = "0.0.1";
+            pyproject = true;
+
+            propagatedBuildInputs = [
+              build
+              packaging
+              poetry-core
+            ];
+            dependencies = [
+              pydantic
+              fastapi
+              requests
+              pycryptodome
+              sqlalchemy
+              uvicorn
+              sqlalchemy-utils
+              httpx
+              socksio
+              chardet
+              python-multipart
+            ];
+
+            src = ./.;
+          };
       });
 }
