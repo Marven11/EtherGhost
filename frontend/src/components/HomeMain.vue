@@ -20,6 +20,7 @@ import axios from "axios"
 
 import { getCurrentApiUrl } from "@/assets/utils";
 import { store } from "@/assets/store";
+import IconSpider from "./icons/iconSpider.vue";
 
 
 const sessions = ref([
@@ -82,7 +83,7 @@ const menuItems = [
   {
     "name": "emulated_antsword",
     "text": "对接蚁剑",
-    "icon": IconHash,
+    "icon": IconSpider,
     "color": "white",
     "link": "/emulated-antsword/SESSION"
   },

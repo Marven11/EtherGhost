@@ -14,6 +14,7 @@ import { addPopup } from "@/assets/utils"
 import IconHash from "./icons/iconHash.vue"
 import IconEdit from "./icons/iconEdit.vue"
 import ClickMenu from "./ClickMenu.vue"
+import IconSpider from "./icons/iconSpider.vue"
 
 const router = useRouter()
 const iconSpecs = [
@@ -113,6 +114,13 @@ const menuItems = [
     icon: IconHash,
     color: "white",
     link: "/shell-command/SESSION"
+  },
+  {
+    name: "emulated_antsword",
+    text: "对接蚁剑",
+    icon: IconSpider,
+    color: "white",
+    link: "/emulated-antsword/SESSION"
   },
   {
     name: "edit_session",
