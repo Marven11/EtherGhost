@@ -36,7 +36,9 @@ const routes = [
     props: true,
   },
   {
-    path: "/terminal/:session", component: TerminalMain, props: route => ({
+    path: "/terminal/:session",
+    component: TerminalMain,
+    props: route => ({
       session: route.params.session,
       pwd: route.query.pwd
     })

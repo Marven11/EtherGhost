@@ -38,6 +38,8 @@ import { yaml } from '@codemirror/lang-yaml'
 
 import { shell } from "@codemirror/legacy-modes/mode/shell"
 import { StreamLanguage } from "@codemirror/language"
+import IconTerminal from "./icons/iconTerminal.vue"
+import { useRouter } from "vue-router"
 
 const props = defineProps({
   session: String,
@@ -46,6 +48,8 @@ const props = defineProps({
 if (props.session) {
   store.session = props.session
 }
+
+const router = useRouter()
 
 // ###########
 // --- PWD ---
@@ -231,6 +235,13 @@ const menuItemsAll = [
     "entry_type": ["file", "link-file"]
   },
   {
+    "name": "open_terminal_here",
+    "text": "在此处打开终端",
+    "icon": IconTerminal,
+    "color": "white",
+    "entry_type": ["empty", "file", "link-file", "dir", "link-dir"]
+  },
+  {
     "name": "new_file",
     "text": "新建文件",
     "icon": IconFileNew,
@@ -377,6 +388,13 @@ function onClickMenuItem(item) {
     confirmRenameFile(clickMenuEntry.name)
   } else if (item.name == "delete_file") {
     confirmDeleteFile(clickMenuEntry.name)
+  } else if (item.name == "open_terminal_here") {
+    router.push({
+      path: `/terminal/${props.session}`,
+      query: {
+        pwd: pwd.value
+      }
+    })
   }
   else {
     addPopup("blue", "TODO", `还没实现${item.name}`)
@@ -532,9 +550,9 @@ function readableFilePerm(filePerm) {
       <IconRun />
     </div>
     <div class="filepath-icon" @click="() => {
-    listDir(pwd);
-    userPwd = pwd;
-  }">
+      listDir(pwd);
+      userPwd = pwd;
+    }">
       <IconLoad />
     </div>
   </form>
@@ -577,8 +595,8 @@ function readableFilePerm(filePerm) {
   </div>
   <transition>
     <div v-if="showClickMenu">
-      <ClickMenu :mouse_x="clickMenuX" :mouse_y="clickMenuY" :menuItems="menuItems" @remove="(_) => showClickMenu = false"
-        @clickItem="onClickMenuItem" />
+      <ClickMenu :mouse_x="clickMenuX" :mouse_y="clickMenuY" :menuItems="menuItems"
+        @remove="(_) => showClickMenu = false" @clickItem="onClickMenuItem" />
     </div>
   </transition>
 
