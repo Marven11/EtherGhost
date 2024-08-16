@@ -13,7 +13,7 @@ import IconTerminal from "./icons/iconTerminal.vue"
 
 
 import ClickMenu from "./ClickMenu.vue"
-import { addPopup, getDataOrPopupError } from "@/assets/utils";
+import { addPopup, getDataOrPopupError, parseDataOrPopupError } from "@/assets/utils";
 import { useRouter } from "vue-router"
 import InputBox from "./InputBox.vue"
 import axios from "axios"
@@ -158,8 +158,8 @@ async function onDeleteSessionConfirm(userConfirm) {
     return
   }
   if (userConfirm) {
-    // TODO: check this result handing method
-    let result = await axios.delete(`${getCurrentApiUrl()}/session/${sessionToDelete}`)
+    let response = await axios.delete(`${getCurrentApiUrl()}/session/${sessionToDelete}`)
+    let result = parseDataOrPopupError(response)
     if (result) {
       addPopup("green", "删除成功", `已经删除指定session`)
     } else {

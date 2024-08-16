@@ -397,7 +397,7 @@ function onClickMenuItem(item) {
     })
   }
   else {
-    addPopup("blue", "TODO", `还没实现${item.name}`)
+    addPopup("red", "内部错误", `没有实现动作：${item.name}`)
   }
 }
 
