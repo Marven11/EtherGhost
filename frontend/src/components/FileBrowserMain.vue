@@ -61,11 +61,9 @@ const router = useRouter()
 const userPwd = ref("") // pwd of user input
 let pwd = ref("")
 
-async function initFetch() {
+setTimeout(async () => {
   pwd.value = await getDataOrPopupError(`/session/${props.session}/get_pwd`)
-}
-
-setTimeout(initFetch, 0)
+}, 0)
 
 function onUserInputPwd(event) {
   event.preventDefault()
@@ -329,21 +327,24 @@ function confirmRenameFile(filename) {
   inputBoxNote.value = `输入新的文件名${filename}`
   inputBoxRequireInput.value = true
   inputBoxCallback = async new_filename => {
-    if (new_filename) {
-      let result = await getDataOrPopupError(`/session/${props.session}/move_file`, {
-        params: {
-          filepath: (await joinPath(pwd.value, filename)),
-          new_filepath: (await joinPath(pwd.value, new_filename))
+    try {
+      if (new_filename) {
+        let result = await getDataOrPopupError(`/session/${props.session}/move_file`, {
+          params: {
+            filepath: (await joinPath(pwd.value, filename)),
+            new_filepath: (await joinPath(pwd.value, new_filename))
+          }
+        })
+        if (result) {
+          addPopup("green", "重命名成功", `文件${filename}已经重命名`)
+        } else {
+          addPopup("red", "重命名失败", `文件${filename}重命名失败`)
         }
-      })
-      if (result) {
-        addPopup("green", "重命名成功", `文件${filename}已经重命名`)
-      } else {
-        addPopup("red", "重命名失败", `文件${filename}重命名失败`)
+        listDir(pwd.value)
       }
-      listDir(pwd.value)
+    } finally {
+      showInputBox.value = false
     }
-    showInputBox.value = false
   }
 }
 
@@ -354,21 +355,26 @@ function confirmDeleteFile(filename) {
   inputBoxNote.value = `真的要删除文件${filename}吗`
   inputBoxRequireInput.value = false
   inputBoxCallback = async result => {
-    if (result) {
-      let result = await getDataOrPopupError(`/session/${props.session}/delete_file`, {
-        params: {
-          current_dir: pwd.value,
-          filename: filename
-        }
-      })
+    try {
       if (result) {
-        addPopup("green", "删除成功", `文件${filename}已经删除`)
-      } else {
-        addPopup("red", "删除失败", `文件${filename}删除失败`)
+        let result = await getDataOrPopupError(`/session/${props.session}/delete_file`, {
+          params: {
+            current_dir: pwd.value,
+            filename: filename
+          }
+        })
+        if (result) {
+          addPopup("green", "删除成功", `文件${filename}已经删除`)
+        } else {
+          addPopup("red", "删除失败", `文件${filename}删除失败`)
+        }
+        listDir(pwd.value)
       }
-      listDir(pwd.value)
+    } finally {
+      showInputBox.value = false
+
     }
-    showInputBox.value = false
+
   }
 }
 

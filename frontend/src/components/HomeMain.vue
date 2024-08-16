@@ -157,18 +157,21 @@ async function onDeleteSessionConfirm(userConfirm) {
     addPopup("red", "内部错误", `找不到要删除的webshell`)
     return
   }
-  if (userConfirm) {
-    let response = await axios.delete(`${getCurrentApiUrl()}/session/${sessionToDelete}`)
-    let result = parseDataOrPopupError(response)
-    if (result) {
-      addPopup("green", "删除成功", `已经删除指定session`)
-    } else {
-      addPopup("red", "删除失败", `无法删除指定session`)
+  try {
+    if (userConfirm) {
+      let response = await axios.delete(`${getCurrentApiUrl()}/session/${sessionToDelete}`)
+      let result = parseDataOrPopupError(response)
+      if (result) {
+        addPopup("green", "删除成功", `已经删除指定session`)
+      } else {
+        addPopup("red", "删除失败", `无法删除指定session`)
+      }
     }
+  } finally {
+    showInputBox.value = false
+    sessionToDelete = undefined
+    setTimeout(fetchWebshell, 0)
   }
-  showInputBox.value = false
-  sessionToDelete = undefined
-  setTimeout(fetchWebshell, 0)
 }
 
 </script>

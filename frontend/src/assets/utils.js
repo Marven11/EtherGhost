@@ -58,6 +58,7 @@ export function addPopup(color, title, msg) {
 }
 
 export function parseDataOrPopupError(resp) {
+  // TODO: 让调用这个函数的其他函数正确处理这里的错误
   if (resp.data.code != 0) {
     let title = `未知错误：${resp.data.code}`
     let errorClass

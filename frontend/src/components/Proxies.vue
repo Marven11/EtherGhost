@@ -93,11 +93,14 @@ async function createProxy() {
 }
 async function closeProxy(listen_port) {
   const response = await axios.delete(`${getCurrentApiUrl()}/forward_proxy/${listen_port}/`)
-  const result = parseDataOrPopupError(response)
-  if (!result) {
-    addPopup("yellow", "关闭失败", "代理无法被关闭")
+  try {
+    const result = parseDataOrPopupError(response)
+    if (!result) {
+      addPopup("yellow", "关闭失败", "代理无法被关闭")
+    }
+  } finally {
+    openedProxies.value = await getDataOrPopupError("/forward_proxy/list")
   }
-  openedProxies.value = await getDataOrPopupError("/forward_proxy/list")
 }
 
 watch(addProxyInput, (newValue, oldValue) => {

@@ -1,9 +1,7 @@
 <script setup>
-import { getDataOrPopupError, parseDataOrPopupError } from "@/assets/utils";
+import { getDataOrPopupError } from "@/assets/utils";
 import IconRun from "./icons/iconRun.vue"
 import { ref } from "vue";
-import Axios from "axios";
-import { getCurrentApiUrl } from "@/assets/utils";
 import { store } from "@/assets/store";
 import InputBox from "./InputBox.vue"
 
