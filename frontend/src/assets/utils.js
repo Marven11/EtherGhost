@@ -18,6 +18,30 @@ export function getCurrentApiUrl() {
   return window.location.origin.includes("5173") ? `http://${window.location.hostname}:8022` : window.location.origin
 }
 
+class UserError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "UserError"
+    this.message = `客户端错误：${message}`
+  }
+}
+
+class ServerError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "ServerError"
+    this.message = `服务端错误：${message}`
+  }
+}
+
+class TargetError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "TargetError";
+    this.message = `受控端错误：${message}`
+  }
+}
+
 export function doAssert(result, msg) {
   if (result) {
     return
@@ -36,16 +60,22 @@ export function addPopup(color, title, msg) {
 export function parseDataOrPopupError(resp) {
   if (resp.data.code != 0) {
     let title = `未知错误：${resp.data.code}`
+    let errorClass
     if (resp.data.code == -400) {
       title = "客户端错误"
+      errorClass = UserError
     } else if (resp.data.code == -500) {
       title = "服务端错误"
+      errorClass = ServerError
     } else if (resp.data.code == -600) {
       title = "受控端错误"
+      errorClass = TargetError
+    }else{
+      title = "错误"
+      errorClass = Error
     }
     addPopup("red", title, resp.data.msg)
-    doAssert(false, `${title}: ${resp.data.msg}`)
-    return;
+    throw errorClass(resp.data.msg)
   }
   return resp.data.data
 }
