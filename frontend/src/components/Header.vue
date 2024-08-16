@@ -1,5 +1,5 @@
 <script setup>
-import { computed, shallowRef, watch } from "vue"
+import { computed, ref, shallowRef, watch } from "vue"
 import IconHome from "./icons/iconHome.vue"
 import IconTerminal from "./icons/iconTerminal.vue"
 import IconFileBrowser from "./icons/iconFileBrowser.vue"
@@ -12,6 +12,8 @@ import { store } from "@/assets/store.js"
 import IconCode from "./icons/iconCode.vue"
 import { addPopup } from "@/assets/utils"
 import IconHash from "./icons/iconHash.vue"
+import IconEdit from "./icons/iconEdit.vue"
+import ClickMenu from "./ClickMenu.vue"
 
 const router = useRouter()
 const iconSpecs = [
@@ -51,16 +53,11 @@ const iconSpecs = [
     uri: "/proxies",
     tooltip: "打开代理"
   },
-  {
-    type: "shell-command",
-    component: IconHash,
-    uri: "/shell-command/SESSION",
-    tooltip: "命令执行"
-  },
+
   {
     type: "others",
     component: IconOthers,
-    uri: "/",
+    uri: "",
     tooltip: "其他"
   },
   {
@@ -96,13 +93,59 @@ watch(() => store.session, (newSession, _) => {
 
 const iconsCount = computed(() => icons.value.length)
 
-function clickIcon(icon) {
-  if (icon.uri == "/popup/no_session") {
+function clickIcon(event, icon) {
+  if (icon.type == "others") {
+    onClickIconOthers(event)
+  }
+  else if (icon.uri == "/popup/no_session") {
     addPopup("red", "没有选中WebShell", "请先在主页选中Webshell")
   } else {
     router.push(icon.uri)
   }
 }
+
+// click menu
+
+const menuItems = [
+  {
+    name: "shell_command",
+    text: "命令执行",
+    icon: IconHash,
+    color: "white",
+    link: "/shell-command/SESSION"
+  },
+  {
+    name: "edit_session",
+    text: "修改webshell",
+    icon: IconEdit,
+    color: "white",
+    link: "/webshell-editor/SESSION"
+  },
+]
+
+const showClickMenu = ref(false)
+const clickMenuX = ref(0)
+const clickMenuY = ref(0)
+
+function onClickIconOthers(event) {
+  event.preventDefault()
+  showClickMenu.value = true
+  clickMenuX.value = event.clientX;
+  clickMenuY.value = event.clientY;
+  console.log(clickMenuX.value)
+}
+
+function onClickMenuItem(item) {
+  if (!store.session) {
+    addPopup("red", "没有选中WebShell", "请先在主页选中Webshell")
+  } else if (item.link) {
+    const uri = item.link.replace("SESSION", store.session)
+    router.push(uri)
+  } else if (item.func) {
+    item.func(clickMenuSession)
+  }
+}
+
 
 </script>
 
@@ -116,15 +159,20 @@ function clickIcon(icon) {
     </div>
     <div class="nav-space">
       <nav>
-        <div v-for="icon in icons" @click="clickIcon(icon)" class="icon" :title="icon.tooltip">
+        <div v-for="icon in icons" @click="(event) => clickIcon(event, icon)" class="icon" :title="icon.tooltip">
           <component :is="icon.component"></component>
         </div>
       </nav>
     </div>
 
-
   </header>
 
+  <transition>
+    <div v-if="showClickMenu">
+      <ClickMenu :mouse_y="clickMenuY" :mouse_x="clickMenuX" :menuItems="menuItems"
+        @remove="(_) => showClickMenu = false" @clickItem="onClickMenuItem" />
+    </div>
+  </transition>
 </template>
 
 <style scoped>
