@@ -6,6 +6,7 @@ import Terminal, { TerminalApi } from 'vue-web-terminal';
 
 const props = defineProps({
   session: String,
+  pwd: String,
 })
 
 if (props.session) {
@@ -13,6 +14,10 @@ if (props.session) {
 }
 
 const pwd = ref("")
+
+if(props.pwd) {
+  pwd.value = props.pwd
+}
 
 async function psudoExec(command) {
   if (pwd.value == "") {
