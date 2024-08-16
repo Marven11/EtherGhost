@@ -176,7 +176,7 @@ function onClickMenuItem(item) {
   </header>
 
   <transition>
-    <div v-if="showClickMenu">
+    <div v-if="showClickMenu" class="header-click-menu">
       <ClickMenu :mouse_y="clickMenuY" :mouse_x="clickMenuX" :menuItems="menuItems"
         @remove="(_) => showClickMenu = false" @clickItem="onClickMenuItem" />
     </div>
@@ -261,5 +261,9 @@ svg {
   width: 35px;
   color: var(--font-color-black);
   stroke: var(--font-color-black);
+}
+
+.header-click-menu {
+  z-index: 10;
 }
 </style>
