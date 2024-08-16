@@ -86,7 +86,7 @@ defineExpose({ addPopup })
   background-color: #00000015;
   border-radius: 20px;
   margin-bottom: 20px;
-  height: 12lvh;
+  height: 150px;
   transition: opacity 0.5s ease;
 }
 
