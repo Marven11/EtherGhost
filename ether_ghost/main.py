@@ -461,21 +461,21 @@ async def forward_proxy_create_psudo_proxy(request: ProxyRequest):
     if request.listen_host is None:
         request.listen_host = "0.0.0.0"
     session: SessionInterface = session_manager.get_session_by_id(request.session_id)
-    # TODO: check request.type
-    server_task = await start_psudo_tcp_proxy(
-        session,
-        request.listen_host,
-        request.listen_port,
-        request.host,
-        request.port,
-        request.send_method,
-    )
-    psudo_tcp_proxies[request.listen_port] = (
-        request,
-        server_task,
-    )
-    return {"code": 0, "data": True}
-
+    if request.type == "psudo_forward_proxy":
+        server_task = await start_psudo_tcp_proxy(
+            session,
+            request.listen_host,
+            request.listen_port,
+            request.host,
+            request.port,
+            request.send_method,
+        )
+        psudo_tcp_proxies[request.listen_port] = (
+            request,
+            server_task,
+        )
+        return {"code": 0, "data": True}
+    return {"code": -400, "msg": f"不支持的代理类型：{request.type}"}
 
 @app.delete("/forward_proxy/{listen_port}/")
 @catch_user_error

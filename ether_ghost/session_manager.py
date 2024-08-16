@@ -24,10 +24,8 @@ def session_info_to_session(session_info: SessionInfo) -> core.SessionInterface:
     Returns:
         session.Session: session对象
     """
-    # TODO: make it tolerant, when session type not found the program shouldn't break
-    # instead, it should tell user that it cannot find the session type
     if session_info.session_type not in session_type_info:
-        raise ValueError(f"Session type {session_info.session_type} is not supported!")
+        raise core.UserError(f"Session类型{session_info.session_type}不存在")
     constructor = session_type_info[session_info.session_type]["constructor"]
     return constructor(session_info.connection)
 
