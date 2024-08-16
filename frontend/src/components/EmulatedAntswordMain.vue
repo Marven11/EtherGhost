@@ -21,14 +21,15 @@ if (props.session) {
       <table>
         <tr>
           <td>地址</td>
-          <td>{{ getCurrentApiUrl() }}/session/{{ props.session }}/emulated_antsword</td>
+          <td class="info-value">{{ getCurrentApiUrl() }}/session/{{ props.session }}/emulated_antsword</td>
         </tr>
         <tr>
           <td>密码</td>
-          <td>as</td>
+          <td class="info-value">as</td>
         </tr>
       </table>
-      <p>就这么多了</p>
+      <p>可以让蚁剑的各类插件对接游魂，运行在冰蝎webshell上，享受游魂带来的各类特性</p>
+      <p>暂时仅支持PHP webshell</p>
     </div>
 
   </div>
@@ -45,7 +46,7 @@ if (props.session) {
 
 .info-panel {
   background-color: var(--background-color-1);
-  height: 30%;
+  height: max-content;
   width: 50%;
   border-radius: 20px;
   color: var(--font-color-grey);
@@ -66,5 +67,10 @@ if (props.session) {
 
 .info-panel td {
   min-width: 100px;
+}
+
+.info-value {
+  font-weight: bold;
+  color: var(--font-color-white);
 }
 </style>

@@ -80,6 +80,13 @@ const menuItems = [
     "link": "/shell-command/SESSION"
   },
   {
+    "name": "emulated_antsword",
+    "text": "对接蚁剑",
+    "icon": IconHash,
+    "color": "white",
+    "link": "/emulated-antsword/SESSION"
+  },
+  {
     "name": "edit_session",
     "text": "修改webshell",
     "icon": IconEdit,
