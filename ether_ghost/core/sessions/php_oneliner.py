@@ -10,7 +10,8 @@ import httpx
 
 from .. import exceptions
 
-from ...utils import random_english_words, random_data, const
+from ...utils.random_data import random_english_words, random_data
+from ...utils import const
 from ...utils.nodejs_bridge import nodejs_eval
 from ..base import (
     register_session,

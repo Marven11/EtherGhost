@@ -2,7 +2,7 @@
 
 import typing as t
 from dataclasses import dataclass
-from ..utils import random_user_agent
+from ..utils.user_agents import random_user_agent
 from ..utils.db import get_settings
 
 import httpx

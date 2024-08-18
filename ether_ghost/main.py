@@ -13,7 +13,16 @@ from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
 from uuid import UUID, uuid4
 
 import chardet
-from fastapi import FastAPI, Body, Request, Response, File, Form, UploadFile, HTTPException
+from fastapi import (
+    FastAPI,
+    Body,
+    Request,
+    Response,
+    File,
+    Form,
+    UploadFile,
+    HTTPException,
+)
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -125,7 +134,7 @@ def catch_user_error(fn):
             return await fn(*args, **kwargs)
         except core.SessionException as exc:
             return {
-                "code": type(exc).code,
+                "code": getattr(type(exc), "code", -500),
                 "msg": f"{type(exc).__doc__}: {str(exc)}",
             }
 
@@ -246,9 +255,8 @@ async def session_get_file_contents(session_id: UUID, current_dir: str, filename
     content = await session.get_file_contents(str(path))
     try:
         detected_encoding = chardet.detect(content)["encoding"]
-        # TODO: Linux的编码一般是utf-8, windows的编码一般是utf-8
         if detected_encoding is None or detected_encoding == "ascii":
-            detected_encoding = "utf-8"
+            detected_encoding = "utf-8" if current_dir.startswith("/") else "gbk"
         text = content.decode(detected_encoding)
         return {"code": 0, "data": {"text": text, "encoding": detected_encoding}}
     except UnicodeDecodeError as exc:
@@ -476,6 +484,7 @@ async def forward_proxy_create_psudo_proxy(request: ProxyRequest):
         )
         return {"code": 0, "data": True}
     return {"code": -400, "msg": f"不支持的代理类型：{request.type}"}
+
 
 @app.delete("/forward_proxy/{listen_port}/")
 @catch_user_error

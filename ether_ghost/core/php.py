@@ -19,16 +19,15 @@ from binascii import Error as BinasciiError
 
 from . import exceptions
 
-# TODO: improve utils imports to avoid circular imports in the futures
-from ..utils import (
-    random_english_words,
-    random_user_agent,
+from ..utils.random_data import random_english_words
+from ..utils.user_agents import random_user_agent
+from ..utils.cipher import (
     get_rsa_key,
     private_decrypt_rsa,
     encrypt_aes256_cbc,
     decrypt_aes256_cbc,
-    const,
 )
+from ..utils import const
 
 # utils should be imported like this to avoid circular imports
 from ..utils.nodejs_bridge import nodejs_eval
