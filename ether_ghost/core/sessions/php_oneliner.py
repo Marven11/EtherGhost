@@ -314,7 +314,7 @@ class PHPWebshellOneliner(PHPWebshell):
             timeout=self.timeout,
         )
 
-    async def submit_raw(self, payload: str) -> t.Tuple[int, str]:
+    async def submit_http(self, payload: str) -> t.Tuple[int, str]:
         params = self.params.copy()
         data = self.data.copy()
         if self.antsword_encoder:

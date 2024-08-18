@@ -34,6 +34,7 @@ from .utils import db
 from . import session_manager, session_types, core, upload_file_status
 from .tcp_proxies import start_psudo_tcp_proxy
 from .core import SessionInterface, PHPSessionInterface, session_type_info
+from .utils import const
 
 token = secrets.token_bytes(16).hex()
 logger = logging.getLogger("main")
@@ -72,6 +73,7 @@ psudo_tcp_proxies: t.Dict[int, t.Tuple[ProxyRequest, asyncio.Task]] = {}
 async def lifespan(api: FastAPI):
     # logger.warning("Your token is %s", token)
     db.ensure_settings()
+    logger.warning("从此文件夹加载配置: %s", const.DATA_FOLDER.as_posix())
     yield
     for _, filepath in temp_files.values():
         if filepath.exists():

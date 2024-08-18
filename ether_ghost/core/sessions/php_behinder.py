@@ -97,7 +97,7 @@ class PHPWebshellBehinderAES(PHPWebshell):
         self.key = md5_encode(session_conn["password"])[:16].encode()
         self.client = get_http_client(verify=session_conn.get("https_verify", False))
 
-    async def submit_raw(self, payload):
+    async def submit_http(self, payload):
         data = behinder_aes(payload, self.key)
         try:
             response = await self.client.request(
@@ -159,7 +159,7 @@ class PHPWebshellBehinderXor(PHPWebshell):
         self.https_verify = session_conn.get("https_verify", False)
         self.client = get_http_client(verify=self.https_verify)
 
-    async def submit_raw(self, payload):
+    async def submit_http(self, payload):
         data = behinder_xor(payload, self.key)
         try:
             response = await self.client.request(
