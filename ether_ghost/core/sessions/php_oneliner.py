@@ -317,6 +317,8 @@ class PHPWebshellOneliner(PHPWebshell):
         data = self.data.copy()
         if self.antsword_encoder:
             data = eval_antsword_encoder(self.antsword_encoder, self.password, payload)
+            if self.http_params_obfs:
+                data = add_obfs_data(data, min_count=300, max_count=500)
         elif self.password_method == "GET":
             params[self.password] = payload
             if self.http_params_obfs:
