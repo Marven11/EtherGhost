@@ -40,7 +40,7 @@ from .base import (
     ConnOption,
 )
 
-logger = logging.getLogger("sessions.php")
+logger = logging.getLogger("core.php")
 
 user_agent = random_user_agent()
 
