@@ -69,7 +69,7 @@ def get_antsword_decoder(filepath: Path) -> Decoder:
     if shutil.which("node") is not None:
         asenc = nodejs_eval(
             filepath.read_text()
-            + "; console.log(JSON.stringify(module.exports.asoutput()))",
+            + "\nconsole.log(JSON.stringify(module.exports.asoutput()))",
             [],
         )
         asenc = json.loads(asenc)
@@ -92,7 +92,7 @@ def get_antsword_decoder(filepath: Path) -> Decoder:
     return {"type": "antsword", "phpcode": phpcode, "decode_response": decode_response}
 
 
-for decoder_file in const.ANTSWORD_DECODER_FOLDER.glob("*"):
+for decoder_file in const.ANTSWORD_DECODER_FOLDER.glob("*.js"):
     decoders[f"[AntSword] {decoder_file.name}"] = get_antsword_decoder(decoder_file)
 
 
