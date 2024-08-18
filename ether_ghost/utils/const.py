@@ -7,11 +7,11 @@ DB_FILENAME = "store.db"
 
 # 当前操作系统的数据保存位置
 if os.name == "posix":
-    DATA_FOLDER = Path("~/.local/share/GuiRen").expanduser()
+    DATA_FOLDER = Path("~/.local/share/EtherGhost").expanduser()
 elif os.name == "nt":
-    DATA_FOLDER = Path("~/AppData/Roaming/GuiRen").expanduser()
+    DATA_FOLDER = Path("~/AppData/Roaming/EtherGhost").expanduser()
 elif os.name == "darwin":
-    DATA_FOLDER = Path("~/Library/Application Support/GuiRen").expanduser()
+    DATA_FOLDER = Path("~/Library/Application Support/EtherGhost").expanduser()
 else:
     DATA_FOLDER = Path(os.path.abspath("."))
 
