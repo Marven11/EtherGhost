@@ -159,6 +159,3 @@ def get_http_client(**kwargs):
     if get_settings().get("proxy", None):
         proxy = get_settings().get("proxy", None)
     return httpx.AsyncClient(headers={"User-Agent": USER_AGENT}, proxy=proxy, **kwargs)
-
-def get_proxy():
-    return get_settings().get("proxy", None)

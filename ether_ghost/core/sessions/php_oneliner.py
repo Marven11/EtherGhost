@@ -18,7 +18,6 @@ from ..base import (
     ConnOption,
     ConnOptionGroup,
     get_http_client,
-    get_proxy,
 )
 from ..php import PHPWebshell, php_webshell_conn_options
 
@@ -262,9 +261,6 @@ class PHPWebshellOneliner(PHPWebshell):
             raise exceptions.UserError(
                 "使用Chunked Transfer Encoding时请求方法必须为POST"
             )
-
-        if self.chunked_request and get_proxy() and get_proxy().startswith("http"):
-            raise exceptions.UserError("当前HTTP代理不支持chunked request！")
 
         self.antsword_encoder: t.Union[str, None]
         if session_conn.get("antsword_encoder", "none") == "none":
