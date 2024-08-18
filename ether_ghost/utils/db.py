@@ -152,5 +152,5 @@ def set_settings(settings: dict):
 def ensure_settings():
     """保证当前设置存在，如果不存在设置则将写入默认设置"""
     default_settings = {"theme": "green", "proxy": ""}
-    if get_settings() is None:
+    if not get_settings():
         set_settings(default_settings)
