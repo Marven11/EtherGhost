@@ -1073,7 +1073,7 @@ class PHPWebshell(PHPSessionInterface):
                 )
             return decoder["phpcode"]
         raise NotImplementedError(
-            f"TODO: support decoder {self.decoder} {decoder['type']}"
+            f"Decoder {self.decoder} {decoder['type']} is not supported"
         )
 
     async def _submit(self, payload: str) -> str:
