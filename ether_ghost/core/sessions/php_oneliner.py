@@ -57,7 +57,10 @@ def user_json_loads(data: str, types: t.Union[type, t.Iterable[type]]):
 
 
 def eval_antsword_encoder(code: str, pwd: str, php_payload: str) -> dict:
-    assert shutil.which("node") is not None, "Cannot find nodejs"
+    if shutil.which("node") is None:
+        raise exceptions.UserError(
+            "找不到NodeJS, 无法使用蚁剑Encoder, 请确保程序'node'在对应的环境变量里"
+        )
     data = {"_": php_payload}
     code = (
         code.replace("module.exports", "var fn")
@@ -76,7 +79,10 @@ def eval_antsword_encoder(code: str, pwd: str, php_payload: str) -> dict:
             ["node", f.name, pwd, json.dumps(data)], stdout=subprocess.PIPE
         )
         proc.wait()
-        assert proc.returncode == 0
+        if proc.returncode != 0:
+            raise exceptions.ServerError(
+                f"蚁剑Encoder执行错误，返回值为{proc.returncode}"
+            )
         stdout, _ = proc.communicate()
         return json.loads(stdout)
 
