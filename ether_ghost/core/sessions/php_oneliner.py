@@ -30,14 +30,25 @@ antsword_encoders = {
 }
 
 
-def get_obfs_data(exclude_keys: t.Iterable[str]):
-    excludes = set(exclude_keys)
+def add_obfs_data(data: t.Dict[str, t.Any]):
+    excludes = set(data.keys())
+    obfs_data = None
     while True:
         obfs_data = {
             random_english_words(): random_data() for _ in range(random.randint(8, 12))
         }
-        if all(k not in obfs_data for k in excludes):
-            return obfs_data
+        if any(k in obfs_data for k in excludes):
+            continue
+        break
+    # we shuffle keys, so it would be iterated randomly
+    data_all = {**data, **obfs_data}
+    keys = list(data_all.keys())
+    random.shuffle(keys)
+    result = t.OrderedDict()
+    for key in keys:
+        result[key] = data_all[key]
+    return result
+
 
 
 def user_json_loads(data: str, types: t.Union[type, t.Iterable[type]]):
@@ -311,11 +322,11 @@ class PHPWebshellOneliner(PHPWebshell):
         elif self.password_method == "GET":
             params[self.password] = payload
             if self.http_params_obfs:
-                params.update(get_obfs_data(params.keys()))
+                params = add_obfs_data(params)
         else:
             data[self.password] = payload
             if self.http_params_obfs:
-                data.update(get_obfs_data(data.keys()))
+                data = add_obfs_data(data)
         try:
             request = (
                 self.build_normal_request(params, data)
