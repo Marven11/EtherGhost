@@ -1,5 +1,6 @@
 import json
 import random
+import base64
 from uuid import uuid4
 from pathlib import Path
 
@@ -19,6 +20,7 @@ def random_choose_from(words_weight: dict) -> str:
         if p <= 0:
             return k
     assert False
+
 
 def random_english_words():
     word = ""
@@ -41,10 +43,16 @@ def random_phone_number():
     region = random_choose_from(phone_5[isp])
     return isp + region + str(random.randint(1000000, 9999999))
 
+# TODO: test it on real waf
 def random_data():
     p = random.randint(1, 100)
     if p < 50:
         return random_english_words()
     if p < 55:
         return str(uuid4())
+    if p < 60:
+        garbage = bytes.fromhex(
+            "".join(random.choices("1234567890abcdef", k=random.randint(1000, 2000) * 2))
+        )
+        return base64.b64encode(garbage).decode()
     return random_phone_number()

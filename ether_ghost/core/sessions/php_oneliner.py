@@ -32,16 +32,14 @@ logger = logging.getLogger("core.sessions.php_oneline")
 antsword_encoders = [file.name for file in const.ANTSWORD_ENCODER_FOLDER.glob("*.js")]
 
 
-def add_obfs_data(data: t.Dict[str, t.Any]):
+def add_obfs_data(data: t.Dict[str, t.Any], min_count, max_count):
     excludes = set(data.keys())
-    obfs_data = None
-    while True:
-        obfs_data = {
-            random_english_words(): random_data() for _ in range(random.randint(8, 12))
-        }
-        if any(k in obfs_data for k in excludes):
+    obfs_data = {}
+    for _ in range(random.randint(min_count, max_count)):
+        key = random_english_words()
+        if key in excludes or key in obfs_data:
             continue
-        break
+        obfs_data[key] = random_data()
     # we shuffle keys, so it would be iterated randomly
     data_all = {**data, **obfs_data}
     keys = list(data_all.keys())
@@ -322,11 +320,11 @@ class PHPWebshellOneliner(PHPWebshell):
         elif self.password_method == "GET":
             params[self.password] = payload
             if self.http_params_obfs:
-                params = add_obfs_data(params)
+                params = add_obfs_data(params, min_count=10, max_count=20)
         else:
             data[self.password] = payload
             if self.http_params_obfs:
-                data = add_obfs_data(data)
+                data = add_obfs_data(data, min_count=300, max_count=500)
         try:
             request = (
                 self.build_normal_request(params, data)
@@ -334,6 +332,9 @@ class PHPWebshellOneliner(PHPWebshell):
                 else self.build_chunked_request(params, data)
             )
             response = await self.client.send(request)
+            print(f"{response.text!r}")
+            import asyncio
+            await asyncio.sleep(0.1)
             return response.status_code, response.text
 
         except httpx.TimeoutException as exc:
