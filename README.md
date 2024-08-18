@@ -61,7 +61,6 @@
 - 数据库连接功能
 - encoder和decoder自定义
 - pyinstaller打包，给windows用户提供一个绿色的exe
-- session持久化，保存sessionid
 
 ## 免责声明
 
