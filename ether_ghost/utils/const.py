@@ -17,4 +17,8 @@ else:
 
 DATA_FOLDER.mkdir(parents=True, exist_ok=True)
 
+ANTSWORD_ENCODER_FOLDER = DATA_FOLDER / "AntSwordEncoder"
+
+ANTSWORD_ENCODER_FOLDER.mkdir(exist_ok=True)
+
 STORE_URL = "sqlite:///" + (DATA_FOLDER / DB_FILENAME).as_posix()

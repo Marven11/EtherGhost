@@ -1,13 +1,18 @@
 from urllib.parse import urlencode
-import random
-import typing as t
+from pathlib import Path
 import json
+import random
+import shutil
+import subprocess
+import tempfile
+import typing as t
+
 
 import httpx
 
 from .. import exceptions
 
-from ...utils import random_english_words, random_data
+from ...utils import random_english_words, random_data, const
 from ..base import (
     register_session,
     ConnOption,
@@ -15,6 +20,16 @@ from ..base import (
     get_http_client,
 )
 from ..php import PHPWebshell, php_webshell_conn_options
+
+# 为了执行蚁剑encoder，我们在发送请求时读取对应的文件传给NodeJS执行
+# 此时只要蓝队可以写文件就可以利用encoder实现RCE
+# 但是为了实现动态加载encoder没有其他方法规避这个风险
+# 为了减缓风险，我们提前读取所有的encoder
+# 这样至少可以避免游魂启动后被反制
+
+antsword_encoders = {
+    file.name: file.read_text() for file in const.ANTSWORD_ENCODER_FOLDER.glob("*.js")
+}
 
 
 def get_obfs_data(exclude_keys: t.Iterable[str]):
@@ -41,6 +56,31 @@ def user_json_loads(data: str, types: t.Union[type, t.Iterable[type]]):
         raise exceptions.UserError(f"解码JSON失败: {data!r}") from exc
 
 
+def eval_antsword_encoder(code: str, pwd: str, php_payload: str) -> dict:
+    assert shutil.which("node") is not None, "Cannot find nodejs"
+    data = {"_": php_payload}
+    code = (
+        code.replace("module.exports", "var fn")
+        + """
+    var pwd = process.argv[2];
+    var data = JSON.parse(process.argv[3]);
+
+    console.log(JSON.stringify(fn(pwd, data)))
+    """
+    )
+
+    with tempfile.NamedTemporaryFile("w", suffix=".js") as f:
+        f.write(code)
+        f.flush()
+        proc = subprocess.Popen(
+            ["node", f.name, pwd, json.dumps(data)], stdout=subprocess.PIPE
+        )
+        proc.wait()
+        assert proc.returncode == 0
+        stdout, _ = proc.communicate()
+        return json.loads(stdout)
+
+
 @register_session
 class PHPWebshellOneliner(PHPWebshell):
     """一句话的php webshell"""
@@ -61,7 +101,7 @@ class PHPWebshellOneliner(PHPWebshell):
                 ),
                 ConnOption(
                     id="password_method",
-                    name="请求方法",
+                    name="密码请求方法",
                     type="select",
                     placeholder="POST",
                     default_value="POST",
@@ -98,6 +138,20 @@ class PHPWebshellOneliner(PHPWebshell):
                     placeholder="使用Chunked Transfer encoding分块编码请求，指定分块大小，0表示不分块",
                     default_value="0",
                     alternatives=None,
+                ),
+                ConnOption(
+                    id="antsword_encoder",
+                    name="蚁剑Encoder",
+                    type="select",
+                    placeholder="无",
+                    default_value="none",
+                    alternatives=[
+                        {"name": "无", "value": "none"},
+                        *[
+                            {"name": filename, "value": filename}
+                            for filename in antsword_encoders
+                        ],
+                    ],
                 ),
             ]
             + php_webshell_conn_options,
@@ -192,6 +246,21 @@ class PHPWebshellOneliner(PHPWebshell):
                 "使用Chunked Transfer Encoding时请求方法必须为POST"
             )
 
+        self.antsword_encoder: t.Union[str, None]
+        if session_conn.get("antsword_encoder", "none") == "none":
+            self.antsword_encoder = None
+        else:
+            encoder = session_conn.get("antsword_encoder", "none")
+            if encoder not in antsword_encoders:
+                raise exceptions.UserError("未找到蚁剑Encoder: " + encoder)
+            self.antsword_encoder = antsword_encoders[encoder]
+
+        if self.antsword_encoder and self.password_method != "POST":
+            raise exceptions.UserError("在使用蚁剑Encoder时密码提交方法必须为POST！")
+
+        if self.antsword_encoder and self.method != "POST":
+            raise exceptions.UserError("在使用蚁剑Encoder时HTTP请求方法必须为POST！")
+
         if not self.timeout:
             self.timeout = None
         self.client = get_http_client(verify=self.https_verify)
@@ -232,7 +301,9 @@ class PHPWebshellOneliner(PHPWebshell):
     async def submit_raw(self, payload: str) -> t.Tuple[int, str]:
         params = self.params.copy()
         data = self.data.copy()
-        if self.password_method == "GET":
+        if self.antsword_encoder:
+            data = eval_antsword_encoder(self.antsword_encoder, self.password, payload)
+        elif self.password_method == "GET":
             params[self.password] = payload
             if self.http_params_obfs:
                 params.update(get_obfs_data(params.keys()))
