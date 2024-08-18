@@ -334,9 +334,6 @@ class PHPWebshellOneliner(PHPWebshell):
                 else self.build_chunked_request(params, data)
             )
             response = await self.client.send(request)
-            print(f"{response.text!r}")
-            import asyncio
-            await asyncio.sleep(0.1)
             return response.status_code, response.text
 
         except httpx.TimeoutException as exc:
