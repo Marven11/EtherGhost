@@ -151,7 +151,7 @@ class PHPWebshellOneliner(PHPWebshell):
                     id="chunked_request",
                     name="分块传输编码",
                     type="text",
-                    placeholder="使用Chunked Transfer encoding分块编码请求，指定分块大小，0表示不分块",
+                    placeholder="分块传输的分块大小，0表示不分块，注意burp suite貌似不支持分块传输",
                     default_value="0",
                     alternatives=None,
                 ),
