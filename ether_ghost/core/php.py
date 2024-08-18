@@ -102,20 +102,13 @@ for decoder_file in const.ANTSWORD_DECODER_FOLDER.glob("*.js"):
     decoders[f"[AntSword] {decoder_file.name}"] = get_antsword_decoder(decoder_file)
 
 
-# session id was specified to avoid session
-# forget to save session id in cookie
-
-
 def compress_phpcode_template(s):
     return re.sub(r" *\n+ +", "", s, re.M)
 
 
 SUBMIT_WRAPPER_PHP = compress_phpcode_template(
     """\
-if (session_status() == PHP_SESSION_NONE) {{
-    session_id('{session_id}');
-    session_start();
-}}
+session_start();
 {decoder}
 $decoder_hooks = array();
 function decoder_echo($s) {{
@@ -670,6 +663,7 @@ php_webshell_conn_options = [
 # TODO: avoid using constant string WRONG_xxx for bad output but uuid
 
 
+# 注意：在继承的时候必须复用HTTP client（或者至少在cookie里指定session id），否则某些功能无法工作
 class PHPWebshell(PHPSessionInterface):
     """PHP session各类工具函数的实现"""
 
@@ -686,16 +680,6 @@ class PHPWebshell(PHPSessionInterface):
         # for upload file and download file
         self.chunk_size = 32 * 1024
         self.max_coro = 4
-
-        # specify session id here
-        # if we use the same session id for every task
-        # then one task would block the others due to php sticky session
-        # to avoid program freeze, we generate unique session id for each object
-
-        # and the reason why we don't use cookie to specify session id
-        # is that the underlying php webshell implementation might not use
-        # session or client to store cookies.
-        self.session_id = "".join(random.choices("1234567890abcdef", k=32))
 
     def encode(self, payload: str) -> str:
         """应用编码器"""
@@ -1102,7 +1086,6 @@ class PHPWebshell(PHPSessionInterface):
             delimiter_start_2=start[3:],
             delimiter_stop=stop,
             payload_raw=payload,
-            session_id=self.session_id,
             decoder=self.get_decoder_phpcode(),
         )
         payload = self.encode(payload)
