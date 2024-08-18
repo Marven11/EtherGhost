@@ -664,10 +664,6 @@ php_webshell_conn_options = [
     ),
 ]
 
-# TODO: make code smaller by removing newlines, spaces and tabs
-# TODO: avoid using constant string WRONG_xxx for bad output but uuid
-
-
 # 注意：在继承的时候必须复用HTTP client（或者至少在cookie里指定session id），否则某些功能无法工作
 class PHPWebshell(PHPSessionInterface):
     """PHP session各类工具函数的实现"""
