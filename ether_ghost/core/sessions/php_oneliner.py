@@ -1,5 +1,6 @@
 from urllib.parse import urlencode
 import json
+import logging
 import random
 import shutil
 import typing as t
@@ -18,6 +19,8 @@ from ..base import (
     get_http_client,
 )
 from ..php import PHPWebshell, php_webshell_conn_options
+
+logger = logging.getLogger("core.sessions.php_oneline")
 
 # 为了执行蚁剑encoder，我们在发送请求时读取对应的文件传给NodeJS执行
 # 此时只要蓝队可以写文件就可以利用encoder实现RCE
@@ -333,6 +336,12 @@ class PHPWebshellOneliner(PHPWebshell):
             return response.status_code, response.text
 
         except httpx.TimeoutException as exc:
+            # 使用某个session id进行长时间操作(比如sleep 100)时会触发HTTP超时
+            # 此时服务端会为这个session id等待这个长时间操作
+            # 所以我们再使用这个session id发起请求就会卡住
+            # 所以我们要丢掉这个session id，使用另一个client发出请求
+            logger.warning("HTTP请求受控端超时，尝试刷新HTTP Client")
+            self.client = get_http_client(verify=self.https_verify)
             raise exceptions.NetworkError("HTTP请求受控端超时") from exc
         except httpx.HTTPError as exc:
             raise exceptions.NetworkError("发送HTTP请求到受控端失败") from exc

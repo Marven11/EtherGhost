@@ -1,10 +1,11 @@
 import typing as t
 import hashlib
+import logging
+import base64
 
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 import httpx
-import base64
 
 from .. import exceptions
 
@@ -16,6 +17,7 @@ from ..base import (
 )
 from ..php import PHPWebshell, php_webshell_conn_options
 
+logger = logging.getLogger("core.sessions.php_behinder")
 
 def md5_encode(s):
     """将给定的字符串或字节序列转换成MD5"""
@@ -154,7 +156,8 @@ class PHPWebshellBehinderXor(PHPWebshell):
         super().__init__(session_conn)
         self.url = session_conn["url"]
         self.key = md5_encode(session_conn["password"])[:16].encode()
-        self.client = get_http_client(verify=session_conn.get("https_verify", False))
+        self.https_verify = session_conn.get("https_verify", False)
+        self.client = get_http_client(verify=self.https_verify)
 
     async def submit_raw(self, payload):
         data = behinder_xor(payload, self.key)
@@ -164,6 +167,12 @@ class PHPWebshellBehinderXor(PHPWebshell):
             )
             return response.status_code, response.text
         except httpx.TimeoutException as exc:
+            # 使用某个session id进行长时间操作(比如sleep 100)时会触发HTTP超时
+            # 此时服务端会为这个session id等待这个长时间操作
+            # 所以我们再使用这个session id发起请求就会卡住
+            # 所以我们要丢掉这个session id，使用另一个client发出请求
+            logger.warning("HTTP请求受控端超时，尝试刷新HTTP Client")
+            self.client = get_http_client(verify=self.https_verify)
             raise exceptions.NetworkError("HTTP请求受控端超时") from exc
         except httpx.HTTPError as exc:
             raise exceptions.NetworkError("发送HTTP请求到受控端失败") from exc
