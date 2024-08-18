@@ -35,5 +35,8 @@ module.exports = (pwd, data, ext={}) => {
 """
     )
 
+ANTSWORD_DECODER_FOLDER = DATA_FOLDER / "AntSwordDecoder"
+ANTSWORD_DECODER_FOLDER.mkdir(exist_ok=True)
+
 
 STORE_URL = "sqlite:///" + (DATA_FOLDER / DB_FILENAME).as_posix()

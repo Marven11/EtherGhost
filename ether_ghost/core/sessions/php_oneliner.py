@@ -1,10 +1,7 @@
 from urllib.parse import urlencode
-from pathlib import Path
 import json
 import random
 import shutil
-import subprocess
-import tempfile
 import typing as t
 
 
@@ -13,6 +10,7 @@ import httpx
 from .. import exceptions
 
 from ...utils import random_english_words, random_data, const
+from ...utils.nodejs_bridge import nodejs_eval
 from ..base import (
     register_session,
     ConnOption,
@@ -71,20 +69,21 @@ def eval_antsword_encoder(code: str, pwd: str, php_payload: str) -> dict:
     console.log(JSON.stringify(fn(pwd, data)))
     """
     )
+    return json.loads(nodejs_eval(code, [pwd, json.dumps(data)]))
 
-    with tempfile.NamedTemporaryFile("w", suffix=".js") as f:
-        f.write(code)
-        f.flush()
-        proc = subprocess.Popen(
-            ["node", f.name, pwd, json.dumps(data)], stdout=subprocess.PIPE
-        )
-        proc.wait()
-        if proc.returncode != 0:
-            raise exceptions.ServerError(
-                f"蚁剑Encoder执行错误，返回值为{proc.returncode}"
-            )
-        stdout, _ = proc.communicate()
-        return json.loads(stdout)
+    # with tempfile.NamedTemporaryFile("w", suffix=".js") as f:
+    #     f.write(code)
+    #     f.flush()
+    #     proc = subprocess.Popen(
+    #         ["node", f.name, pwd, json.dumps(data)], stdout=subprocess.PIPE
+    #     )
+    #     proc.wait()
+    #     if proc.returncode != 0:
+    #         raise exceptions.ServerError(
+    #             f"蚁剑Encoder执行错误，返回值为{proc.returncode}"
+    #         )
+    #     stdout, _ = proc.communicate()
+    #     return json.loads(stdout)
 
 
 @register_session
