@@ -106,7 +106,7 @@ class PHPWebshellOneliner(PHPWebshell):
                 ),
                 ConnOption(
                     id="password_method",
-                    name="密码请求方法",
+                    name="密码传参方式",
                     type="select",
                     placeholder="POST",
                     default_value="POST",
@@ -146,7 +146,7 @@ class PHPWebshellOneliner(PHPWebshell):
                 ),
                 ConnOption(
                     id="antsword_encoder",
-                    name="蚁剑Encoder",
+                    name="蚁剑编码器",
                     type="select",
                     placeholder="无",
                     default_value="none",

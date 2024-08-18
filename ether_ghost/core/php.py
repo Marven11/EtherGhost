@@ -72,7 +72,6 @@ def get_antsword_decoder(filepath: Path) -> Decoder:
             + "; console.log(JSON.stringify(module.exports.asoutput()))",
             [],
         )
-        print(asenc)
         asenc = json.loads(asenc)
         phpcode = asenc + "\nfunction decoder_echo_raw($s) {echo asenc($s);}"
     else:
@@ -94,7 +93,7 @@ def get_antsword_decoder(filepath: Path) -> Decoder:
 
 
 for decoder_file in const.ANTSWORD_DECODER_FOLDER.glob("*"):
-    decoders[decoder_file.name] = get_antsword_decoder(decoder_file)
+    decoders[f"[AntSword] {decoder_file.name}"] = get_antsword_decoder(decoder_file)
 
 
 # session id was specified to avoid session
@@ -607,7 +606,7 @@ def to_sessionize_payload(
 php_webshell_conn_options = [
     ConnOption(
         id="encoder",
-        name="编码器",
+        name="PHP代码编码器",
         type="select",
         placeholder="base64",
         default_value="base64",
