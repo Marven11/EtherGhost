@@ -68,8 +68,12 @@ decoders: t.Dict[str, Decoder] = {
 def get_antsword_decoder(filepath: Path) -> Decoder:
     if shutil.which("node") is not None:
         asenc = nodejs_eval(
-            filepath.read_text()
-            + "\nconsole.log(JSON.stringify(module.exports.asoutput()))",
+            """
+            var decoder = require(FILEPATH);
+            console.log(JSON.stringify(decoder.asoutput()));
+            """.replace(
+                "FILEPATH", repr(filepath.as_posix())
+            ),
             [],
         )
         asenc = json.loads(asenc)
@@ -80,11 +84,13 @@ def get_antsword_decoder(filepath: Path) -> Decoder:
     def decode_response(text: str):
         return base64.b64decode(
             nodejs_eval(
-                filepath.read_text()
-                + """
+                """
+                var decoder = require(FILEPATH);
                 var code = JSON.parse(process.argv[2]);
-                console.log(module.exports.decode_buff(code).toString('base64'));
-                """,
+                console.log(decoder.decode_buff(code).toString('base64'));
+                """.replace(
+                    "FILEPATH", repr(filepath.as_posix())
+                ),
                 [json.dumps(text)],
             )
         ).decode()

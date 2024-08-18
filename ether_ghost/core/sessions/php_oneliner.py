@@ -22,12 +22,10 @@ from ..php import PHPWebshell, php_webshell_conn_options
 # 为了执行蚁剑encoder，我们在发送请求时读取对应的文件传给NodeJS执行
 # 此时只要蓝队可以写文件就可以利用encoder实现RCE
 # 但是为了实现动态加载encoder没有其他方法规避这个风险
-# 为了减缓风险，我们提前读取所有的encoder
+# 为了减缓风险，我们提前检测所有的encoder
 # 这样至少可以避免游魂启动后被反制
 
-antsword_encoders = {
-    file.name: file.read_text() for file in const.ANTSWORD_ENCODER_FOLDER.glob("*.js")
-}
+antsword_encoders = [file.name for file in const.ANTSWORD_ENCODER_FOLDER.glob("*.js")]
 
 
 def add_obfs_data(data: t.Dict[str, t.Any]):
@@ -50,7 +48,6 @@ def add_obfs_data(data: t.Dict[str, t.Any]):
     return result
 
 
-
 def user_json_loads(data: str, types: t.Union[type, t.Iterable[type]]):
     if not isinstance(types, type):
         types = tuple(types)
@@ -65,20 +62,19 @@ def user_json_loads(data: str, types: t.Union[type, t.Iterable[type]]):
         raise exceptions.UserError(f"解码JSON失败: {data!r}") from exc
 
 
-def eval_antsword_encoder(code: str, pwd: str, php_payload: str) -> dict:
+def eval_antsword_encoder(filename: str, pwd: str, php_payload: str) -> dict:
     if shutil.which("node") is None:
         raise exceptions.UserError(
             "找不到NodeJS, 无法使用蚁剑Encoder, 请确保程序'node'在对应的环境变量里"
         )
     data = {"_": php_payload}
-    code = (
-        code.replace("module.exports", "var fn")
-        + """
+    code = """
+    var fn = require(FILEPATH)
     var pwd = process.argv[2];
     var data = JSON.parse(process.argv[3]);
-
     console.log(JSON.stringify(fn(pwd, data)))
-    """
+    """.replace(
+        "FILEPATH", repr((const.ANTSWORD_ENCODER_FOLDER / filename).as_posix())
     )
     return json.loads(nodejs_eval(code, [pwd, json.dumps(data)]))
 
@@ -269,7 +265,7 @@ class PHPWebshellOneliner(PHPWebshell):
             encoder = session_conn.get("antsword_encoder", "none")
             if encoder not in antsword_encoders:
                 raise exceptions.UserError("未找到蚁剑Encoder: " + encoder)
-            self.antsword_encoder = antsword_encoders[encoder]
+            self.antsword_encoder = encoder
 
         if self.antsword_encoder and self.password_method != "POST":
             raise exceptions.UserError("在使用蚁剑Encoder时密码提交方法必须为POST！")
