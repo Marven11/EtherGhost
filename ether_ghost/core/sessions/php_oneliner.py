@@ -1,7 +1,7 @@
+from urllib.parse import urlencode
 import random
 import typing as t
 import json
-import urllib
 
 import httpx
 
@@ -60,7 +60,7 @@ class PHPWebshellOneliner(PHPWebshell):
                     alternatives=None,
                 ),
                 ConnOption(
-                    id="method",
+                    id="password_method",
                     name="请求方法",
                     type="select",
                     placeholder="POST",
@@ -105,6 +105,14 @@ class PHPWebshellOneliner(PHPWebshell):
         {
             "name": "自定义HTTP参数",
             "options": [
+                ConnOption(
+                    id="http_request_method",
+                    name="自定义HTTP请求方法",
+                    type="text",
+                    placeholder='如"GET"，默认由密码提交方式决定',
+                    default_value="",
+                    alternatives=None,
+                ),
                 ConnOption(
                     id="extra_get_params",
                     name="额外的GET参数",
@@ -159,7 +167,7 @@ class PHPWebshellOneliner(PHPWebshell):
 
     def __init__(self, session_conn: dict) -> None:
         super().__init__(session_conn)
-        self.method = session_conn["method"].upper()
+        self.password_method = session_conn["password_method"].upper()
         self.url = session_conn["url"]
         self.password = session_conn["password"]
         self.params = user_json_loads(session_conn.get("extra_get_params", "{}"), dict)
@@ -172,18 +180,24 @@ class PHPWebshellOneliner(PHPWebshell):
         )
         self.http_params_obfs = session_conn["http_params_obfs"]
         self.chunked_request = int(session_conn.get("chunked_request", 0))
-        if self.chunked_request and self.method != "POST":
+        self.https_verify = session_conn.get("https_verify", False)
+        self.timeout = float(session_conn.get("timeout", 0))
+
+        self.method = self.password_method
+        if session_conn.get("http_request_method", ""):
+            self.method = session_conn["http_request_method"].strip().upper()
+
+        if self.chunked_request and self.password_method != "POST":
             raise exceptions.UserError(
                 "使用Chunked Transfer Encoding时请求方法必须为POST"
             )
-        self.https_verify = session_conn.get("https_verify", False)
-        self.timeout = float(session_conn.get("timeout", 0))
+
         if not self.timeout:
             self.timeout = None
         self.client = get_http_client(verify=self.https_verify)
 
     def build_chunked_request(self, params: dict, data: dict):
-        data_bytes = urllib.parse.urlencode(data).encode()
+        data_bytes = urlencode(data).encode()
 
         async def yield_data():
             for i in range(0, len(data_bytes), self.chunked_request):
@@ -218,7 +232,7 @@ class PHPWebshellOneliner(PHPWebshell):
     async def submit_raw(self, payload: str) -> t.Tuple[int, str]:
         params = self.params.copy()
         data = self.data.copy()
-        if self.method in ["GET", "HEAD"]:
+        if self.password_method == "GET":
             params[self.password] = payload
             if self.http_params_obfs:
                 params.update(get_obfs_data(params.keys()))
