@@ -1,5 +1,6 @@
 """管理session相关的函数，实现了session info的CRUD与session的实例化等"""
 
+import time
 import typing as t
 from uuid import UUID
 
@@ -10,7 +11,8 @@ from .session_types import (
     SessionInfo,
 )
 
-
+SESSION_CACHE_TIMEOUT = 300
+session_store: t.Dict[UUID, t.Tuple[int, core.SessionInterface]] = {}
 location_readable = {"US": "🇺🇸"}
 session_con_converters = {}
 
@@ -46,9 +48,7 @@ def get_session_info_by_id(
     return db.get_session_info_by_id(session_id)
 
 
-def get_session_by_id(
-    session_id: t.Union[str, UUID]
-) -> core.SessionInterface:
+def get_session_by_id(session_id: t.Union[str, UUID]) -> core.SessionInterface:
     """根据id返回session对象，优先返回缓存的对象
 
     Args:
@@ -59,10 +59,24 @@ def get_session_by_id(
     """
     if isinstance(session_id, str):
         session_id = UUID(session_id)
+    cache_timeout_sessions = [
+        uuid
+        for uuid, (timestamp, _) in session_store.items()
+        if timestamp + SESSION_CACHE_TIMEOUT < time.time()
+    ]
+    for uuid in cache_timeout_sessions:
+        del session_store[uuid]
+    if session_id in session_store:
+        _, session = session_store[session_id]
+        session_store[session_id] = (int(time.time()), session)
+        return session
+
     session_info = get_session_info_by_id(session_id)
     if session_info is None:
         raise core.UserError("没有这个UUID对应的Session!")
-    return session_info_to_session(session_info)
+    session = session_info_to_session(session_info)
+    session_store[session_id] = (int(time.time()), session)
+    return session
 
 
 def list_sessions_readable() -> t.List[t.Dict[str, t.Any]]:
