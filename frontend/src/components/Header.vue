@@ -7,7 +7,7 @@ import IconInfo from "./icons/iconInfo.vue"
 import IconProxy from "./icons/iconProxy.vue"
 import IconOthers from "./icons/iconOthers.vue"
 import IconSetting from "./icons/iconSetting.vue"
-import { RouterLink, useRouter } from "vue-router"
+import { useRouter } from "vue-router"
 import { store } from "@/assets/store.js"
 import IconCode from "./icons/iconCode.vue"
 import { addPopup, ClickMenuManager } from "@/assets/utils"
@@ -15,9 +15,18 @@ import IconHash from "./icons/iconHash.vue"
 import IconEdit from "./icons/iconEdit.vue"
 import ClickMenu from "./ClickMenu.vue"
 import IconSpider from "./icons/iconSpider.vue"
-import IconLoad from "./icons/iconLoad.vue"
+import IconLeft from "./icons/iconLeft.vue"
+import IconRight from "./icons/iconRight.vue"
 
 const router = useRouter()
+const navigateIconSpecs = [
+  {
+    type: "home",
+    component: IconHome,
+    uri: "/",
+    tooltip: "回到主页，打开其他webshell"
+  },
+]
 const iconSpecs = [
   {
     type: "home",
@@ -220,6 +229,14 @@ function rightClickIcon(event, icon) {
 }
 
 
+function historyBack() {
+  window.history.back()
+}
+
+function historyForward() {
+  window.history.forward()
+}
+
 </script>
 
 <template>
@@ -231,11 +248,22 @@ function rightClickIcon(event, icon) {
       <p>{{ store.sessionName }}</p>
     </div>
     <div class="nav-space">
+
       <nav>
-        <a v-for="icon in icons" :href="icon.url" class="icon" @click="(event) => clickIcon(event, icon)"
+        <div class="icon" @click="historyBack()" title="返回">
+          <IconLeft></IconLeft>
+        </div>
+        <div class="icon" @click="historyForward()" title="前进">
+          <IconRight></IconRight>
+        </div>
+        <div class="icon-delimiter-background">
+        <div class="icon-delimiter"></div>
+
+        </div>
+        <div v-for="icon in icons" class="icon" @click="(event) => clickIcon(event, icon)"
           @click.right.prevent="event => rightClickIcon(event, icon)" :title="icon.tooltip">
           <component :is="icon.component"></component>
-        </a>
+        </div>
       </nav>
     </div>
 
@@ -305,7 +333,7 @@ header[data-bg-transition="true"] {
 
 .nav-space {
   flex-grow: 1;
-  max-width: 800px;
+  max-width: 900px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -320,7 +348,7 @@ nav {
 
 @media (min-width: 600px) {
   nav {
-    grid-template-columns: repeat(v-bind(iconsCount), 1fr);
+    grid-template-columns: 1fr 1fr 0.4fr repeat(v-bind(iconsCount), 1fr);
   }
 }
 
@@ -330,7 +358,7 @@ nav {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 50px;
+  width: 100%;
   height: 50px;
   border-radius: 200px;
   transition: background 0.3s ease;
@@ -338,6 +366,21 @@ nav {
 
 .icon:hover {
   background-color: #00000015;
+}
+
+.icon-delimiter-background {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.icon-delimiter {
+  background-color: #00000015;
+  height: 100%;
+  width: 5px;
+  border-radius: 20px;
 }
 
 svg {
