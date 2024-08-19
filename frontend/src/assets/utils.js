@@ -1,6 +1,6 @@
 import axios from "axios"
 import { popupsRef } from "./store"
-import { ref } from "vue"
+import { ref, shallowRef } from "vue"
 
 export function hello() {
   console.log("Hello, World!")
@@ -108,7 +108,7 @@ export async function postDataOrPopupError(uri, data, config = undefined) {
 }
 
 
-export function ClickMenuManager(items, handleItem) {
+export function ClickMenuManager(items, handleSelected) {
   const showClickMenu = ref(false)
   const clickMenuX = ref(0)
   const clickMenuY = ref(0)
@@ -119,18 +119,18 @@ export function ClickMenuManager(items, handleItem) {
     clickMenuX.value = event.clientX;
     clickMenuY.value = event.clientY;
   }
-  function onClickedEvent(item) {
+  function onclickEvent(item) {
     showClickMenu.value = false
-    setTimeout(() => handleItem(item), 0)
+    setTimeout(() => handleSelected(item), 0)
   }
   function onRemove(_) {
     showClickMenu.value = false
   }
   return {
-    "items": items,
+    "items": shallowRef(items),
     "show": showClickMenu,
     "onshow": onShowClickMenu,
-    "onclicked": onClickedEvent,
+    "onclick": onclickEvent,
     "onremove": onRemove,
     "x": clickMenuX,
     "y": clickMenuY,

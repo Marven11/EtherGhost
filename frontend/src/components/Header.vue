@@ -162,7 +162,7 @@ const clickOthersMenu = ClickMenuManager([
 
   <transition>
     <div v-if="clickOthersMenu.show.value" class="header-click-menu">
-      <ClickMenu :mouse_y="clickOthersMenu.y" :mouse_x="clickOthersMenu.x" :menuItems="clickOthersMenu.items"
+      <ClickMenu :mouse_y="clickOthersMenu.y" :mouse_x="clickOthersMenu.x" :menuItems="clickOthersMenu.items.value"
         @remove="clickOthersMenu.onremove" @clickItem="clickOthersMenu.onclick" />
     </div>
   </transition>

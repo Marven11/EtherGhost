@@ -13,7 +13,7 @@ import IconTerminal from "./icons/iconTerminal.vue"
 
 
 import ClickMenu from "./ClickMenu.vue"
-import { addPopup, getDataOrPopupError, parseDataOrPopupError } from "@/assets/utils";
+import { addPopup, ClickMenuManager, getDataOrPopupError, parseDataOrPopupError } from "@/assets/utils";
 import { useRouter } from "vue-router"
 import InputBox from "./InputBox.vue"
 import axios from "axios"
@@ -31,94 +31,89 @@ const sessions = ref([
 // ################
 
 
-const showClickMenu = ref(false)
-const clickMenuX = ref(0)
-const clickMenuY = ref(0)
 const router = useRouter();
-let clickMenuSession = ""
+let clickedSession = ""
 
-const menuItems = [
-  {
-    "name": "terminal",
-    "text": "模拟终端",
-    "icon": IconTerminal,
-    "color": "white",
-    "link": "/terminal/SESSION"
-  },
-  {
-    "name": "browse_files",
-    "text": "浏览文件",
-    "icon": IconFileBrowser,
-    "color": "white",
-    "link": "/file-browser/SESSION"
-  },
-  {
-    "name": "open_php_eval",
-    "text": "PHP Eval",
-    "icon": IconCode,
-    "color": "white",
-    "link": "/php-eval/SESSION"
-  },
-  {
-    "name": "open_proxy",
-    "text": "打开代理",
-    "icon": IconProxy,
-    "color": "white",
-    "link": "/proxies/SESSION"
-  },
-  {
-    "name": "get_info",
-    "text": "基本信息",
-    "icon": IconInfo,
-    "color": "white",
-    "link": "/basic-info/SESSION"
-  },
-  {
-    "name": "open_shell_command",
-    "text": "命令执行",
-    "icon": IconHash,
-    "color": "white",
-    "link": "/shell-command/SESSION"
-  },
-  {
-    "name": "emulated_antsword",
-    "text": "对接蚁剑",
-    "icon": IconSpider,
-    "color": "white",
-    "link": "/emulated-antsword/SESSION"
-  },
-  {
-    "name": "edit_session",
-    "text": "修改webshell",
-    "icon": IconEdit,
-    "color": "white",
-    "link": "/webshell-editor/SESSION"
-  },
-  {
-    "name": "delete_session",
-    "text": "删除Webshell",
-    "icon": IconDelete,
-    "color": "red",
-    "link": undefined,
-    "func": (session) => onMarkDeleteSession(session),
+const ClickMenuSession = ClickMenuManager(
+  [
+    {
+      "name": "terminal",
+      "text": "模拟终端",
+      "icon": IconTerminal,
+      "color": "white",
+      "link": "/terminal/SESSION"
+    },
+    {
+      "name": "browse_files",
+      "text": "浏览文件",
+      "icon": IconFileBrowser,
+      "color": "white",
+      "link": "/file-browser/SESSION"
+    },
+    {
+      "name": "open_php_eval",
+      "text": "PHP Eval",
+      "icon": IconCode,
+      "color": "white",
+      "link": "/php-eval/SESSION"
+    },
+    {
+      "name": "open_proxy",
+      "text": "打开代理",
+      "icon": IconProxy,
+      "color": "white",
+      "link": "/proxies/SESSION"
+    },
+    {
+      "name": "get_info",
+      "text": "基本信息",
+      "icon": IconInfo,
+      "color": "white",
+      "link": "/basic-info/SESSION"
+    },
+    {
+      "name": "open_shell_command",
+      "text": "命令执行",
+      "icon": IconHash,
+      "color": "white",
+      "link": "/shell-command/SESSION"
+    },
+    {
+      "name": "emulated_antsword",
+      "text": "对接蚁剑",
+      "icon": IconSpider,
+      "color": "white",
+      "link": "/emulated-antsword/SESSION"
+    },
+    {
+      "name": "edit_session",
+      "text": "修改webshell",
+      "icon": IconEdit,
+      "color": "white",
+      "link": "/webshell-editor/SESSION"
+    },
+    {
+      "name": "delete_session",
+      "text": "删除Webshell",
+      "icon": IconDelete,
+      "color": "red",
+      "link": undefined,
+      "func": (session) => onMarkDeleteSession(session),
+    }
+  ],
+  (item) => {
+    if (item.link) {
+      const uri = item.link.replace("SESSION", clickedSession)
+      router.push(uri)
+    } else if (item.func) {
+      item.func(clickedSession)
+    }
   }
-]
+)
 
 function onClickIconOthers(event, sessionId) {
-  event.preventDefault()
-  showClickMenu.value = true
-  clickMenuX.value = event.clientX;
-  clickMenuY.value = event.clientY;
-  clickMenuSession = sessionId;
-}
-
-function onClickMenuItem(item) {
-  if (item.link) {
-    const uri = item.link.replace("SESSION", clickMenuSession)
-    router.push(uri)
-  } else if (item.func) {
-    item.func(clickMenuSession)
-  }
+  clickedSession = sessionId;
+  ClickMenuSession.onshow(event)
 }
 
 async function fetchWebshell() {
@@ -215,9 +210,9 @@ async function onDeleteSessionConfirm(userConfirm) {
   </div>
 
   <transition>
-    <div v-if="showClickMenu">
-      <ClickMenu :mouse_y="clickMenuY" :mouse_x="clickMenuX" :menuItems="menuItems"
-        @remove="(_) => showClickMenu = false" @clickItem="onClickMenuItem" />
+    <div v-if="ClickMenuSession.show.value">
+      <ClickMenu :mouse_y="ClickMenuSession.y" :mouse_x="ClickMenuSession.x" :menuItems="ClickMenuSession.items.value"
+        @remove="ClickMenuSession.onremove" @clickItem="ClickMenuSession.onclick" />
     </div>
   </transition>
 

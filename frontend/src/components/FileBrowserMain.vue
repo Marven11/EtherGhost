@@ -18,7 +18,7 @@ import HoverForm from "./HoverForm.vue"
 import HoverStatus from "./HoverBox.vue"
 import InputBox from "./InputBox.vue"
 import { Codemirror } from 'vue-codemirror'
-import { getDataOrPopupError, postDataOrPopupError, addPopup, joinPath } from "@/assets/utils"
+import { getDataOrPopupError, postDataOrPopupError, addPopup, joinPath, ClickMenuManager } from "@/assets/utils"
 import { store } from "@/assets/store"
 
 // --- CodeMirror Stuff
@@ -220,10 +220,8 @@ async function submitUploadFile(form) {
 // ###############################
 // --- Folder entry click menu ---
 // ###############################
+let clickMenuEntry = undefined
 
-const clickMenuY = ref(0)
-const clickMenuX = ref(0)
-const showClickMenu = ref(false)
 const menuItemsAll = [
   {
     "name": "open_file",
@@ -282,12 +280,39 @@ const menuItemsAll = [
     "entry_type": ["dir", "link-dir"]
   },
 ]
+const ClickMenuFolderEntry = ClickMenuManager([
+
+], (item) => {
+  console.log(item)
+  if (item.name == "open_file") {
+    viewFile(clickMenuEntry.name)
+    addPopup("blue", "提示", `可以双击打开文件`)
+  } else if (item.name == "open_dir") {
+    changeDir(clickMenuEntry.name)
+  } else if (item.name == "new_file") {
+    confirmNewFile()
+  } else if (item.name == "upload_file") {
+    confirmUploadFile()
+  } else if (item.name == "download_file") {
+    downloadFile(pwd.value, clickMenuEntry.name)
+  } else if (item.name == "rename_file") {
+    confirmRenameFile(clickMenuEntry.name)
+  } else if (item.name == "delete_file") {
+    confirmDeleteFile(clickMenuEntry.name)
+  } else if (item.name == "open_terminal_here") {
+    router.push({
+      path: `/terminal/${props.session}`,
+      query: {
+        pwd: pwd.value
+      }
+    })
+  }
+  else {
+    addPopup("red", "内部错误", `没有实现动作：${item.name}`)
+  }
+})
 
 
-const menuItems = shallowRef([
-])
-
-let clickMenuEntry = undefined
 
 function confirmNewFile() {
   showInputBox.value = true
@@ -378,53 +403,18 @@ function confirmDeleteFile(filename) {
   }
 }
 
-function onClickMenuItem(item) {
-  if (item.name == "open_file") {
-    viewFile(clickMenuEntry.name)
-    addPopup("blue", "提示", `可以双击打开文件`)
-  } else if (item.name == "open_dir") {
-    changeDir(clickMenuEntry.name)
-  } else if (item.name == "new_file") {
-    confirmNewFile()
-  } else if (item.name == "upload_file") {
-    confirmUploadFile()
-  } else if (item.name == "download_file") {
-    downloadFile(pwd.value, clickMenuEntry.name)
-  } else if (item.name == "rename_file") {
-    confirmRenameFile(clickMenuEntry.name)
-  } else if (item.name == "delete_file") {
-    confirmDeleteFile(clickMenuEntry.name)
-  } else if (item.name == "open_terminal_here") {
-    router.push({
-      path: `/terminal/${props.session}`,
-      query: {
-        pwd: pwd.value
-      }
-    })
-  }
-  else {
-    addPopup("red", "内部错误", `没有实现动作：${item.name}`)
-  }
-}
-
 function onRightClickEntry(event) {
-  event.preventDefault()
   const element = event.currentTarget
   const entry = entries.value[element.dataset.entryIndex]
-  clickMenuX.value = event.clientX;
-  clickMenuY.value = event.clientY;
-  menuItems.value = menuItemsAll.filter(item => item.entry_type.includes(entry.entryType))
+  ClickMenuFolderEntry.items.value = menuItemsAll.filter(item => item.entry_type.includes(entry.entryType))
   clickMenuEntry = entry
-  showClickMenu.value = true
+  ClickMenuFolderEntry.onshow(event)
 }
 
 function onRightClickEmpty(event) {
-  event.preventDefault()
-  clickMenuX.value = event.clientX;
-  clickMenuY.value = event.clientY;
-  menuItems.value = menuItemsAll.filter(item => item.entry_type.includes("empty"))
+  ClickMenuFolderEntry.items.value = menuItemsAll.filter(item => item.entry_type.includes("empty"))
   clickMenuEntry = undefined
-  showClickMenu.value = true
+  ClickMenuFolderEntry.onshow(event)
 }
 
 
@@ -600,9 +590,10 @@ function readableFilePerm(filePerm) {
     </div>
   </div>
   <transition>
-    <div v-if="showClickMenu">
-      <ClickMenu :mouse_x="clickMenuX" :mouse_y="clickMenuY" :menuItems="menuItems"
-        @remove="(_) => showClickMenu = false" @clickItem="onClickMenuItem" />
+    <div v-if="ClickMenuFolderEntry.show.value">
+      <ClickMenu :mouse_x="ClickMenuFolderEntry.x" :mouse_y="ClickMenuFolderEntry.y"
+        :menuItems="ClickMenuFolderEntry.items.value" @remove="ClickMenuFolderEntry.onremove"
+        @clickItem="ClickMenuFolderEntry.onclick" />
     </div>
   </transition>
 
