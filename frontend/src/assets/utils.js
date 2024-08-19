@@ -121,7 +121,7 @@ export function ClickMenuManager(items, handleSelected) {
   }
   function onclickEvent(item) {
     showClickMenu.value = false
-    setTimeout(() => handleSelected(item), 0)
+    handleSelected(item)
   }
   function onRemove(_) {
     showClickMenu.value = false
