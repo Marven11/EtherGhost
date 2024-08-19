@@ -21,9 +21,9 @@
   - 文件管理
     - 异步文件上传下载
   - PHP代码执行
-  - 打开代理
-  <!-- - 查看基本信息 -->
-  <!-- - 下载phpinfo -->
+  - 伪正向代理
+  - 查看基本信息
+  - 下载phpinfo
 - webshell编码
   - HTTP参数混淆
   - 蚁剑类encoder和decoder
@@ -58,8 +58,8 @@
   - 从蚁剑的本地目录导入蚁剑webshell
   - 从冰蝎的本地目录导入冰蝎webshell
   - [done] 以webshell形式对接蚁剑
-- 下载phpinfo
-- 显示机器信息
+- [done] 下载phpinfo
+- [done] 显示机器信息
 - i18n
 - 改进文件管理的文件夹管理功能
 - 真正的正向代理和反向代理
