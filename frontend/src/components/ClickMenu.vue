@@ -4,7 +4,7 @@ import { ref, shallowRef, watch } from "vue"
 
 const props = defineProps(["mouse_x", "mouse_y", "menuItems"])
 
-const emit = defineEmits(["remove", "clickItem"])
+const emit = defineEmits(["remove", "clickItem", "rightClickItem"])
 
 // An item is sth like this:
 // {
@@ -22,7 +22,7 @@ const menuLeft = ref(props.mouse_x || 0)
 const menuItems = shallowRef([...props.menuItems])
 
 watch(clickMenu, () => {
-  if(menuLeft.value + clickMenu.value.clientWidth > screen.width) {
+  if (menuLeft.value + clickMenu.value.clientWidth > screen.width) {
     menuLeft.value -= clickMenu.value.clientWidth
   }
 })
@@ -32,25 +32,21 @@ function hideAndEmit() {
   emit("remove", true)
 }
 
-function onClickItem(itemName) {
-  emit("clickItem", itemName)
-  hideAndEmit()
-}
-
 </script>
 
 <template>
-  <div class="background" @click="hideAndEmit" @click.right="e => { e.preventDefault(); hideAndEmit() }">
+  <div class="background" @click="emit('remove', true)" @click.right.prevent="emit('remove', true)">
   </div>
   <div class="click-menu" :style="`top: ${menuTop}px; left: ${menuLeft}px; `" ref="clickMenu">
-    <div class="click-menu-item" v-for="menu_item in menuItems" @click="onClickItem(menu_item)"
-      @click.right="e => { e.preventDefault(); hideAndEmit() }">
-      <div class="click-menu-icon" :color="menu_item.color">
-        <component :is="menu_item.icon"></component>
+    <div class="click-menu-item" v-for="menuItem in menuItems"
+      @click="emit('clickItem', menuItem); emit('remove', true)"
+      @click.right.prevent="e => {emit('rightClickItem', e, menuItem); emit('remove', true)}">
+      <div class="click-menu-icon" :color="menuItem.color">
+        <component :is="menuItem.icon"></component>
       </div>
-      <div class="menu-item" :color="menu_item.color">
+      <div class="menu-item" :color="menuItem.color">
         <p>
-          {{ menu_item.text }}
+          {{ menuItem.text }}
         </p>
       </div>
 
