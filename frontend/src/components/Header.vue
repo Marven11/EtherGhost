@@ -135,7 +135,10 @@ const clickMenuRightClick = ClickMenuManager(
     },
   ],
   (item) => {
-    if (item.name == "open") {
+    if (rightClickedIcon.uri == "/popup/no_session") {
+      addPopup("red", "没有选中WebShell", "请先在主页选中Webshell")
+    }
+    else if (item.name == "open") {
       router.push(rightClickedIcon.uri)
     } else {
       let link = router.resolve({ path: rightClickedIcon.uri })
@@ -197,7 +200,9 @@ const clickMenuOthersRightClick = ClickMenuManager(
   ],
   (item) => {
     const uri = rightClickedOtherEntry.link.replace("SESSION", store.session)
-    if (item.name == "open") {
+    if (!store.session) {
+      addPopup("red", "没有选中WebShell", "请先在主页选中Webshell")
+    } else if (item.name == "open") {
       router.push(uri)
     } else {
       let link = router.resolve({ path: uri })
@@ -257,7 +262,7 @@ function historyForward() {
           <IconRight></IconRight>
         </div>
         <div class="icon-delimiter-background">
-        <div class="icon-delimiter"></div>
+          <div class="icon-delimiter"></div>
 
         </div>
         <div v-for="icon in icons" class="icon" @click="(event) => clickIcon(event, icon)"
