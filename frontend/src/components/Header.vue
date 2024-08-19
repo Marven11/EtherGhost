@@ -95,9 +95,70 @@ watch(() => store.session, (newSession, _) => {
 
 const iconsCount = computed(() => icons.value.length)
 
+// click menus
+
+const clickMenuOthers = ClickMenuManager(
+  [
+    {
+      name: "shell_command",
+      text: "命令执行",
+      icon: IconHash,
+      color: "white",
+      link: "/shell-command/SESSION"
+    },
+    {
+      name: "emulated_antsword",
+      text: "对接蚁剑",
+      icon: IconSpider,
+      color: "white",
+      link: "/emulated-antsword/SESSION"
+    },
+    {
+      name: "edit_session",
+      text: "修改webshell",
+      icon: IconEdit,
+      color: "white",
+      link: "/webshell-editor/SESSION"
+    },
+  ],
+  (item) => {
+    if (!store.session) {
+      addPopup("red", "没有选中WebShell", "请先在主页选中Webshell")
+    } else if (item.link) {
+      const uri = item.link.replace("SESSION", store.session)
+      router.push(uri)
+    }
+  }
+)
+
+const clickMenuRightClick = ClickMenuManager(
+  [
+    {
+      name: "open",
+      text: "打开",
+      icon: IconHash,
+      color: "white",
+    },
+    {
+      name: "open_in_new_page",
+      text: "在新标签页打开",
+      icon: IconCode,
+      color: "white",
+    },
+  ],
+  (item) => {
+    if(item.name == "open") {
+      router.push(rightClickedIcon.uri)
+    }else{
+      let link = router.resolve({ path: rightClickedIcon.uri })
+      window.open(link.href, '_blank');
+    }
+  }
+)
+
 function clickIcon(event, icon) {
   if (icon.type == "others") {
-    clickOthersMenu.onshow(event)
+    clickMenuOthers.onshow(event)
   }
   else if (icon.uri == "/popup/no_session") {
     addPopup("red", "没有选中WebShell", "请先在主页选中Webshell")
@@ -106,38 +167,18 @@ function clickIcon(event, icon) {
   }
 }
 
-// click menu for others button
+let rightClickedIcon = undefined
 
-const clickOthersMenu = ClickMenuManager([
-  {
-    name: "shell_command",
-    text: "命令执行",
-    icon: IconHash,
-    color: "white",
-    link: "/shell-command/SESSION"
-  },
-  {
-    name: "emulated_antsword",
-    text: "对接蚁剑",
-    icon: IconSpider,
-    color: "white",
-    link: "/emulated-antsword/SESSION"
-  },
-  {
-    name: "edit_session",
-    text: "修改webshell",
-    icon: IconEdit,
-    color: "white",
-    link: "/webshell-editor/SESSION"
-  },
-], (item) => {
-  if (!store.session) {
-    addPopup("red", "没有选中WebShell", "请先在主页选中Webshell")
-  } else if (item.link) {
-    const uri = item.link.replace("SESSION", store.session)
-    router.push(uri)
+function clickIconRight(event, icon) {
+  rightClickedIcon = icon
+  console.log(icon)
+  if (icon.type != "others") {
+
+    clickMenuRightClick.onshow(event)
   }
-})
+  console.log("TODO: handle right click others entry")
+}
+
 
 </script>
 
@@ -151,8 +192,8 @@ const clickOthersMenu = ClickMenuManager([
     </div>
     <div class="nav-space">
       <nav>
-        <a v-for="icon in icons" @click="(event) => clickIcon(event, icon)" :href="icon.url" class="icon"
-          :title="icon.tooltip">
+        <a v-for="icon in icons" :href="icon.url" class="icon" @click="(event) => clickIcon(event, icon)"
+          @click.right.prevent="event => clickIconRight(event, icon)" :title="icon.tooltip">
           <component :is="icon.component"></component>
         </a>
       </nav>
@@ -161,9 +202,16 @@ const clickOthersMenu = ClickMenuManager([
   </header>
 
   <transition>
-    <div v-if="clickOthersMenu.show.value" class="header-click-menu">
-      <ClickMenu :mouse_y="clickOthersMenu.y" :mouse_x="clickOthersMenu.x" :menuItems="clickOthersMenu.items.value"
-        @remove="clickOthersMenu.onremove" @clickItem="clickOthersMenu.onclick" />
+    <div v-if="clickMenuOthers.show.value" class="header-click-menu">
+      <ClickMenu :mouse_y="clickMenuOthers.y" :mouse_x="clickMenuOthers.x" :menuItems="clickMenuOthers.items.value"
+        @remove="clickMenuOthers.onremove" @clickItem="clickMenuOthers.onclick" />
+    </div>
+  </transition>
+  <transition>
+    <div v-if="clickMenuRightClick.show.value" class="header-click-menu">
+      <ClickMenu :mouse_y="clickMenuRightClick.y" :mouse_x="clickMenuRightClick.x"
+        :menuItems="clickMenuRightClick.items.value" @remove="clickMenuRightClick.onremove"
+        @clickItem="clickMenuRightClick.onclick" />
     </div>
   </transition>
 </template>
