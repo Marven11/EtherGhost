@@ -270,6 +270,12 @@ async function onDeleteSessionConfirm(userConfirm) {
   padding-left: 25px;
   padding-right: 25px;
   border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+.session:hover {
+  filter: brightness(105%);
+  box-shadow: 0 0 5px rgba(15, 15, 15, 0.5);
 }
 
 .session-top {
@@ -319,12 +325,17 @@ async function onDeleteSessionConfirm(userConfirm) {
   border-radius: 1000px;
   position: fixed;
   top: 90vh;
+  transition: background 0.3s ease;
 }
 
 .add-webshell-button svg {
   width: 50px;
   stroke: var(--font-color-white);
   margin: 10px;
+}
+
+.add-webshell-button:hover {
+  background-color: #00000015;
 }
 
 svg {

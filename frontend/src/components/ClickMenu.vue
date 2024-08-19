@@ -32,7 +32,7 @@ watch(clickMenu, () => {
 <template>
   <div class="background" @click="emit('remove', true)" @click.right.prevent="emit('remove', true)">
   </div>
-  <div class="click-menu shadow" :style="`top: ${menuTop}px; left: ${menuLeft}px; `" ref="clickMenu">
+  <div class="click-menu" :style="`top: ${menuTop}px; left: ${menuLeft}px; `" ref="clickMenu">
     <div class="click-menu-item" v-for="menuItem in menuItems"
       @click="emit('clickItem', menuItem); emit('remove', true)"
       @click.right.prevent="e => {emit('rightClickItem', e, menuItem); emit('remove', true)}">
@@ -57,6 +57,7 @@ watch(clickMenu, () => {
   border-radius: 20px;
   padding-top: 20px;
   padding-bottom: 20px;
+  box-shadow: 0 0 15px rgba(15, 15, 15, 0.3);
 }
 
 .click-menu-item {
