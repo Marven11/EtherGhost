@@ -563,7 +563,7 @@ def to_sessionize_payload(
     payload: str, chunk: int = PAYLOAD_SESSIONIZE_CHUNK
 ) -> t.List[str]:
     payload = base64_encode(payload)
-    payload_store_name = random_english_words()
+    payload_store_name = str(uuid.uuid4())
     payloads = []
     for i in range(0, len(payload), chunk):
         part = payload[i : i + chunk]
@@ -656,6 +656,22 @@ php_webshell_conn_options = [
         default_value=False,
         alternatives=None,
     ),
+    ConnOption(
+        id="updownload_chunk_size",
+        name="文件上传下载分块大小",
+        type="text",
+        placeholder="文件上传下载的分块大小，单位为字节，建议在1KB-1024KB之间",
+        default_value=str(1024 * 16),
+        alternatives=None,
+    ),
+    ConnOption(
+        id="updownload_max_coroutine",
+        name="文件上传下载并发量",
+        type="text",
+        placeholder="控制文件上传和下载时的最大协程数量",
+        default_value="4",
+        alternatives=None,
+    ),
 ]
 
 
@@ -674,8 +690,8 @@ class PHPWebshell(PHPSessionInterface):
         self.encryption = options.get("encryption", False)
         self.bypass_open_basedir = options.get("bypass_open_basedir", False)
         # for upload file and download file
-        self.chunk_size = 32 * 1024
-        self.max_coro = 4
+        self.chunk_size = int(options.get("updownload_chunk_size", 1024 * 16))
+        self.max_coro = int(options.get("updownload_max_coroutine", 4))
 
         # AES key以及其在服务器session中存储的名字
         # 在和服务器握手获取key的时候需要加锁
@@ -784,6 +800,7 @@ class PHPWebshell(PHPSessionInterface):
             async with sem:
                 await asyncio.sleep(0.01)  # we don't ddos
                 result = await self.submit(code)
+                # TODO: 在这里加锁，适配GIL模式
                 done_count += 1
                 if callback:
                     callback(done_count / len(coros))
