@@ -7,14 +7,15 @@ import IconInfo from "./icons/iconInfo.vue"
 import IconProxy from "./icons/iconProxy.vue"
 import IconOthers from "./icons/iconOthers.vue"
 import IconSetting from "./icons/iconSetting.vue"
-import { useRouter } from "vue-router"
+import { RouterLink, useRouter } from "vue-router"
 import { store } from "@/assets/store.js"
 import IconCode from "./icons/iconCode.vue"
-import { addPopup } from "@/assets/utils"
+import { addPopup, ClickMenuManager } from "@/assets/utils"
 import IconHash from "./icons/iconHash.vue"
 import IconEdit from "./icons/iconEdit.vue"
 import ClickMenu from "./ClickMenu.vue"
 import IconSpider from "./icons/iconSpider.vue"
+import IconLoad from "./icons/iconLoad.vue"
 
 const router = useRouter()
 const iconSpecs = [
@@ -96,7 +97,7 @@ const iconsCount = computed(() => icons.value.length)
 
 function clickIcon(event, icon) {
   if (icon.type == "others") {
-    onClickIconOthers(event)
+    clickOthersMenu.onshow(event)
   }
   else if (icon.uri == "/popup/no_session") {
     addPopup("red", "没有选中WebShell", "请先在主页选中Webshell")
@@ -105,9 +106,9 @@ function clickIcon(event, icon) {
   }
 }
 
-// click menu
+// click menu for others button
 
-const menuItems = [
+const clickOthersMenu = ClickMenuManager([
   {
     name: "shell_command",
     text: "命令执行",
@@ -129,31 +130,14 @@ const menuItems = [
     color: "white",
     link: "/webshell-editor/SESSION"
   },
-]
-
-const showClickMenu = ref(false)
-const clickMenuX = ref(0)
-const clickMenuY = ref(0)
-
-function onClickIconOthers(event) {
-  event.preventDefault()
-  showClickMenu.value = true
-  clickMenuX.value = event.clientX;
-  clickMenuY.value = event.clientY;
-  console.log(clickMenuX.value)
-}
-
-function onClickMenuItem(item) {
+], (item) => {
   if (!store.session) {
     addPopup("red", "没有选中WebShell", "请先在主页选中Webshell")
   } else if (item.link) {
     const uri = item.link.replace("SESSION", store.session)
     router.push(uri)
-  } else if (item.func) {
-    item.func(clickMenuSession)
   }
-}
-
+})
 
 </script>
 
@@ -167,18 +151,19 @@ function onClickMenuItem(item) {
     </div>
     <div class="nav-space">
       <nav>
-        <div v-for="icon in icons" @click="(event) => clickIcon(event, icon)" class="icon" :title="icon.tooltip">
+        <a v-for="icon in icons" @click="(event) => clickIcon(event, icon)" :href="icon.url" class="icon"
+          :title="icon.tooltip">
           <component :is="icon.component"></component>
-        </div>
+        </a>
       </nav>
     </div>
 
   </header>
 
   <transition>
-    <div v-if="showClickMenu" class="header-click-menu">
-      <ClickMenu :mouse_y="clickMenuY" :mouse_x="clickMenuX" :menuItems="menuItems"
-        @remove="(_) => showClickMenu = false" @clickItem="onClickMenuItem" />
+    <div v-if="clickOthersMenu.show.value" class="header-click-menu">
+      <ClickMenu :mouse_y="clickOthersMenu.y" :mouse_x="clickOthersMenu.x" :menuItems="clickOthersMenu.items"
+        @remove="clickOthersMenu.onremove" @clickItem="clickOthersMenu.onclick" />
     </div>
   </transition>
 </template>
