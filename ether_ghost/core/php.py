@@ -38,7 +38,7 @@ user_agent = random_user_agent()
 
 
 def compress_phpcode_template(s):
-    return re.sub(r" *\n+ +", "", s, re.M)
+    return re.sub(r"\n *", " ", s)
 
 
 SUBMIT_WRAPPER_PHP = compress_phpcode_template(
