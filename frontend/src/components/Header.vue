@@ -105,6 +105,8 @@ const iconsCount = computed(() => icons.value.length)
 // 右键点击clickMenuOthers时会打开clickMenuOthersRightClick
 // 然后在clickMenuOthersRightClick关闭时一并关闭clickMenuOthersRightClick
 
+// 其中rightClickedOtherEntry作为判断何时关闭clickMenuOthersRightClick的标志
+// 需要在clickMenuOthersRightClick关闭时一并清零
 
 let rightClickedIcon = undefined
 
@@ -192,7 +194,6 @@ const clickMenuOthersRightClick = ClickMenuManager(
       let link = router.resolve({ path: uri })
       window.open(link.href, '_blank');
     }
-    rightClickedOtherEntry = undefined
   }
 )
 
@@ -259,7 +260,7 @@ function rightClickIcon(event, icon) {
     <div v-if="clickMenuOthersRightClick.show.value" class="header-click-menu">
       <ClickMenu :mouse_y="clickMenuOthersRightClick.y" :mouse_x="clickMenuOthersRightClick.x"
         :menuItems="clickMenuOthersRightClick.items.value"
-        @remove="x => { clickMenuOthersRightClick.onremove(x); clickMenuOthers.show.value = false }"
+        @remove="x => { clickMenuOthersRightClick.onremove(x); clickMenuOthers.show.value = false; rightClickedOtherEntry = undefined; }"
         @clickItem="clickMenuOthersRightClick.onclick" />
     </div>
   </transition>

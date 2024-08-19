@@ -27,11 +27,6 @@ watch(clickMenu, () => {
   }
 })
 
-
-function hideAndEmit() {
-  emit("remove", true)
-}
-
 </script>
 
 <template>
