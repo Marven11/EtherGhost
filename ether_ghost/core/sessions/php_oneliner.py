@@ -344,5 +344,7 @@ class PHPWebshellOneliner(PHPWebshell):
             logger.warning("HTTP请求受控端超时，尝试刷新HTTP Client")
             self.client = get_http_client(verify=self.https_verify)
             raise exceptions.NetworkError("HTTP请求受控端超时") from exc
+        except httpx.ProxyError as exc:
+            raise exceptions.NetworkError("连接代理失败") from exc
         except httpx.HTTPError as exc:
             raise exceptions.NetworkError("发送HTTP请求到受控端失败") from exc

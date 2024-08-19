@@ -208,6 +208,7 @@ async def update_webshell(session_info: session_types.SessionInfo):
     if session_manager.get_session_info_by_id(session_info.session_id):
         session_manager.delete_session_info_by_id(session_info.session_id)
     session_manager.add_session_info(session_info)
+    session_manager.clear_session_cache()
     return {"code": 0, "data": session_info.session_id}
 
 
@@ -555,6 +556,7 @@ async def get_settings():
 async def set_settings(settings: t.Dict[str, t.Any]):
     """设置当前配置"""
     db.set_settings(settings)
+    session_manager.clear_session_cache()
     return {"code": 0, "data": True}
 
 

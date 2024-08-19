@@ -78,6 +78,9 @@ def get_session_by_id(session_id: t.Union[str, UUID]) -> core.SessionInterface:
     session_store[session_id] = (int(time.time()), session)
     return session
 
+def clear_session_cache():
+    session_store.clear()
+
 
 def list_sessions_readable() -> t.List[t.Dict[str, t.Any]]:
     """列出所有的session info
