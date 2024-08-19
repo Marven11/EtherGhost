@@ -397,7 +397,7 @@ async def session_download_phpinfo(session_id: UUID):
 
     headers = {"Content-Disposition": "attachment; filename=phpinfo.html"}  # 设置文件名
     return Response(
-        content=content, media_type="application/octet-stream", headers=headers
+        content=content, media_type="text/html", headers=headers
     )
 
 

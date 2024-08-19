@@ -45,7 +45,7 @@ const iconSpecs = [
   {
     type: "info",
     component: IconInfo,
-    uri: "/",
+    uri: "/basic-info/SESSION",
     tooltip: "机器信息"
   },
   {

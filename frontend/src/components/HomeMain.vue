@@ -71,7 +71,7 @@ const menuItems = [
     "text": "基本信息",
     "icon": IconInfo,
     "color": "white",
-    "link": "/page_404/SESSION"
+    "link": "/basic-info/SESSION"
   },
   {
     "name": "open_shell_command",

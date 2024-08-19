@@ -11,6 +11,7 @@ import ShellCommandMain from "./components/ShellCommandMain.vue";
 import FileBrowserMain from "./components/FileBrowserMain.vue";
 import PhpEvalMain from "./components/PhpEvalMain.vue";
 import EmulatedAntswordMain from "./components/EmulatedAntswordMain.vue";
+import BasicInfoMain from "./components/BasicInfoMain.vue";
 import Proxies from "./components/Proxies.vue";
 import { createRouter, createWebHashHistory } from "vue-router";
 import Terminal from 'vue-web-terminal'
@@ -47,6 +48,7 @@ const routes = [
   { path: "/file-browser/:session", component: FileBrowserMain, props: true },
   { path: "/php-eval/:session", component: PhpEvalMain, props: true },
   { path: "/emulated-antsword/:session", component: EmulatedAntswordMain, props: true },
+  { path: "/basic-info/:session", component: BasicInfoMain, props: true },
   { path: "/proxies", component: Proxies, props: true },
   { path: "/proxies/:session", component: Proxies, props: true },
 ];
