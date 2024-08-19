@@ -180,7 +180,7 @@ function onSelectElementChange(option) {
 
 <template>
   <div class="option-group" v-for="group in optionsGroups">
-    <p class="group-title">
+    <p class="group-title shadow">
       {{ group.name }}
     </p>
     <div class="option" v-for="option in group.options">
@@ -205,7 +205,7 @@ function onSelectElementChange(option) {
       <p v-else>内部错误：未知选项类型 {{ option.type }}</p>
     </div>
   </div>
-  <div class="submit-buttons">
+  <div class="submit-buttons shadow">
     <div class="submit-button" @click="() => router.go(-1)">
       丢弃
     </div>

@@ -53,7 +53,7 @@ defineExpose({ addPopup })
 
 <template>
   <div class="popups" v-if="popups.length != 0">
-    <div class="popup" v-for="popup in popups" :color="popup.color" :state="popup.state">
+    <div class="popup shadow" v-for="popup in popups" :color="popup.color" :state="popup.state">
       <div class="popup-title-line">
         <div class="popup-icon">
           <IconCross v-if="popup.color == 'red'" />

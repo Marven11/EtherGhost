@@ -32,7 +32,7 @@ watch(clickMenu, () => {
 <template>
   <div class="background" @click="emit('remove', true)" @click.right.prevent="emit('remove', true)">
   </div>
-  <div class="click-menu" :style="`top: ${menuTop}px; left: ${menuLeft}px; `" ref="clickMenu">
+  <div class="click-menu shadow" :style="`top: ${menuTop}px; left: ${menuLeft}px; `" ref="clickMenu">
     <div class="click-menu-item" v-for="menuItem in menuItems"
       @click="emit('clickItem', menuItem); emit('remove', true)"
       @click.right.prevent="e => {emit('rightClickItem', e, menuItem); emit('remove', true)}">

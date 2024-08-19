@@ -306,6 +306,7 @@ header {
   min-height: 120px;
   padding-left: 2%;
   padding-right: 2%;
+  box-shadow: 0 0 10px rgba(15, 15, 15, 0.7);
 }
 
 header[data-bg-transition="true"] {

@@ -541,11 +541,11 @@ function readableFilePerm(filePerm) {
 
 <template>
   <form action="" class="filepath-input" @submit="onUserInputPwd">
-    <input v-model="userPwd" id="filepath-input" type="text" placeholder="/var/www/html">
-    <div class="filepath-icon" @click="onUserInputPwd">
+    <input v-model="userPwd" id="filepath-input" class="shadow" type="text" placeholder="/var/www/html">
+    <div class="filepath-icon shadow" @click="onUserInputPwd">
       <IconRun />
     </div>
-    <div class="filepath-icon" @click="() => {
+    <div class="filepath-icon shadow" @click="() => {
       listDir(pwd);
       userPwd = pwd;
     }">
@@ -553,7 +553,7 @@ function readableFilePerm(filePerm) {
     </div>
   </form>
   <div class="file-panel">
-    <div class="folder-panel scrollbar" @click.right.stop="onRightClickEmpty">
+    <div class="folder-panel scrollbar shadow" @click.right.stop="onRightClickEmpty">
       <div class="folder-entry" v-for="[entryIndex, entry] in entries.entries()" @dblclick="onDoubleClickEntry"
         @click.right.stop="onRightClickEntry" :data-entry-index="entryIndex">
         <div class="folder-entry-icon">
@@ -572,13 +572,14 @@ function readableFilePerm(filePerm) {
     </div>
     <div class="file-content-panel">
       <div class="files-title">
-        <input type="text" name="filename" id="files-title-filename" placeholder="passwd" v-model="userFilename">
+        <input type="text" name="filename" id="files-title-filename" placeholder="passwd" class="shadow"
+          v-model="userFilename">
       </div>
-      <div class="files-content scrollbar">
+      <div class="files-content scrollbar shadow">
         <codemirror v-model="codeMirrorContent" placeholder="Content goes here..." :autofocus="true"
           :indent-with-tab="true" :tab-size="4" :extensions="codeMirrorExtensions" @ready="codeMirrorReady" />
       </div>
-      <div class="files-control">
+      <div class="files-control shadow">
         <div class="file-control-left">
           <p>文件编码: </p>
           <input type="text" name="encoding" id="files-control-encoding" v-model="fileEncoding">

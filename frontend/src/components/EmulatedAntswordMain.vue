@@ -15,7 +15,7 @@ if (props.session) {
 
 <template>
   <div class="info-main">
-    <div class="info-panel">
+    <div class="info-panel shadow">
       <h1>对接蚁剑</h1>
       <p>使用以下信息让蚁剑通过游魂连接webshell</p>
       <table>
@@ -45,13 +45,12 @@ if (props.session) {
 }
 
 .info-panel {
-  background-color: var(--background-color-1);
+  background-color: var(--background-color-2);
   height: max-content;
   width: 50%;
   border-radius: 20px;
   color: var(--font-color-grey);
   padding: 20px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
 }
 
 .info-panel h1 {
