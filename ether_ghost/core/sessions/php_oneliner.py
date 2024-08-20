@@ -341,8 +341,10 @@ class PHPWebshellOneliner(PHPWebshell):
             # 此时服务端会为这个session id等待这个长时间操作
             # 所以我们再使用这个session id发起请求就会卡住
             # 所以我们要丢掉这个session id，使用另一个client发出请求
-            logger.warning("HTTP请求受控端超时，尝试刷新HTTP Client")
-            self.client = get_http_client(verify=self.https_verify)
+
+            # TODO: 让用户决定是否刷新
+            # logger.warning("HTTP请求受控端超时，尝试刷新HTTP Client")
+            # self.client = get_http_client(verify=self.https_verify)
             raise exceptions.NetworkError("HTTP请求受控端超时") from exc
         except httpx.ProxyError as exc:
             raise exceptions.NetworkError("连接代理失败") from exc

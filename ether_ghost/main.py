@@ -34,6 +34,7 @@ from .utils import db
 from . import session_manager, session_types, core, upload_file_status
 from .tcp_proxies import start_psudo_tcp_proxy
 from .core import SessionInterface, PHPSessionInterface, session_type_info
+from .core.vessel_php.serve import start_vessel_server
 from .utils import const
 
 token = secrets.token_bytes(16).hex()
@@ -397,9 +398,7 @@ async def session_download_phpinfo(session_id: UUID):
     content = await session.download_phpinfo()
 
     headers = {"Content-Disposition": "attachment; filename=phpinfo.html"}  # 设置文件名
-    return Response(
-        content=content, media_type="text/html", headers=headers
-    )
+    return Response(content=content, media_type="text/html", headers=headers)
 
 
 @app.post("/session/{session_id}/php_eval")
@@ -411,6 +410,17 @@ async def session_php_eval(session_id: UUID, req: PhpCodeRequest):
         return {"code": -400, "msg": "指定的session不是PHP Session"}
     result = await session.php_eval(req.code)
     return {"code": 0, "data": result}
+
+
+@app.get("/session/{session_id}/deploy_vessel")
+@catch_user_error
+async def session_deploy_vessel(session_id: UUID):
+    """测试"""
+    session: SessionInterface = session_manager.get_session_by_id(session_id)
+    if not isinstance(session, PHPSessionInterface):
+        return {"code": -400, "msg": "指定的session不是PHP Session"}
+    client_code = await start_vessel_server(session)
+    return {"code": 0, "data": client_code}
 
 
 @app.post("/session/{session_id}/emulated_antsword")

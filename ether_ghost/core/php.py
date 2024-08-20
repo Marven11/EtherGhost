@@ -563,7 +563,7 @@ def to_sessionize_payload(
     payload: str, chunk: int = PAYLOAD_SESSIONIZE_CHUNK
 ) -> t.List[str]:
     payload = base64_encode(payload)
-    payload_store_name = f"_{uuid.uuid4()}" # PHP有时不支持数字session key
+    payload_store_name = f"_{uuid.uuid4()}"  # PHP有时不支持数字session key
     payloads = []
     for i in range(0, len(payload), chunk):
         part = payload[i : i + chunk]
@@ -579,7 +579,7 @@ def to_sessionize_payload(
 
 
 async def get_aes_key(pubkey, submitter):
-    session_name = f"_{uuid.uuid4()}" # PHP有时不支持数字session key
+    session_name = f"_{uuid.uuid4()}"  # PHP有时不支持数字session key
     key_encrypted = await submitter(
         ENCRYPTION_SENDKEY_PHP.replace("PUBKEY_B64", string_repr(base64_encode(pubkey)))
         .replace("SESSION_NAME", string_repr(session_name))
@@ -1168,6 +1168,10 @@ class PHPWebshell(PHPSessionInterface):
             EVAL_PHP.format(code_b64=string_repr(base64_encode(code)))
         )
         return result
+
+    async def php_eval_raw(self, code: str) -> t.Tuple[int, str]:
+        # its just a renaming of submit_http
+        return await self.submit_http(code)
 
     async def emulated_antsword(self, body: bytes) -> t.Tuple[int, str]:
         code = """
