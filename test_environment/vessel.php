@@ -2,10 +2,6 @@
 ignore_user_abort(true);
 set_time_limit(0);
 
-$PREFIX = "vessel";
-$folder = "/tmp/vessel";
-
-mkdir($folder, 0777, true);
 
 $endpoints = array();
 
@@ -91,6 +87,74 @@ function child_shell_exit($args)
 
 $endpoints["child_shell_exit"] = "child_shell_exit";
 
+$tcp_sockets = [];
+
+function tcp_socket_connect($args)
+{
+    global $tcp_sockets;
+    if (!function_exists("fsockopen")) {
+        throw new Exception("No function fsockopen");
+    }
+    $socket = fsockopen($args[0], $args[1], $error_code, $error_message);
+    if ($error_code != 0) {
+        throw new Exception("Socket connect failed: code: $error_code, msg: $error_message");
+    }
+    if (!$socket) {
+        throw new Exception("Socket create failed: error initializing");
+    }
+    stream_set_blocking($socket, false);
+    $tcp_sockets[] = $socket; // TODO: use a random string
+    return array_key_last($tcp_sockets);
+}
+
+$endpoints["tcp_socket_connect"] = "tcp_socket_connect";
+
+function tcp_socket_write($args)
+{
+    global $tcp_sockets;
+    $socket = $tcp_sockets[$args[0]];
+    if (feof($socket)) {
+        unset($tcp_sockets[$args[0]]);
+        throw new Exception("Socket closed: EOF");
+    }
+    $message = base64_decode($args[1]);
+    return fwrite($socket, $message);
+}
+
+$endpoints["tcp_socket_write"] = "tcp_socket_write";
+
+function tcp_socket_read($args)
+{
+    global $tcp_sockets;
+    $socket = $tcp_sockets[$args[0]];
+    if (feof($socket)) {
+        unset($tcp_sockets[$args[0]]);
+        throw new Exception("Socket closed: EOF");
+    }
+    $result = fread($socket, $args[1]);
+    if ($result === false) {
+        throw new Exception("Socket closed");
+    }
+    return base64_encode($result);
+}
+
+$endpoints["tcp_socket_read"] = "tcp_socket_read";
+
+function tcp_socket_close($args)
+{
+    global $tcp_sockets;
+    $socket = $tcp_sockets[$args[0]];
+    fclose($socket);
+    unset($tcp_sockets[$args[0]]);
+    return true;
+}
+
+$endpoints["tcp_socket_close"] = "tcp_socket_close";
+
+$PREFIX = "vessel";
+$folder = "/tmp/vessel";
+
+mkdir($folder, 0777, true);
 
 while (is_dir($folder . "/")) {
     foreach (scandir($folder) as $filename) {
@@ -118,6 +182,7 @@ while (is_dir($folder . "/")) {
                     "code" => -100,
                     "msg" => $e->getMessage(),
                 ]));
+                continue;
             }
             try {
                 file_put_contents("$folder/{$PREFIX}_{$reqid}_resp", json_encode([
