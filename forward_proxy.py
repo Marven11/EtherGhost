@@ -3,7 +3,8 @@ import base64
 import json
 import time
 import traceback
-import typing as t
+import uuid
+
 import httpx
 
 url = "http://127.0.0.1/vessel-client.php"
@@ -16,9 +17,16 @@ class SocketClosed(Exception):
     pass
 
 
-async def call(client: httpx.AsyncClient, fn, *args, timeout):
+async def call(client: httpx.AsyncClient, session_key: str, fn, *args, timeout):
     resp = await client.post(
-        url, data={"fn": fn, "args": json.dumps(args), "timeout": timeout}, timeout=3
+        url,
+        data={
+            "session_key": session_key,
+            "fn": fn,
+            "args": json.dumps(args),
+            "timeout": timeout,
+        },
+        timeout=3,
     )
     data = resp.json()
     print(f"{fn=} {args=} {data=}")
@@ -43,6 +51,7 @@ async def sender(
         try:
             await call(
                 client,
+                state["session_key"],
                 "tcp_socket_write",
                 socket_id,
                 base64.b64encode(tosend).decode(),
@@ -64,6 +73,7 @@ async def receiver(
         try:
             towrite = await call(
                 client,
+                state["session_key"],
                 "tcp_socket_read",
                 socket_id,
                 1024,
@@ -97,6 +107,7 @@ class TcpServeConnection:
         self.host = host
         self.port = port
         self.client = httpx.AsyncClient()
+        self.session_key = "_default_"
 
     async def serve_connection_raw(
         self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
@@ -105,14 +116,17 @@ class TcpServeConnection:
         try:
             socket_id = await call(
                 self.client,
+                self.session_key,
                 "tcp_socket_connect",
                 self.host,
                 self.port,
                 timeout=1,
             )
         except httpx.HTTPError:
+            import traceback
+
+            traceback.print_exc()
             writer.close()
-            self.client = httpx.AsyncClient()
             return
         except Exception:
             writer.close()
@@ -121,6 +135,7 @@ class TcpServeConnection:
         print(f"{socket_id=}")
         state = {
             "socket_open": True,
+            "session_key": self.session_key,
             "last_communicate_time": time.perf_counter(),
         }
         try:
@@ -133,6 +148,7 @@ class TcpServeConnection:
         try:
             socket_id = await call(
                 self.client,
+                self.session_key,
                 "tcp_socket_close",
                 socket_id,
                 1024,
@@ -150,17 +166,40 @@ class TcpServeConnection:
         except Exception:
             traceback.print_exc()
 
-    async def start_server(self) -> asyncio.Task:
+    async def start_server(self):
+
+        session_id = (
+            await self.client.get(
+                "http://127.0.0.1/vessel.php", params={"action": "check_session_id"}
+            )
+        ).text.strip()
+        print(f"{session_id=}")
+
+        self.session_key = f"_{uuid.uuid4()}"
+
+        async def start_vessel():
+            resp = await self.client.get(
+                "http://127.0.0.1/vessel.php",
+                params={
+                    "action": "serve_over_session",
+                    "session_key": self.session_key,
+                },
+                timeout=100,
+            )
+            print(f"Vessel server resp: {resp.text[:100]=}")
+
+        vessel_task = asyncio.create_task(start_vessel())
+        await asyncio.sleep(0.1)
         server = await asyncio.start_server(
             self.serve_connection, self.listen_host, self.listen_port
         )
 
         task = asyncio.create_task(server.serve_forever())
-        return task
+        return asyncio.gather(task, vessel_task)
 
 
 async def main():
-    server = TcpServeConnection("127.0.0.1", 8080, "127.0.0.1", 80)
+    server = TcpServeConnection("127.0.0.1", 8082, "127.0.0.1", 80)
     task = await server.start_server()
     await task
 

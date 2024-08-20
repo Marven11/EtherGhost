@@ -1,7 +1,7 @@
 <?php
+session_start();
 ignore_user_abort(true);
 set_time_limit(0);
-
 
 $endpoints = array();
 
@@ -151,51 +151,110 @@ function tcp_socket_close($args)
 
 $endpoints["tcp_socket_close"] = "tcp_socket_close";
 
-$PREFIX = "vessel";
-$folder = "/tmp/vessel";
-
-mkdir($folder, 0777, true);
-
-while (is_dir($folder . "/")) {
-    foreach (scandir($folder) as $filename) {
-        if ($filename == "." || $filename == "..") {
-            continue;
+function serve_over_session($session_key)
+{
+    global $endpoints;
+    $last_serve_time = time();
+    $_SESSION[$session_key] = array(
+        "req" => array(),
+        "resp" => array(),
+    );
+    session_write_close();
+    while (time() - $last_serve_time < 3600) {
+        usleep(10000);
+        session_start();
+        if (!isset($_SESSION[$session_key])) {
+            echo ("session key not found");
+            return;
         }
-        $filepath = "$folder/$filename";
-        $matches = null;
-        if (preg_match("/^vessel_([a-z0-9]+)_req/", $filename, $matches)) {
-            $reqid = $matches[1];
-            $content = file_get_contents($filepath);
-            @unlink($filepath);
-            $data = null;
-            try {
-                $data = json_decode($content);
-            } catch (Exception $e) {
-                continue;
-            }
+        foreach (array_keys($_SESSION[$session_key]["req"]) as $reqid) {
+            $last_serve_time = time();
+
+            $data = json_decode($_SESSION[$session_key]["req"][$reqid]);
+            unset($_SESSION[$session_key]["req"][$reqid]);
             $resp = null;
             try {
                 $resp = $endpoints[$data->fn]($data->args);
             } catch (Exception $e) {
-                file_put_contents("$folder/{$PREFIX}_{$reqid}_resp", json_encode([
+
+                $_SESSION[$session_key]["resp"][$reqid] = json_encode([
                     "reqid" => $reqid,
                     "code" => -100,
                     "msg" => $e->getMessage(),
-                ]));
+                ]);
                 continue;
             }
-            try {
-                file_put_contents("$folder/{$PREFIX}_{$reqid}_resp", json_encode([
-                    "reqid" => $reqid,
-                    "code" => 0,
-                    "resp" => $resp,
-                ]));
-            } catch (Exception $e) {
-                echo $e;
+            $_SESSION[$session_key]["resp"][$reqid] = json_encode([
+                "reqid" => $reqid,
+                "code" => 0,
+                "resp" => $resp,
+            ]);
+        }
+        session_write_close();
+    }
+    echo "bye";
+}
+
+function serve_over_files()
+{
+    global $endpoints;
+    $PREFIX = "vessel";
+    $folder = "/tmp/vessel";
+
+    mkdir($folder, 0777, true);
+
+    while (is_dir($folder . "/")) {
+        foreach (scandir($folder) as $filename) {
+            if ($filename == "." || $filename == "..") {
+                continue;
+            }
+            $filepath = "$folder/$filename";
+            $matches = null;
+            if (preg_match("/^vessel_([a-z0-9]+)_req/", $filename, $matches)) {
+                $reqid = $matches[1];
+                $content = file_get_contents($filepath);
+                @unlink($filepath);
+                $data = null;
+                try {
+                    $data = json_decode($content);
+                } catch (Exception $e) {
+                    continue;
+                }
+                $resp = null;
+                try {
+                    $resp = $endpoints[$data->fn]($data->args);
+                } catch (Exception $e) {
+                    file_put_contents("$folder/{$PREFIX}_{$reqid}_resp", json_encode([
+                        "reqid" => $reqid,
+                        "code" => -100,
+                        "msg" => $e->getMessage(),
+                    ]));
+                    continue;
+                }
+                try {
+                    file_put_contents("$folder/{$PREFIX}_{$reqid}_resp", json_encode([
+                        "reqid" => $reqid,
+                        "code" => 0,
+                        "resp" => $resp,
+                    ]));
+                } catch (Exception $e) {
+                    echo $e;
+                }
             }
         }
+        usleep(5000);
+        // php would cache is_dir, clear it
+        clearstatcache();
     }
-    usleep(5000);
-    // php would cache is_dir, clear it
-    clearstatcache();
+}
+
+if ($_GET["action"] == "check_session_id") {
+    session_start();
+    echo session_id();
+} else if ($_GET["action"] == "serve_over_session") {
+    serve_over_session($_GET["session_key"]);
+} else if ($_GET["action"] == "serve_over_files") {
+    serve_over_files();
+} else {
+    echo "Hello, World!";
 }
