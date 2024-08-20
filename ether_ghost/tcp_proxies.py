@@ -1,10 +1,14 @@
 import asyncio
 import traceback
 import re
+import base64
+import uuid
+import time
 import typing as t
 
 
-from .core import SessionInterface, exceptions
+from .core import SessionInterface, exceptions, PHPSessionInterface
+from .core.vessel_php.main import get_vessel_client
 
 
 class PsudoTcpServeConnection:
@@ -90,4 +94,157 @@ async def start_psudo_tcp_proxy(
 ) -> asyncio.Task:
     return await PsudoTcpServeConnection(
         session, listen_host, listen_port, host, port, send_method
+    ).start_server()
+
+
+REQUEST_INTERVAL_SHORT = 0.1
+REQUEST_INTERVAL_LONG = 2
+
+
+class SocketClosed(Exception):
+    pass
+
+
+async def sender(
+    state: dict,
+    call: t.Callable[..., t.Awaitable],
+    socket_id: int,
+    reader: asyncio.StreamReader,
+):
+    while state["socket_open"]:
+        tosend = await reader.read(1024)
+        if not tosend:
+            state["socket_open"] = False
+            return
+        try:
+            await call(
+                "tcp_socket_write",
+                socket_id,
+                base64.b64encode(tosend).decode(),
+                timeout=1,
+            )
+        except SocketClosed:
+            state["socket_open"] = False
+            return
+        state["last_communicate_time"] = time.perf_counter()
+
+
+async def receiver(
+    state: dict,
+    call: t.Callable[..., t.Awaitable],
+    socket_id: int,
+    writer: asyncio.StreamWriter,
+):
+    while state["socket_open"]:
+        try:
+            towrite = await call(
+                "tcp_socket_read",
+                socket_id,
+                1024,
+                timeout=1,
+            )
+        except SocketClosed:
+            state["socket_open"] = False
+            return
+        towrite_bytes = base64.b64decode(towrite)
+        if not towrite_bytes:
+            await asyncio.sleep(
+                REQUEST_INTERVAL_SHORT
+                if time.perf_counter() - state["last_communicate_time"] < 3
+                else REQUEST_INTERVAL_LONG
+            )
+            continue
+        writer.write(towrite_bytes)
+        state["last_communicate_time"] = time.perf_counter()
+
+
+class VesselTcpForwardServeConnection:
+    def __init__(
+        self,
+        session: PHPSessionInterface,
+        load_vessel_client_code: str,
+        listen_host: str,
+        listen_port: int,
+        host: str,
+        port: int,
+    ):
+        self.listen_host = listen_host
+        self.listen_port = listen_port
+        self.host = host
+        self.port = port
+        self.call = get_vessel_client(session, load_vessel_client_code)
+        self.session_key = f"_{uuid.uuid4()}"
+
+    async def serve_connection_raw(
+        self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
+    ):
+        socket_id = None
+        try:
+            socket_id = await self.call(
+                "tcp_socket_connect",
+                self.host,
+                self.port,
+                timeout=1,
+            )
+        except Exception:
+            writer.close()
+            return
+
+        print(f"{socket_id=}")
+        state = {
+            "socket_open": True,
+            "session_key": self.session_key,
+            "last_communicate_time": time.perf_counter(),
+        }
+        try:
+            await asyncio.gather(  # type: ignore
+                sender(state, self.call, socket_id, reader),  # type: ignore
+                receiver(state, self.call, socket_id, writer),  # type: ignore
+            )
+        finally:
+            state["socket_open"] = False
+        try:
+            socket_id = await self.call(
+                "tcp_socket_close",
+                socket_id,
+                1024,
+                timeout=1,
+            )
+        except Exception:
+            writer.close()
+            return
+
+    async def serve_connection(
+        self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
+    ):
+        try:
+            await self.serve_connection_raw(reader, writer)
+        except Exception:
+            traceback.print_exc()
+
+    async def start_server(self):
+
+        await asyncio.sleep(0.1)
+        server = await asyncio.start_server(
+            self.serve_connection, self.listen_host, self.listen_port
+        )
+
+        return asyncio.create_task(server.serve_forever())
+
+
+async def start_vessel_forward_tcp(
+    session: PHPSessionInterface,
+    load_vessel_client_code: str,
+    listen_host: str,
+    listen_port: int,
+    host: str,
+    port: int,
+) -> asyncio.Task:
+    return await VesselTcpForwardServeConnection(
+        session,
+        load_vessel_client_code,
+        listen_host,
+        listen_port,
+        host,
+        port,
     ).start_server()

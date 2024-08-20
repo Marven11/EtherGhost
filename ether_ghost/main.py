@@ -32,9 +32,12 @@ import httpx
 from .utils import db
 
 from . import session_manager, session_types, core, upload_file_status
-from .tcp_proxies import start_psudo_tcp_proxy
+from .tcp_proxies import (
+    start_psudo_tcp_proxy,
+    start_vessel_forward_tcp,
+)
 from .core import SessionInterface, PHPSessionInterface, session_type_info
-from .core.vessel_php.serve import start_vessel_server
+from .core.vessel_php.main import start_vessel_server
 from .utils import const
 
 token = secrets.token_bytes(16).hex()
@@ -55,7 +58,7 @@ class PhpCodeRequest(BaseModel):
 
 
 class ProxyRequest(BaseModel):
-    type: t.Literal["psudo_forward_proxy"]
+    type: t.Literal["psudo_forward_proxy", "vessel_forward_tcp"]
     session_id: UUID
     listen_host: t.Union[str, None]
     listen_port: int
@@ -415,7 +418,7 @@ async def session_php_eval(session_id: UUID, req: PhpCodeRequest):
 @app.get("/session/{session_id}/deploy_vessel")
 @catch_user_error
 async def session_deploy_vessel(session_id: UUID):
-    """测试"""
+    """部署vessel server"""
     session: SessionInterface = session_manager.get_session_by_id(session_id)
     if not isinstance(session, PHPSessionInterface):
         return {"code": -400, "msg": "指定的session不是PHP Session"}
@@ -490,6 +493,25 @@ async def forward_proxy_create_psudo_proxy(request: ProxyRequest):
             request.host,
             request.port,
             request.send_method,
+        )
+        psudo_tcp_proxies[request.listen_port] = (
+            request,
+            server_task,
+        )
+        return {"code": 0, "data": True}
+    elif request.type == "vessel_forward_tcp":
+        if not isinstance(session, PHPSessionInterface):
+            return {"code": -400, "msg": "Vessel当前只支持PHP webshell"}
+
+        client_code = await start_vessel_server(session)
+
+        server_task = await start_vessel_forward_tcp(
+            session=session,
+            load_vessel_client_code=client_code,
+            listen_host=request.listen_host,
+            listen_port=request.listen_port,
+            host=request.host,
+            port=request.port,
         )
         psudo_tcp_proxies[request.listen_port] = (
             request,

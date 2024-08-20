@@ -19,7 +19,8 @@ const sessions = ref([])
 const supportedSendMethods = reactive({})
 
 const readableProxyType = {
-  psudo_forward_proxy: "伪正向代理（仅支持HTTP）"
+  psudo_forward_proxy: "伪正向代理（仅支持HTTP）",
+  vessel_forward_tcp: "Vessel正向TCP代理"
 }
 
 // `openedProxies` is a list of objects like:
@@ -66,9 +67,9 @@ async function createProxy() {
     return;
   } else if (addProxyInput.type == "") {
     addPopup("red", "请填写代理类型", "代理类型未填写")
-  } else if (addProxyInput.type == "psudo_forward_proxy") {
+  } else if (addProxyInput.type == "psudo_forward_proxy" || addProxyInput.type == "vessel_forward_tcp") {
     const data = {
-      "type": "psudo_forward_proxy",
+      "type": addProxyInput.type,
       "session_id": addProxyInput.session_id,
       "listen_host": addProxyInput.listen_host,
       "listen_port": parseInt(addProxyInput.listen_port),
@@ -76,14 +77,13 @@ async function createProxy() {
       "port": parseInt(addProxyInput.port),
       "send_method": addProxyInput.send_method ? addProxyInput.send_method : null,
     }
-    console.log(data)
     const _ = await postDataOrPopupError("/forward_proxy/create_psudo_proxy", data)
     addPopup("green", "代理添加成功", `到${addProxyInput.host}:${addProxyInput.port}的代理添加成功`)
     Object.keys(addProxyInput).forEach(key => {
       addProxyInput[key] = ""
     });
     setTimeout(() => {
-      addPopup("yellow", "此功能仍不稳定", `伪正向代理仍在测试中，且仅支持HTTP！`)
+      addPopup("yellow", "此功能仍不稳定", `代理仍在测试中，且仅支持HTTP！`)
     }, 500)
   } else {
     addPopup("red", "不支持的代理类型", `当前还不支持以下代理类型${JSON.stringify(addProxyInput.type)}`)

@@ -113,3 +113,33 @@ eval(load_vessel_client());
     # 因为已经启动成功了所以直接把task给cancel掉就好了
     request_task.cancel()
     return load_vessel_client_code
+
+
+def get_vessel_client(session: PHPSessionInterface, load_vessel_client_code):
+
+    async def vessel_client_call(fn, *args, timeout):
+        start_uuid, stop_uuid = str(uuid.uuid4()), str(uuid.uuid4())
+        start_uuid_1, start_uuid_2 = start_uuid[:10], start_uuid[10:]
+        args_b64 = base64_encode(json.dumps(args))
+        _, result = await session.php_eval_raw(
+            (
+                load_vessel_client_code
+                + f"""
+$args = json_decode(base64_decode({args_b64!r}), true);
+$result = call("call_over_session", {fn!r}, $args, {timeout!r});
+echo "{start_uuid_1}" . "{start_uuid_2}";
+echo $result;
+echo "{stop_uuid}";
+"""
+            )
+        )
+        print(f"{fn=} {args=} {timeout=}")
+        try:
+            data = json.loads(result.rpartition(start_uuid)[2].partition(stop_uuid)[0])
+            if data["code"] != 0:
+                raise exceptions.TargetError(f"Vessel call failed: {data['msg']}")
+            return data["resp"]
+        except Exception:
+            return None
+
+    return vessel_client_call
