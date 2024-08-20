@@ -133,13 +133,11 @@ echo "{stop_uuid}";
 """
             )
         )
-        print(f"{fn=} {args=} {timeout=}")
         try:
             data = json.loads(result.rpartition(start_uuid)[2].partition(stop_uuid)[0])
-            if data["code"] != 0:
-                raise exceptions.TargetError(f"Vessel call failed: {data['msg']}")
-            return data["resp"]
         except Exception:
             return None
-
+        if data["code"] != 0:
+            raise exceptions.TargetRuntimeError(f"VESSEL_FAILED: {data['msg']}")
+        return data["resp"]
     return vessel_client_call

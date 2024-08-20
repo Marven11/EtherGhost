@@ -114,6 +114,9 @@ $endpoints["tcp_socket_connect"] = "tcp_socket_connect";
 function tcp_socket_write($args)
 {
     global $tcp_sockets;
+    if (!isset($tcp_sockets[$args[0]])) {
+        throw new Exception("Socket not exists");
+    }
     $socket = $tcp_sockets[$args[0]];
     if (feof($socket)) {
         unset($tcp_sockets[$args[0]]);
@@ -128,6 +131,9 @@ $endpoints["tcp_socket_write"] = "tcp_socket_write";
 function tcp_socket_read($args)
 {
     global $tcp_sockets;
+    if (!isset($tcp_sockets[$args[0]])) {
+        throw new Exception("Socket not exists");
+    }
     $socket = $tcp_sockets[$args[0]];
     if (feof($socket)) {
         unset($tcp_sockets[$args[0]]);
@@ -145,6 +151,9 @@ $endpoints["tcp_socket_read"] = "tcp_socket_read";
 function tcp_socket_close($args)
 {
     global $tcp_sockets;
+    if (!isset($tcp_sockets[$args[0]])) {
+        throw new Exception("Socket not exists");
+    }
     $socket = $tcp_sockets[$args[0]];
     fclose($socket);
     unset($tcp_sockets[$args[0]]);

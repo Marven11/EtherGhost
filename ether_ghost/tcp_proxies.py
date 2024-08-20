@@ -97,12 +97,9 @@ async def start_psudo_tcp_proxy(
     ).start_server()
 
 
+# TODO: 允许用户在设置里指定这两个值
 REQUEST_INTERVAL_SHORT = 0.1
 REQUEST_INTERVAL_LONG = 2
-
-
-class SocketClosed(Exception):
-    pass
 
 
 async def sender(
@@ -112,7 +109,8 @@ async def sender(
     reader: asyncio.StreamReader,
 ):
     while state["socket_open"]:
-        tosend = await reader.read(1024)
+        # TODO: 允许用户设置这里的buffer大小
+        tosend = await reader.read(1024 * 32)
         if not tosend:
             state["socket_open"] = False
             return
@@ -123,7 +121,9 @@ async def sender(
                 base64.b64encode(tosend).decode(),
                 timeout=1,
             )
-        except SocketClosed:
+        except exceptions.TargetRuntimeError as e:
+            if "VESSEL_FAILED" not in str(e):
+                raise e
             state["socket_open"] = False
             return
         state["last_communicate_time"] = time.perf_counter()
@@ -140,12 +140,17 @@ async def receiver(
             towrite = await call(
                 "tcp_socket_read",
                 socket_id,
-                1024,
+                1024 * 32,
                 timeout=1,
             )
-        except SocketClosed:
+        except exceptions.TargetRuntimeError as e:
+            if "VESSEL_FAILED" not in str(e):
+                raise e
             state["socket_open"] = False
             return
+        if towrite is None:
+            await asyncio.sleep(1)
+            continue
         towrite_bytes = base64.b64decode(towrite)
         if not towrite_bytes:
             await asyncio.sleep(
@@ -178,19 +183,12 @@ class VesselTcpForwardServeConnection:
     async def serve_connection_raw(
         self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
     ):
-        socket_id = None
-        try:
-            socket_id = await self.call(
-                "tcp_socket_connect",
-                self.host,
-                self.port,
-                timeout=1,
-            )
-        except Exception:
-            writer.close()
-            return
-
-        print(f"{socket_id=}")
+        socket_id = await self.call(
+            "tcp_socket_connect", self.host, self.port, timeout=1
+        )
+        if socket_id is None:
+            raise exceptions.ServerError("Cannot connect")
+        print(f"[+] Open new socket {socket_id=}")
         state = {
             "socket_open": True,
             "session_key": self.session_key,
@@ -204,15 +202,17 @@ class VesselTcpForwardServeConnection:
         finally:
             state["socket_open"] = False
         try:
-            socket_id = await self.call(
+            await self.call(
                 "tcp_socket_close",
                 socket_id,
                 1024,
                 timeout=1,
             )
-        except Exception:
-            writer.close()
-            return
+        except exceptions.TargetRuntimeError as e:
+            if "VESSEL_FAILED" not in str(e):
+                raise e
+            print(f"[x] Socket close failed {socket_id=} {str(e)}")
+        print(f"[-] Socket closed {socket_id=}")
 
     async def serve_connection(
         self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
