@@ -10,6 +10,27 @@
 
 游魂自带上手即用RSA2048+AES256-CBC强加密，AES密钥在连接时生成并使用RSA加密传输，彻底阻止重放攻击和流量分析。
 
+## 特点
+
+- 同时支持PHP一句话webshell和冰蝎PHP webshell
+- 流量防重放和流量强加密
+- TCP正向代理
+- 异步上传下载文件
+- chunked transfer encoding分块发包
+- 对接蚁剑
+- 自定义encoder和decoder
+  - 支持导入部分蚁剑encoder和decoder
+- 。。。。。。
+
+
+## 预览
+
+![preview](assets/preview-homepage.png)
+
+![preview](assets/preview-terminal.png)
+
+![preview](assets/preview-files.png)
+
 ## 当前功能
 
 - 支持的webshell
@@ -21,7 +42,7 @@
   - 文件管理
     - 异步文件上传下载
   - PHP代码执行
-  - 伪正向代理
+  - TCP正向代理
   - 查看基本信息
   - 下载phpinfo
 - webshell编码
@@ -30,14 +51,6 @@
   - session暂存payload
   - 防流量重放
   - RSA+AES加密
-
-## 预览
-
-![preview](assets/preview-homepage.png)
-
-![preview](assets/preview-terminal.png)
-
-![preview](assets/preview-files.png)
 
 ## 为什么不用蚁剑？
 

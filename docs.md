@@ -75,3 +75,13 @@ module.exports = {
 完成后可以在webshell编辑界面看到encoder
 
 注意：游魂不支持和蚁剑内部设计高度相关的某些环境变量，某些encoder需要进行修改才能使用
+
+# Q&A: 为什么正向代理有Vessel和伪正向两种代理？Vessel是什么？
+
+Vessel是我自己写的一个PHP持久化内存马，可以通过文件和Session两种方式通信。本来正向代理功能是打算直接联动[Neo-reGeorg](https://github.com/L-codes/Neo-reGeorg)的，但是Neo-reGeorg的许可证是GPL3，如果用他们的代码的话就要换许可证了。
+
+本来计划是写一个PHP内存马然后通过文件实现与内存马的通信，但是看了Neo-reGeorg的代码后才发现Session竟然可以这么用来通信，然后才加上了Session的通信方式。
+
+Vessel没有经过多少测试，功能也只是基本能用的状态，速度应该也比不上Neo-reGeorg，但是用来做内网渗透应该是够的。
+
+伪正向代理是用gopher协议以类似SSRF的方式发送流量，因为是SSRF所以基本上只能支持HTTP之类的协议。
