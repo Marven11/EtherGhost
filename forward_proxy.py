@@ -1,11 +1,19 @@
 import asyncio
 import base64
 import json
+import time
 import traceback
 import typing as t
 import httpx
 
 url = "http://127.0.0.1/vessel-client.php"
+
+REQUEST_INTERVAL_SHORT = 0.1
+REQUEST_INTERVAL_LONG = 2
+
+
+class SocketClosed(Exception):
+    pass
 
 
 async def call(client: httpx.AsyncClient, fn, *args, timeout):
@@ -15,17 +23,24 @@ async def call(client: httpx.AsyncClient, fn, *args, timeout):
     data = resp.json()
     print(f"{fn=} {args=} {data=}")
     if data.get("code", None) != 0:
+        if "SOCKET_CLOSED" in data["msg"]:
+            raise SocketClosed()
         raise RuntimeError(data["msg"])
     return data["resp"]
 
 
-async def sender(socket_id: int, reader: asyncio.StreamReader):
-    async with httpx.AsyncClient() as client:
-        while True:
-            tosend = await reader.read(1024)
-            if not tosend:
-                await asyncio.sleep(0.5)
-                continue
+async def sender(
+    state: dict,
+    client: httpx.AsyncClient,
+    socket_id: int,
+    reader: asyncio.StreamReader,
+):
+    while state["socket_open"]:
+        tosend = await reader.read(1024)
+        if not tosend:
+            state["socket_open"] = False
+            return
+        try:
             await call(
                 client,
                 "tcp_socket_write",
@@ -33,11 +48,20 @@ async def sender(socket_id: int, reader: asyncio.StreamReader):
                 base64.b64encode(tosend).decode(),
                 timeout=1,
             )
+        except SocketClosed:
+            state["socket_open"] = False
+            return
+        state["last_communicate_time"] = time.perf_counter()
 
 
-async def receiver(socket_id: int, writer: asyncio.StreamWriter):
-    async with httpx.AsyncClient() as client:
-        while True:
+async def receiver(
+    state: dict,
+    client: httpx.AsyncClient,
+    socket_id: int,
+    writer: asyncio.StreamWriter,
+):
+    while state["socket_open"]:
+        try:
             towrite = await call(
                 client,
                 "tcp_socket_read",
@@ -45,11 +69,19 @@ async def receiver(socket_id: int, writer: asyncio.StreamWriter):
                 1024,
                 timeout=1,
             )
-            towrite_bytes = base64.b64decode(towrite)
-            if not towrite_bytes:
-                await asyncio.sleep(0.5)
-                continue
-            writer.write(towrite_bytes)
+        except SocketClosed:
+            state["socket_open"] = False
+            return
+        towrite_bytes = base64.b64decode(towrite)
+        if not towrite_bytes:
+            await asyncio.sleep(
+                REQUEST_INTERVAL_SHORT
+                if time.perf_counter() - state["last_communicate_time"] < 3
+                else REQUEST_INTERVAL_LONG
+            )
+            continue
+        writer.write(towrite_bytes)
+        state["last_communicate_time"] = time.perf_counter()
 
 
 class TcpServeConnection:
@@ -64,42 +96,48 @@ class TcpServeConnection:
         self.listen_port = listen_port
         self.host = host
         self.port = port
+        self.client = httpx.AsyncClient()
 
     async def serve_connection_raw(
         self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
     ):
         socket_id = None
         try:
-            async with httpx.AsyncClient() as client:
-                socket_id = await call(
-                    client,
-                    "tcp_socket_connect",
-                    self.host,
-                    self.port,
-                    timeout=1,
-                )
+            socket_id = await call(
+                self.client,
+                "tcp_socket_connect",
+                self.host,
+                self.port,
+                timeout=1,
+            )
+        except httpx.HTTPError:
+            writer.close()
+            self.client = httpx.AsyncClient()
+            return
         except Exception:
             writer.close()
             return
 
         print(f"{socket_id=}")
+        state = {
+            "socket_open": True,
+            "last_communicate_time": time.perf_counter(),
+        }
         try:
-            # TODO: 正确关闭coro, 避免内存泄漏
             await asyncio.gather(
-                sender(socket_id, reader),
-                receiver(socket_id, writer),
+                sender(state, self.client, socket_id, reader),
+                receiver(state, self.client, socket_id, writer),
             )
-        except Exception:
-            pass
+        finally:
+            state["socket_open"] = False
         try:
-            async with httpx.AsyncClient() as client:
-                socket_id = await call(
-                    client,
-                    "tcp_socket_close",
-                    socket_id,
-                    1024,
-                    timeout=1,
-                )
+            socket_id = await call(
+                self.client,
+                "tcp_socket_close",
+                socket_id,
+                1024,
+                timeout=1,
+            )
         except Exception:
             writer.close()
             return

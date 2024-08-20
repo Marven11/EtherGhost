@@ -115,7 +115,7 @@ function tcp_socket_write($args)
     $socket = $tcp_sockets[$args[0]];
     if (feof($socket)) {
         unset($tcp_sockets[$args[0]]);
-        throw new Exception("Socket closed: EOF");
+        throw new Exception("SOCKET_CLOSED: reach EOF, bye");
     }
     $message = base64_decode($args[1]);
     return fwrite($socket, $message);
@@ -129,11 +129,11 @@ function tcp_socket_read($args)
     $socket = $tcp_sockets[$args[0]];
     if (feof($socket)) {
         unset($tcp_sockets[$args[0]]);
-        throw new Exception("Socket closed: EOF");
+        throw new Exception("SOCKET_CLOSED: reach EOF, bye");
     }
     $result = fread($socket, $args[1]);
     if ($result === false) {
-        throw new Exception("Socket closed");
+        throw new Exception("read failed");
     }
     return base64_encode($result);
 }
