@@ -70,7 +70,7 @@ class ProxyRequest(BaseModel):
 temp_dir = Path(tempfile.gettempdir())
 temp_files: t.Dict[UUID, t.Tuple[str, Path]] = {}
 
-psudo_tcp_proxies: t.Dict[int, t.Tuple[ProxyRequest, asyncio.Task]] = {}
+tcp_forward_proxies: t.Dict[int, t.Tuple[ProxyRequest, asyncio.Task]] = {}
 
 
 @asynccontextmanager
@@ -83,13 +83,13 @@ async def lifespan(api: FastAPI):
         if filepath.exists():
             filepath.unlink()
     temp_files.clear()
-    for tpl in psudo_tcp_proxies.values():
+    for tpl in tcp_forward_proxies.values():
         server = tpl[-1]
         try:
             server.cancel()
         except asyncio.exceptions.CancelledError:
             pass
-    psudo_tcp_proxies.clear()
+    tcp_forward_proxies.clear()
 
 
 DIR = Path(__file__).parent
@@ -463,7 +463,7 @@ async def forward_proxy_list():
         "code": 0,
         "data": [
             {
-                "type": "psudo_forward_proxy",
+                "type": proxy_request.type,
                 "session_id": proxy_request.session_id,
                 "session_name": get_session_name(proxy_request.session_id),
                 "listen_host": proxy_request.listen_host,
@@ -472,7 +472,7 @@ async def forward_proxy_list():
                 "port": proxy_request.port,
                 "send_method": proxy_request.send_method,
             }
-            for proxy_request, _ in psudo_tcp_proxies.values()
+            for proxy_request, _ in tcp_forward_proxies.values()
         ],
     }
 
@@ -480,7 +480,7 @@ async def forward_proxy_list():
 @app.post("/forward_proxy/create_psudo_proxy")
 @catch_user_error
 async def forward_proxy_create_psudo_proxy(request: ProxyRequest):
-    if request.listen_port in psudo_tcp_proxies:
+    if request.listen_port in tcp_forward_proxies:
         return {"code": -400, "msg": "端口已占用"}
     if request.listen_host is None:
         request.listen_host = "0.0.0.0"
@@ -494,7 +494,7 @@ async def forward_proxy_create_psudo_proxy(request: ProxyRequest):
             request.port,
             request.send_method,
         )
-        psudo_tcp_proxies[request.listen_port] = (
+        tcp_forward_proxies[request.listen_port] = (
             request,
             server_task,
         )
@@ -513,7 +513,7 @@ async def forward_proxy_create_psudo_proxy(request: ProxyRequest):
             host=request.host,
             port=request.port,
         )
-        psudo_tcp_proxies[request.listen_port] = (
+        tcp_forward_proxies[request.listen_port] = (
             request,
             server_task,
         )
@@ -524,12 +524,12 @@ async def forward_proxy_create_psudo_proxy(request: ProxyRequest):
 @app.delete("/forward_proxy/{listen_port}/")
 @catch_user_error
 async def forward_proxy_delete(listen_port: int):
-    server_task = psudo_tcp_proxies[listen_port][-1]
+    server_task = tcp_forward_proxies[listen_port][-1]
     try:
         server_task.cancel()
     except asyncio.exceptions.CancelledError:
         pass
-    del psudo_tcp_proxies[listen_port]
+    del tcp_forward_proxies[listen_port]
     return {"code": 0, "data": True}
 
 

@@ -1,7 +1,7 @@
 <script setup>
 
 import { addPopup, getCurrentApiUrl, getDataOrPopupError, parseDataOrPopupError, postDataOrPopupError } from "@/assets/utils";
-import { reactive, ref, shallowRef, watch } from "vue";
+import { reactive, ref, watch } from "vue";
 import iconCross from "./icons/iconCross.vue";
 import { store } from "@/assets/store";
 import axios from "axios";
@@ -19,8 +19,8 @@ const sessions = ref([])
 const supportedSendMethods = reactive({})
 
 const readableProxyType = {
+  vessel_forward_tcp: "Vessel正向TCP代理",
   psudo_forward_proxy: "伪正向代理（仅支持HTTP）",
-  vessel_forward_tcp: "Vessel正向TCP代理"
 }
 
 // `openedProxies` is a list of objects like:
@@ -173,7 +173,7 @@ setTimeout(() => {
         :data-valid="addProxyInputValid.host">
       <input type="text" name="port" id="" placeholder="远程连接端口" v-model="addProxyInput.port"
         :data-valid="addProxyInputValid.port">
-      <select v-if="supportedSendMethods.length != 0 && addProxyInput.session_id != ''" name="send_method" id=""
+      <select v-if="supportedSendMethods.length != 0 && addProxyInput.session_id != '' && addProxyInput.type=='psudo_forward_proxy'" name="send_method" id=""
         v-model="addProxyInput.send_method">
         <option :value="''">自动选择发送方法
         </option>
