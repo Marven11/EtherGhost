@@ -23,7 +23,7 @@ function getPopup(id) {
 
 
 function addPopup(color, title, message) {
-  const id = Date.now()
+  const id = Date.now() + Math.floor(Math.random() * 100000)
   const popup = {
     id,
     color,
