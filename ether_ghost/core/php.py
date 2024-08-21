@@ -1193,8 +1193,8 @@ class PHPWebshell(PHPSessionInterface):
         )
         return result
 
-    async def php_eval_raw(self, code: str) -> t.Tuple[int, str]:
-        # its just a renaming of submit_http
+    async def php_eval_beforebody(self, code: str) -> t.Tuple[int, str]:
+        # by default its just a renaming of submit_http
         return await self.submit_http(code)
 
     async def emulated_antsword(self, body: bytes) -> t.Tuple[int, str]:

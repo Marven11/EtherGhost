@@ -258,14 +258,3 @@ function serve_over_files()
         clearstatcache();
     }
 }
-
-// if ($_GET["action"] == "check_session_id") {
-//     session_start();
-//     echo session_id();
-// } else if ($_GET["action"] == "serve_over_session") {
-//     serve_over_session($_GET["session_key"]);
-// } else if ($_GET["action"] == "serve_over_files") {
-//     serve_over_files();
-// } else {
-//     echo "Hello, World!";
-// }

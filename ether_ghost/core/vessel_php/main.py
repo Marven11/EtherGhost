@@ -35,13 +35,13 @@ async def start_vessel_server(session: PHPSessionInterface, timeout=10):
     # 先测试一下phpsession是否可以使用
     await session.php_eval(
         f"""
-session_start();
+@session_start();
 $_SESSION['{vessel_client_store}'] = '{vessel_client_store}';
 """
     )
     stored_session_value = await session.php_eval(
         f"""
-session_start();
+@session_start();
 echo json_encode($_SESSION['{vessel_client_store}']);
 """
     )
@@ -51,9 +51,10 @@ echo json_encode($_SESSION['{vessel_client_store}']);
     # 几乎一定会timeout， 因为vessel会一直运行
     async def start_vessel_request():
         try:
-            await session.php_eval_raw(
+            _, r = await session.php_eval_beforebody(
                 code + f"\nserve_over_session('{vessel_session_key}');"
             )
+            print(r)
         except Exception:
             pass
 
@@ -98,7 +99,7 @@ eval(load_vessel_client());
     while time.perf_counter() - check_start_time < timeout:
         await asyncio.sleep(0.2)
         first, second = str(uuid.uuid4()), str(uuid.uuid4())
-        _, result = await session.php_eval_raw(
+        _, result = await session.php_eval_beforebody(
             (
                 load_vessel_client_code
                 + f"""echo call("call_over_session", "hello", ["{first}", "{second}"], 1);"""
@@ -121,7 +122,7 @@ def get_vessel_client(session: PHPSessionInterface, load_vessel_client_code):
         start_uuid, stop_uuid = str(uuid.uuid4()), str(uuid.uuid4())
         start_uuid_1, start_uuid_2 = start_uuid[:10], start_uuid[10:]
         args_b64 = base64_encode(json.dumps(args))
-        _, result = await session.php_eval_raw(
+        _, result = await session.php_eval_beforebody(
             (
                 load_vessel_client_code
                 + f"""

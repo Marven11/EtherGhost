@@ -131,8 +131,10 @@ class PHPSessionInterface(SessionInterface):
         """执行给定的代码，使用eval"""
         raise NotImplementedError()
 
-    async def php_eval_raw(self, code: str) -> t.Tuple[int, str]:
-        """执行给定的代码，不使用任何wrapper，保证在此之前不使用echo等输出文本"""
+    async def php_eval_beforebody(self, code: str) -> t.Tuple[int, str]:
+        """执行给定的代码，不使用任何wrapper
+
+        保证在此之前不使用echo等输出body正文，但不能自动从HTML中提取代码输出"""
         # 为了保证能正常地打开和关闭php session
         raise NotImplementedError()
 
