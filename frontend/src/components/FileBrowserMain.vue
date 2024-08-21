@@ -176,6 +176,15 @@ const entries = shallowRef([
 // --- Upload File Hover Form ---
 // ##############################
 
+// uploadProgress
+
+const uploadingFiles = ref([])
+
+setTimeout(async () => {
+  let result = await getDataOrPopupError(`/session/${props.session}/file_upload_status`)
+  uploadingFiles.value = result
+}, 0)
+
 function sleep(time) {
   return new Promise((resolve) => setTimeout(resolve, time));
 }
@@ -186,12 +195,15 @@ async function checkUploadStatus(stopSignal) {
   while (!stopSignal.signal) {
     await sleep(300)
     let result = await getDataOrPopupError(`/session/${props.session}/file_upload_status`)
-    uploadingFiles.value = result
     console.log(result)
+    uploadingFiles.value = result
     if (result.length == 0) {
       return;
     }
   }
+  // 最后再刷新一次，保证去除上传失败的文件
+  let result = await getDataOrPopupError(`/session/${props.session}/file_upload_status`)
+  uploadingFiles.value = result
 }
 
 async function submitUploadFile(form) {
@@ -498,11 +510,6 @@ const inputBoxNote = ref("")
 const inputBoxRequireInput = ref(false)
 let inputBoxCallback = ref(undefined)
 
-// uploadProgress
-
-const uploadingFiles = ref([])
-
-console.log(uploadingFiles.value)
 
 // #################
 // --- Utilities ---

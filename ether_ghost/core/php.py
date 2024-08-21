@@ -16,7 +16,6 @@ from binascii import Error as BinasciiError
 from . import exceptions, custom_encoders
 from .php_decoder import decoders
 
-from ..utils.random_data import random_english_words
 from ..utils.user_agents import random_user_agent
 from ..utils.cipher import (
     get_rsa_key,
