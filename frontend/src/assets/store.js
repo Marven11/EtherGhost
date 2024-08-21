@@ -11,7 +11,8 @@ export const store = reactive({
 })
 
 export const currentSettings = reactive({
-  theme: "white"
+  theme: "white",
+  filesizeUnit: 1024
 })
 
 watch(

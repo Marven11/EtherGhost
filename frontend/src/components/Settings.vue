@@ -71,7 +71,29 @@ const connectionOptionGroup = {
   ]
 }
 
-const optionsGroups = shallowRef([userInterfaceOptionGroup, connectionOptionGroup])
+const othersOptionGroup = {
+  name: "其他配置",
+  options: [
+  {
+      id: "filesizeUnit",
+      name: "文件大小单位",
+      type: "select",
+      default_value: 1024,
+      alternatives: [
+        {
+          name: "KiB, MiB...",
+          value: 1024
+        },
+        {
+          name: "KB, MB...",
+          value: 1000
+        },
+      ]
+    },
+  ]
+}
+
+const optionsGroups = shallowRef([userInterfaceOptionGroup, connectionOptionGroup, othersOptionGroup])
 
 function changeClickboxOption(optionId) {
   currentSettings[optionId] = !currentSettings[optionId]

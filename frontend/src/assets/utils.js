@@ -1,5 +1,5 @@
 import axios from "axios"
-import { popupsRef } from "./store"
+import { popupsRef, currentSettings } from "./store"
 import { ref, shallowRef } from "vue"
 
 export function hello() {
@@ -143,10 +143,18 @@ export function readableFileSize(fileSize) {
     return "? KB"
   }
   let units = ["B", "KiB", "MiB", "GiB", "TiB"]
+  let diff = 1024
+  if (currentSettings.filesizeUnit == 1000) {
+    units = ["B", "KB", "MB", "GB", "TB"]
+    diff = 1000
+  }
+  if (fileSize < diff) {
+    return `${fileSize}B`
+  }
   for (let unit of units) {
-    if (fileSize <= 1024 || unit == "TiB") {
+    if (fileSize <= diff || unit == units[units.length - 1]) {
       return `${fileSize.toFixed(2)}${unit}`
     }
-    fileSize /= 1024
+    fileSize /= diff
   }
 }
