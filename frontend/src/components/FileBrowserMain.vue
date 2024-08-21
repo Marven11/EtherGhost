@@ -18,7 +18,7 @@ import HoverForm from "./HoverForm.vue"
 import HoverStatus from "./HoverBox.vue"
 import InputBox from "./InputBox.vue"
 import { Codemirror } from 'vue-codemirror'
-import { getDataOrPopupError, postDataOrPopupError, addPopup, joinPath, ClickMenuManager } from "@/assets/utils"
+import { getDataOrPopupError, postDataOrPopupError, addPopup, joinPath, ClickMenuManager, readableFileSize } from "@/assets/utils"
 import { store } from "@/assets/store"
 
 // --- CodeMirror Stuff
@@ -515,18 +515,6 @@ let inputBoxCallback = ref(undefined)
 // --- Utilities ---
 // #################
 
-function readableFileSize(fileSize) {
-  if (fileSize == -1) {
-    return "? KB"
-  }
-  let units = ["B", "KiB", "MiB", "GiB", "TiB"]
-  for (let unit of units) {
-    if (fileSize <= 1024 || unit == "TiB") {
-      return `${Math.round(fileSize)} ${unit}`
-    }
-    fileSize /= 1024
-  }
-}
 
 function readableFilePerm(filePerm) {
   let result = ""
@@ -632,10 +620,17 @@ function readableFilePerm(filePerm) {
               {{ Math.floor(file.percentage * 100) }}%
             </p>
           </div>
+          <div class="upload-progress-fileinfo">
+            <p class="upload-progress-filename">
+              {{ file.file }}
+            </p>
+            <p class="upload-progress-meta">
+              {{ readableFileSize(file.done_bytes) }}
+              / {{ readableFileSize(file.max_bytes) }}
+              at {{ file.folder }}
+            </p>
+          </div>
 
-          <p class="upload-progress-filename">
-            {{ file.file }}
-          </p>
         </div>
       </div>
     </HoverStatus>
@@ -817,8 +812,18 @@ input[type="text"] {
   padding: 20px;
 }
 
+.upload-progress-fileinfo {
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+}
+
 .upload-progress-filename {
-  font-size: 24px;
+  font-size: 28px;
+}
+
+.upload-progress-meta {
+  color: var(--font-color-grey);
 }
 
 .upload-progress-percentage {

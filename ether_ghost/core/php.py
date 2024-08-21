@@ -807,7 +807,8 @@ class PHPWebshell(PHPSessionInterface):
     ) -> bool:
         sem = asyncio.Semaphore(self.max_coro)
         chunk_size = self.chunk_size
-        done_count = 0
+        done_coro = 0
+        done_bytes = 0
         coros = []
 
         result = await self.submit(
@@ -821,15 +822,21 @@ class PHPWebshell(PHPSessionInterface):
             raise exceptions.FileError("检查文件写入权限失败")
 
         async def upload_chunk(chunk: bytes):
-            nonlocal done_count
+            nonlocal done_coro, done_bytes
             code = UPLOAD_FILE_CHUNK_PHP.replace("BASE64_CONTENT", base64_encode(chunk))
             async with sem:
                 await asyncio.sleep(0.01)  # we don't ddos
                 result = await self.submit(code)
                 # TODO: 在这里加锁，适配GIL模式
-                done_count += 1
+                done_coro += 1
+                done_bytes += len(chunk)
                 if callback:
-                    callback(done_count / len(coros))
+                    callback(
+                        done_coro=done_coro,
+                        max_coro=len(coros),
+                        done_bytes=done_bytes,
+                        max_bytes=len(content),
+                    )
             return result
 
         coros = [

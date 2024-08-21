@@ -5,6 +5,7 @@ import uuid
 upload_file_status = {}
 
 
+
 @contextmanager
 def record_upload_file(session_id: t.Union[uuid.UUID, str], folder: str, filename: str):
 
@@ -12,8 +13,14 @@ def record_upload_file(session_id: t.Union[uuid.UUID, str], folder: str, filenam
         upload_file_status[session_id] = {}
     upload_file_status[session_id][(folder, filename)] = 0
 
-    def change_status(percentage: float):
-        upload_file_status[session_id][(folder, filename)] = percentage
+    def change_status(done_coro: int, max_coro: int, done_bytes: int, max_bytes: int):
+        percentage = done_coro / max_coro
+        upload_file_status[session_id][(folder, filename)] = (
+            percentage,
+            done_bytes,
+            max_bytes,
+        )
+
     try:
         yield change_status
     finally:
@@ -24,6 +31,16 @@ def record_upload_file(session_id: t.Union[uuid.UUID, str], folder: str, filenam
 
 def get_session_uploading_file(session_id):
     return [
-        {"folder": folder, "file": file, "percentage": percentage}
-        for (folder, file), percentage in upload_file_status.get(session_id, {}).items()
+        {
+            "folder": folder,
+            "file": file,
+            "percentage": percentage,
+            "done_bytes": done_bytes,
+            "max_bytes": max_bytes,
+        }
+        for (folder, file), (
+            percentage,
+            done_bytes,
+            max_bytes,
+        ) in upload_file_status.get(session_id, {}).items()
     ]

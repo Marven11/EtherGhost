@@ -72,7 +72,7 @@ export function parseDataOrPopupError(resp) {
     } else if (resp.data.code == -600) {
       title = "受控端错误"
       errorClass = TargetError
-    }else{
+    } else {
       title = "错误"
       errorClass = Error
     }
@@ -134,5 +134,19 @@ export function ClickMenuManager(items, handleSelected) {
     "onremove": onRemove,
     "x": clickMenuX,
     "y": clickMenuY,
+  }
+}
+
+
+export function readableFileSize(fileSize) {
+  if (fileSize == -1) {
+    return "? KB"
+  }
+  let units = ["B", "KiB", "MiB", "GiB", "TiB"]
+  for (let unit of units) {
+    if (fileSize <= 1024 || unit == "TiB") {
+      return `${fileSize.toFixed(2)}${unit}`
+    }
+    fileSize /= 1024
   }
 }
