@@ -156,6 +156,18 @@ if(!file_exists($filePath)) {
 """
 )
 
+UPLOAD_FILE_CHECK_PERMISSION_PHP = compress_phpcode_template(
+    """
+if(!is_writable(FOLDER)) {
+    decoder_echo("WRONG_NO_PERMISSION");
+}else if(file_exists(FILE)) {
+    decoder_echo("WRONG_FILE_EXISTS");
+}else{
+    decoder_echo("OK");
+}
+"""
+)
+
 UPLOAD_FILE_CHUNK_PHP = compress_phpcode_template(
     """
 $file = tempnam("", "");
@@ -792,6 +804,14 @@ class PHPWebshell(PHPSessionInterface):
         chunk_size = self.chunk_size
         done_count = 0
         coros = []
+
+        result = await self.submit(UPLOAD_FILE_CHECK_PERMISSION_PHP)
+        if result == "WRONG_NO_PERMISSION":
+            raise exceptions.FileError("没有权限写入文件夹")
+        if result == "WRONG_FILE_EXISTS":
+            raise exceptions.FileError("文件已存在")
+        if result != "OK":
+            raise exceptions.FileError("检查文件写入权限失败")
 
         async def upload_chunk(chunk: bytes):
             nonlocal done_count
