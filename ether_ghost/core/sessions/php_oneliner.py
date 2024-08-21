@@ -146,6 +146,14 @@ class PHPWebshellOneliner(PHPWebshell):
                     alternatives=None,
                 ),
                 ConnOption(
+                    id="timeout_refresh_client",
+                    name="超时更换HTTP Session",
+                    type="checkbox",
+                    placeholder="一直使用相同的PHPSESSID可能会导致前一个长时间操作阻塞接下来的操作",
+                    default_value=True,
+                    alternatives=None,
+                ),
+                ConnOption(
                     id="chunked_request",
                     name="分块传输编码",
                     type="text",
@@ -247,6 +255,7 @@ class PHPWebshellOneliner(PHPWebshell):
             session_conn.get("extra_cookies", "null"), (dict, type(None))
         )
         self.http_params_obfs = session_conn["http_params_obfs"]
+        self.timeout_refresh_client = session_conn.get("timeout_refresh_client", True)
         self.chunked_request = int(session_conn.get("chunked_request", 0))
         self.https_verify = session_conn.get("https_verify", False)
         self.timeout = float(session_conn.get("timeout", 0))
@@ -342,9 +351,9 @@ class PHPWebshellOneliner(PHPWebshell):
             # 所以我们再使用这个session id发起请求就会卡住
             # 所以我们要丢掉这个session id，使用另一个client发出请求
 
-            # TODO: 让用户决定是否刷新
-            # logger.warning("HTTP请求受控端超时，尝试刷新HTTP Client")
-            # self.client = get_http_client(verify=self.https_verify)
+            if self.timeout_refresh_client:
+                logger.warning("HTTP请求受控端超时，尝试刷新HTTP Client")
+                self.client = get_http_client(verify=self.https_verify)
             raise exceptions.NetworkError("HTTP请求受控端超时") from exc
         except httpx.ProxyError as exc:
             raise exceptions.NetworkError("连接代理失败") from exc
