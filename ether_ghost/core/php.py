@@ -158,9 +158,9 @@ if(!file_exists($filePath)) {
 
 UPLOAD_FILE_CHECK_PERMISSION_PHP = compress_phpcode_template(
     """
-if(!is_writable(FOLDER)) {
+if(!is_writable(dirname(FILEPATH))) {
     decoder_echo("WRONG_NO_PERMISSION");
-}else if(file_exists(FILE)) {
+}else if(file_exists(FILEPATH)) {
     decoder_echo("WRONG_FILE_EXISTS");
 }else{
     decoder_echo("OK");
@@ -810,7 +810,9 @@ class PHPWebshell(PHPSessionInterface):
         done_count = 0
         coros = []
 
-        result = await self.submit(UPLOAD_FILE_CHECK_PERMISSION_PHP)
+        result = await self.submit(
+            UPLOAD_FILE_CHECK_PERMISSION_PHP.replace("FILEPATH", string_repr(filepath))
+        )
         if result == "WRONG_NO_PERMISSION":
             raise exceptions.FileError("没有权限写入文件夹")
         if result == "WRONG_FILE_EXISTS":

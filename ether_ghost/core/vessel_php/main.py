@@ -28,7 +28,9 @@ def xor_encode(text: str, key: str):
 
 
 async def start_vessel_server(session: PHPSessionInterface, timeout=10):
-    code = VESSEL_SERVER_SRC.read_text().removeprefix("<?php").strip()
+    code = (
+        VESSEL_SERVER_SRC.read_text().removeprefix("<?php").strip().replace("    ", "")
+    )
     vessel_client_store = f"_{uuid.uuid4()}"
     vessel_session_key = f"_{uuid.uuid4()}"
     print(f"{vessel_session_key=}")
@@ -52,7 +54,8 @@ echo json_encode($_SESSION['{vessel_client_store}']);
     async def start_vessel_request():
         try:
             _, r = await session.php_eval_beforebody(
-                code + f"\nserve_over_session('{vessel_session_key}');"
+                code
+                + f"\n(new VesselServer()) -> serve_over_session('{vessel_session_key}');"
             )
             print(r)
         except Exception:
@@ -86,8 +89,8 @@ function load_vessel_client() {
     }
     return base64_decode($str);
 }
-define('VESSEL_SESSION_KEY', '{vessel_session_key}');
 eval(load_vessel_client());
+$client = new VesselClient('{vessel_session_key}');
 """
         )
         .replace("    ", "")
@@ -102,12 +105,13 @@ eval(load_vessel_client());
         _, result = await session.php_eval_beforebody(
             (
                 load_vessel_client_code
-                + f"""echo call("call_over_session", "hello", ["{first}", "{second}"], 1);"""
+                + f"""echo $client -> call("call_over_session", "hello", ["{first}", "{second}"], 1);"""
             )
         )
         if f"{first} {second}" in result:
             check_success = True
             break
+        print(result)
     if not check_success:
         raise exceptions.TargetError("启动失败：无法连接到启动的vessel")
 
@@ -127,7 +131,7 @@ def get_vessel_client(session: PHPSessionInterface, load_vessel_client_code):
                 load_vessel_client_code
                 + f"""
 $args = json_decode(base64_decode({args_b64!r}), true);
-$result = call("call_over_session", {fn!r}, $args, {timeout!r});
+$result = $client -> call("call_over_session", {fn!r}, $args, {timeout!r});
 echo "{start_uuid_1}" . "{start_uuid_2}";
 echo $result;
 echo "{stop_uuid}";
@@ -141,4 +145,5 @@ echo "{stop_uuid}";
         if data["code"] != 0:
             raise exceptions.TargetRuntimeError(f"VESSEL_FAILED: {data['msg']}")
         return data["resp"]
+
     return vessel_client_call

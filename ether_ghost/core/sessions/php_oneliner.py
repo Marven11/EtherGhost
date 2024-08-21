@@ -150,7 +150,7 @@ class PHPWebshellOneliner(PHPWebshell):
                     name="超时更换HTTP Session",
                     type="checkbox",
                     placeholder="一直使用相同的PHPSESSID可能会导致前一个长时间操作阻塞接下来的操作",
-                    default_value=True,
+                    default_value=False,
                     alternatives=None,
                 ),
                 ConnOption(
@@ -255,7 +255,7 @@ class PHPWebshellOneliner(PHPWebshell):
             session_conn.get("extra_cookies", "null"), (dict, type(None))
         )
         self.http_params_obfs = session_conn["http_params_obfs"]
-        self.timeout_refresh_client = session_conn.get("timeout_refresh_client", True)
+        self.timeout_refresh_client = session_conn.get("timeout_refresh_client", False)
         self.chunked_request = int(session_conn.get("chunked_request", 0))
         self.https_verify = session_conn.get("https_verify", False)
         self.timeout = float(session_conn.get("timeout", 0))
