@@ -15,8 +15,6 @@ setTimeout(async () => {
   setTimeout(() => store.header_background_transition = true, 100)
 }, 0)
 
-const showHoverForm = ref(true)
-
 </script>
 
 <template>

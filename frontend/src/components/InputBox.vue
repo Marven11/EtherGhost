@@ -91,6 +91,7 @@ function onClickBackground(event) {
 
 .input-box {
   width: 30%;
+  min-width: 400px;
   background-color: var(--background-color-1);
   color: var(--font-color-grey);
   border-radius: 20px;

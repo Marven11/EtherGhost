@@ -22,7 +22,7 @@ function onClickBackground(event) {
   event.preventDefault()
   let target = event.target
   while (target) {
-    if (target.classList.contains("input-box")) {
+    if (target.classList.contains("hover-form")) {
       return;
     }
     target = target.parentElement
@@ -33,14 +33,14 @@ function onClickBackground(event) {
 </script>
 
 <template>
-  <div class="input-box-main" @click.self="onClickBackground">
-    <div class="input-box">
-      <h1 class="input-box-title">{{ props.title }}</h1>
-      <form action="" class="input-box-form" ref="form">
+  <div class="hover-form-main" @click.self="onClickBackground">
+    <div class="hover-form">
+      <h1 class="hover-form-title">{{ props.title }}</h1>
+      <form action="" class="hover-form-form" ref="form">
         <slot></slot>
-        <div class="input-box-line">
-          <input class="input-box-button" type="button" value="取消" @click="onClickCancel">
-          <input class="input-box-button" type="button" value="确认" @click="onClickConfirm">
+        <div class="hover-form-line">
+          <input class="hover-form-button" type="button" value="取消" @click="onClickCancel">
+          <input class="hover-form-button" type="button" value="确认" @click="onClickConfirm">
         </div>
       </form>
     </div>
@@ -48,7 +48,7 @@ function onClickBackground(event) {
 </template>
 
 <style>
-.input-box-main {
+.hover-form-main {
   position: absolute;
   top: 0;
   left: 0;
@@ -60,8 +60,9 @@ function onClickBackground(event) {
   justify-content: center;
 }
 
-.input-box-main .input-box {
-  width: 50%;
+.hover-form-main .hover-form {
+  width: 30%;
+  min-width: 500px;
   background-color: var(--background-color-1);
   color: var(--font-color-grey);
   border-radius: 20px;
@@ -70,20 +71,20 @@ function onClickBackground(event) {
   flex-direction: column;
 }
 
-.input-box-main .input-box-form {
+.hover-form-main .hover-form-form {
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.input-box-main .input-box-title {
+.hover-form-main .hover-form-title {
   color: var(--font-color-white);
   margin: 0;
   margin-top: 20px;
 }
 
-.input-box-main .input-box-line {
+.hover-form-main .hover-form-line {
   display: flex;
   flex-direction: row;
   height: 100px;
@@ -92,32 +93,46 @@ function onClickBackground(event) {
   justify-content: space-evenly;
 }
 
-.input-box-main .input-box-line p {
+.hover-form-main .hover-form-line p {
   font-size: 20px;
   color: var(--font-color-white);
   margin-left: 20px;
   margin-right: 20px;
 }
 
-.input-box-main .input-box input,
-.input-box-main .input-box select,
-.input-box-main .input-file {
+.hover-form-main .hover-form input,
+.hover-form-main .hover-form select,
+.hover-form-main .input-file {
   transition: background 0.3s ease;
   background-color: var(--background-color-2);
 }
 
-.input-box-main .input-file {
+.hover-form-main .input-file {
+  background-color: var(--background-color-2);
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-grow: 1;
-  width: 50%;
-  height: 50px;
+  width: 80%;
+  height: 60px;
   border: none;
   border-radius: 20px;
 }
 
-.input-box-main .input-box input[type="text"] {
+.hover-form-main .input-file input {
+  height: 60%;
+}
+
+.hover-form-main .input-file input::file-selector-button {
+  background-color: var(--font-color-white);
+  border-radius: 20px;
+  padding-left: 10px;
+  padding-right: 10px;
+  height: 100%;
+  outline: none;
+  border: none
+}
+
+.hover-form-main .hover-form input[type="text"] {
   height: 50px;
   width: 50%;
   outline: none;
@@ -129,7 +144,7 @@ function onClickBackground(event) {
   padding-right: 10px;
 }
 
-.input-box-main .input-box input[type="button"] {
+.hover-form-main .hover-form input[type="button"] {
   height: 50px;
   width: 100px;
   outline: 2px dashed var(--font-color-grey);
@@ -140,7 +155,7 @@ function onClickBackground(event) {
   transition: background 0.3s ease;
 }
 
-.input-box-main .input-box input[type="button"]:hover {
+.hover-form-main .hover-form input[type="button"]:hover {
   background-color: #ffffff15;
 }
 </style>

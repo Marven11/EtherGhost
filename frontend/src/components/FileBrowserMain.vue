@@ -607,7 +607,7 @@ function readableFilePerm(filePerm) {
     <HoverForm title="上传文件" :callback="(result) => { submitUploadFile(result); showUploadFileHoverForm = false }"
       v-if="showUploadFileHoverForm">
       <input type="hidden" name="folder" :value="pwd">
-      <div class="input-box-line">
+      <div class="hover-form-line">
         <div class="input-file">
           <input type="file" name="file" id="file">
         </div>
