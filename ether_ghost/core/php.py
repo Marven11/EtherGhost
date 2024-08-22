@@ -886,11 +886,12 @@ class PHPWebshell(PHPSessionInterface):
 
         sem = asyncio.Semaphore(self.max_coro)
         chunk_size = self.chunk_size
-        done_count = 0
+        done_coro = 0
+        done_bytes = 0
         coros = []
 
         async def download_chunk(offset: int):
-            nonlocal done_count, coros
+            nonlocal done_coro, coros, done_bytes
             code = (
                 DOWNLOAD_FILE_CHUNK_PHP.replace("FILEPATH", string_repr(filepath))
                 .replace("OFFSET", str(offset))
@@ -899,9 +900,15 @@ class PHPWebshell(PHPSessionInterface):
             async with sem:
                 await asyncio.sleep(0.01)  # we don't ddos
                 result = await self.submit(code)
-                done_count += 1
+                done_coro += 1
+                done_bytes += chunk_size # TODO: fix me
                 if callback:
-                    callback(done_count / len(coros))
+                    callback(
+                        done_coro=done_coro,
+                        max_coro=len(coros),
+                        done_bytes=min(done_bytes, filesize),
+                        max_bytes=filesize,
+                    )
             return result
 
         coros = [download_chunk(i) for i in range(0, filesize, chunk_size)]

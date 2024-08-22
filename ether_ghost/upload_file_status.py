@@ -5,13 +5,12 @@ import uuid
 upload_file_status = {}
 
 
-
 @contextmanager
 def record_upload_file(session_id: t.Union[uuid.UUID, str], folder: str, filename: str):
 
     if session_id not in upload_file_status:
         upload_file_status[session_id] = {}
-    upload_file_status[session_id][(folder, filename)] = 0
+    upload_file_status[session_id][(folder, filename)] = (0, 0, 0)
 
     def change_status(done_coro: int, max_coro: int, done_bytes: int, max_bytes: int):
         percentage = done_coro / max_coro
@@ -24,7 +23,8 @@ def record_upload_file(session_id: t.Union[uuid.UUID, str], folder: str, filenam
     try:
         yield change_status
     finally:
-        del upload_file_status[session_id][(folder, filename)]
+        if (folder, filename) in upload_file_status[session_id]:
+            del upload_file_status[session_id][(folder, filename)]
         if not upload_file_status[session_id]:
             del upload_file_status[session_id]
 
