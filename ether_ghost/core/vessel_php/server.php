@@ -2,6 +2,7 @@
 session_start();
 ignore_user_abort(true);
 set_time_limit(0);
+error_reporting(E_ALL);
 
 class VesselServer
 {
@@ -35,11 +36,15 @@ class VesselServer
         if (!is_resource($proc)) {
             throw new Exception("Error: spawn failed");
         }
-        ($this->child_shells)[] = [
+        $key = rand(0, 100000);
+        while (isset($this->child_shells[$key])) {
+            $key = rand(0, 100000);
+        }
+        $this->child_shells[$key] = [
             "proc" => $proc,
             "pipes" => $pipes
         ];
-        return key($this->child_shells);
+        return $key;
     }
 
     function child_shell_write_stdin($args)
@@ -89,8 +94,12 @@ class VesselServer
             throw new Exception("Socket create failed: error initializing");
         }
         stream_set_blocking($socket, false);
-        $this->tcp_sockets[] = $socket; // TODO: use a random string
-        return array_key_last($this->tcp_sockets);
+        $key = rand(0, 100000);
+        while (isset($this->tcp_sockets[$key])) {
+            $key = rand(0, 100000);
+        }
+        $this->tcp_sockets[$key] = $socket;
+        return $key;
     }
 
 
@@ -156,13 +165,15 @@ class VesselServer
             }
             foreach (array_keys($_SESSION[$session_key]["req"]) as $reqid) {
                 $last_serve_time = time();
-
                 $data = json_decode($_SESSION[$session_key]["req"][$reqid]);
                 unset($_SESSION[$session_key]["req"][$reqid]);
                 $resp = null;
                 try {
                     $fn = $data->fn; # TODO: check fn here
                     $resp = call_user_func([$this, $data->fn], $data->args);
+                    // if ($data->fn == "tcp_socket_connect") {
+                    //     die(var_export($resp));
+                    // }
                 } catch (Exception $e) {
 
                     $_SESSION[$session_key]["resp"][$reqid] = json_encode([

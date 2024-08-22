@@ -53,11 +53,11 @@ echo json_encode($_SESSION['{vessel_client_store}']);
     # 几乎一定会timeout， 因为vessel会一直运行
     async def start_vessel_request():
         try:
-            _, r = await session.php_eval_beforebody(
+            _, vessel_server_resp = await session.php_eval_beforebody(
                 code
                 + f"\n(new VesselServer()) -> serve_over_session('{vessel_session_key}');"
             )
-            print(r)
+            print(f"{vessel_server_resp=}")
         except Exception:
             pass
 
@@ -116,7 +116,7 @@ $client = new VesselClient('{vessel_session_key}');
         raise exceptions.TargetError("启动失败：无法连接到启动的vessel")
 
     # 因为已经启动成功了所以直接把task给cancel掉就好了
-    request_task.cancel()
+    # request_task.cancel()
     return load_vessel_client_code
 
 
