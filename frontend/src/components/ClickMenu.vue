@@ -25,6 +25,10 @@ watch(clickMenu, () => {
   if (menuLeft.value + clickMenu.value.clientWidth > screen.width) {
     menuLeft.value -= clickMenu.value.clientWidth
   }
+  if (menuTop.value + clickMenu.value.clientHeight > screen.height) {
+    menuTop.value -= clickMenu.value.clientHeight
+  }
+  console.log(menuTop.value)
 })
 
 </script>
