@@ -4,7 +4,7 @@
 
 [下载](./assets/ether_ghost.exe)
 
-游魂是一个开源的Webshell管理器，提供更为方便的界面和功能，可配合或代替其他webshell管理器，帮助用户在各类渗透场景中控制目标机器。
+游魂是一个开源的Webshell管理器，提供更为方便的界面和更为简单易用的功能，可配合或代替其他webshell管理器，帮助用户在各类渗透场景中控制目标机器。
 
 游魂不仅支持常见的一句话webshell以及常见Webshell管理器的功能，还支持添加冰蝎的webshell，以及将任何webshell提供给蚁剑进行连接的功能。通过使用游魂，用户可以使用蚁剑操控冰蝎webshell，在冰蝎webshell上使用蚁剑的各类插件，同时享受蚁剑的丰富生态以及冰蝎的流量加密和免杀特性。
 
@@ -20,6 +20,8 @@
 - 异步上传下载文件
 - chunked transfer encoding分块发包
 - 对接蚁剑
+- 默认使用随机User Agent
+- HTTP填充垃圾数据
 - 自定义encoder和decoder
   - 支持导入部分蚁剑encoder和decoder
 - 。。。。。。
@@ -64,6 +66,8 @@
 - 蚁剑使用的Electron导致XSS漏洞极易被提升为RCE漏洞，导致攻击机被反制
 - 蚁剑的encoder需要经过复杂配置之后才可支持AES和RSA加密
 - 虽然蚁剑可以使用php_raw配合encoder连接冰蝎webshell，但蚁剑的插件生态仅支持php类型的webshell，无法在冰蝎webshell上使用各类插件
+
+当然蚁剑的encoder生态和插件生态还是很丰富的，encoder可以通过让python调用nodejs直接使用，插件移植难度比较大，可以让游魂假装是一个webshell，接受蚁剑传来的代码就可以解决。
 
 ## TODO
 
