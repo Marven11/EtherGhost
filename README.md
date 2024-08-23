@@ -2,6 +2,8 @@
 
 [文档](./docs.md)
 
+[下载](./assets/ether_ghost.exe)
+
 游魂是一个开源的Webshell管理器，提供更为方便的界面和功能，可配合或代替其他webshell管理器，帮助用户在各类渗透场景中控制目标机器。
 
 游魂不仅支持常见的一句话webshell以及常见Webshell管理器的功能，还支持添加冰蝎的webshell，以及将任何webshell提供给蚁剑进行连接的功能。通过使用游魂，用户可以使用蚁剑操控冰蝎webshell，在冰蝎webshell上使用蚁剑的各类插件，同时享受蚁剑的丰富生态以及冰蝎的流量加密和免杀特性。
