@@ -9,11 +9,13 @@ TODO: 做一个添加encoder的页面
 ```python
 import base64
 
-def encode(code: str) -> str:
+def encode(code: str):
     return f"eval(base64_decode({base64.b64encode(code.encode()).decode()!r}));"
 ```
 
 最后重启游魂即可在webshell编辑页面看到encoder
+
+注意：encode函数的返回值可以是str或bytes，代表需要执行的PHP代码
 
 # 示例：自定义Decoder
 

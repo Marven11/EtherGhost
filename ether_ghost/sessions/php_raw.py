@@ -31,6 +31,7 @@ def base64_encode(s):
         s = s.encode("utf-8")
     return base64.b64encode(s).decode()
 
+
 @register_session
 class PHPWebshellRaw(PHPWebshellCommunication, PHPWebshellActions):
     session_type = "PHP_RAW"
@@ -84,7 +85,7 @@ class PHPWebshellRaw(PHPWebshellCommunication, PHPWebshellActions):
     async def php_eval_beforebody(self, code: str) -> t.Tuple[int, str]:
         return await self.submit_http(code)
 
-    async def submit_http(self, payload):
+    async def submit_http(self, payload: t.Union[str, bytes]):
         try:
             response = await self.client.request(
                 method="POST", url=self.url, content=payload

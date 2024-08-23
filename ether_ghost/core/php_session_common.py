@@ -1055,7 +1055,7 @@ class PHPWebshellCommunication:
         if self.decoder not in decoders:
             raise exceptions.ServerError(f"找不到Decoder: {self.decoder}")
 
-    def encode(self, payload: str) -> str:
+    def encode(self, payload: str) -> t.Union[str, bytes]:
         """应用编码器"""
         if self.encoder == "raw":
             return payload
@@ -1200,8 +1200,8 @@ class PHPWebshellCommunication:
             payload_raw=payload,
             decoder=self.get_decoder_phpcode(),
         )
-        payload = self.encode(payload)
-        status_code, text = await self.submit_http(payload)
+        payload_encoded = self.encode(payload)
+        status_code, text = await self.submit_http(payload_encoded)
         if status_code == 404:
             raise exceptions.TargetUnreachable(
                 f"状态码404, 没有这个webshell: {status_code}"
@@ -1236,7 +1236,7 @@ class PHPWebshellCommunication:
             submitter = self.bypass_opendir_wrapper(submitter)
         return await submitter(payload)
 
-    async def submit_http(self, payload: str) -> t.Tuple[int, str]:
+    async def submit_http(self, payload: t.Union[str, bytes]) -> t.Tuple[int, str]:
         """提交原始php payload
 
         Args:

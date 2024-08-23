@@ -69,7 +69,7 @@ def user_json_loads(data: str, types: t.Union[type, t.Iterable[type]]):
         raise exceptions.UserError(f"解码JSON失败: {data!r}") from exc
 
 
-def eval_antsword_encoder(filename: str, pwd: str, php_payload: str) -> dict:
+def eval_antsword_encoder(filename: str, pwd: str, php_payload) -> dict:
     if shutil.which("node") is None:
         raise exceptions.UserError(
             "找不到NodeJS, 无法使用蚁剑Encoder, 请确保程序'node'在对应的环境变量里"
@@ -313,10 +313,15 @@ class PHPWebshellOneliner(PHPWebshellCommunication, PHPWebshellActions):
             timeout=self.timeout,
         )
 
-    async def submit_http(self, payload: str) -> t.Tuple[int, str]:
+    async def submit_http(self, payload: t.Union[str, bytes]) -> t.Tuple[int, str]:
         params = self.params.copy()
         data = self.data.copy()
         if self.antsword_encoder:
+            if isinstance(payload, bytes):
+                raise exceptions.UserError(
+                    "蚁剑的编码器不支持编码bytes类型的Payload！"
+                    + "请使用其他的PHP代码编码器"
+                )
             data = eval_antsword_encoder(self.antsword_encoder, self.password, payload)
             if self.http_params_obfs:
                 data = add_obfs_data(data, min_count=300, max_count=500)
