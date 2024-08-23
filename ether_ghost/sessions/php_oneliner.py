@@ -8,18 +8,18 @@ import typing as t
 
 import httpx
 
-from .. import exceptions
+from ..core import exceptions
 
-from ...utils.random_data import random_english_words, random_data
-from ...utils import const
-from ...utils.nodejs_bridge import nodejs_eval
-from ..base import (
+from ..utils.random_data import random_english_words, random_data
+from ..utils import const
+from ..utils.nodejs_bridge import nodejs_eval
+from ..core.base import (
     register_session,
     ConnOption,
     ConnOptionGroup,
     get_http_client,
 )
-from ..php import PHPWebshell, php_webshell_conn_options
+from ..core.php import PHPWebshell, php_webshell_conn_options
 
 logger = logging.getLogger("core.sessions.php_oneline")
 

@@ -7,15 +7,15 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 import httpx
 
-from .. import exceptions
+from ..core import exceptions
 
-from ..base import (
+from ..core.base import (
     register_session,
     ConnOption,
     ConnOptionGroup,
     get_http_client,
 )
-from ..php import PHPWebshell, php_webshell_conn_options
+from ..core.php import PHPWebshell, php_webshell_conn_options
 
 logger = logging.getLogger("core.sessions.php_behinder")
 
