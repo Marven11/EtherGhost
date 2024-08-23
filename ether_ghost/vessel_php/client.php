@@ -71,7 +71,7 @@ class VesselClient
 
     function call($call_raw, $fn, $args, $timeout)
     {
-        $hello_resp = json_decode($this->$call_raw("hello", [], 10));
+        $hello_resp = json_decode($this->$call_raw("hello", ["john", "doe"], 10));
         if ($hello_resp->code != 0) {
             return json_encode($hello_resp);
         }

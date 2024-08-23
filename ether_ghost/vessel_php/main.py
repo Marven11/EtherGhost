@@ -7,8 +7,8 @@ import time
 import typing as t
 import uuid
 from pathlib import Path
-from ..base import PHPSessionInterface
-from .. import exceptions
+from ..core.base import PHPSessionInterface
+from ..core import exceptions
 
 VESSEL_SERVER_SRC = Path(__file__).parent / "server.php"
 VESSEL_CLIENT_SRC = Path(__file__).parent / "client.php"

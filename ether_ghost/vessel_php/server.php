@@ -2,7 +2,7 @@
 session_start();
 ignore_user_abort(true);
 set_time_limit(0);
-error_reporting(E_ALL);
+error_reporting(0);
 
 class VesselServer
 {
@@ -171,9 +171,6 @@ class VesselServer
                 try {
                     $fn = $data->fn; # TODO: check fn here
                     $resp = call_user_func([$this, $data->fn], $data->args);
-                    // if ($data->fn == "tcp_socket_connect") {
-                    //     die(var_export($resp));
-                    // }
                 } catch (Exception $e) {
 
                     $_SESSION[$session_key]["resp"][$reqid] = json_encode([

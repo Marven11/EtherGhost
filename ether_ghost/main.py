@@ -37,7 +37,7 @@ from .tcp_proxies import (
     start_vessel_forward_tcp,
 )
 from .core import SessionInterface, PHPSessionInterface, session_type_info
-from .core.vessel_php.main import start_vessel_server
+from .vessel_php.main import start_vessel_server
 from .utils import const
 
 token = secrets.token_bytes(16).hex()

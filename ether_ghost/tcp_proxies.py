@@ -8,7 +8,7 @@ import typing as t
 
 
 from .core import SessionInterface, exceptions, PHPSessionInterface
-from .core.vessel_php.main import get_vessel_client
+from .vessel_php.main import get_vessel_client
 
 
 class PsudoTcpServeConnection:
