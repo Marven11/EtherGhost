@@ -706,12 +706,6 @@ class PHPWebshellActions(PHPSessionInterface):
         self.chunk_size = int(options.get("updownload_chunk_size", 1024 * 16))
         self.max_coro = int(options.get("updownload_max_coroutine", 4))
 
-        # AES key以及其在服务器session中存储的名字
-        # 在和服务器握手获取key的时候需要加锁
-        self.fetchkey_lock = asyncio.Lock()
-        self.aes_session_name = None
-        self.aes_key = None
-
     # --- 以下是Interface的实现，依赖submit函数 ---
 
     async def execute_cmd(self, cmd: str) -> str:
@@ -1051,6 +1045,12 @@ class PHPWebshellCommunication:
         self.antireplay = options.get("antireplay", False)
         self.encryption = options.get("encryption", False)
         self.bypass_open_basedir = options.get("bypass_open_basedir", False)
+
+        # AES key以及其在服务器session中存储的名字
+        # 在和服务器握手获取key的时候需要加锁
+        self.fetchkey_lock = asyncio.Lock()
+        self.aes_session_name = None
+        self.aes_key = None
 
         if self.decoder not in decoders:
             raise exceptions.ServerError(f"找不到Decoder: {self.decoder}")
