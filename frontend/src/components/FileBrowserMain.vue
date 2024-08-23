@@ -487,18 +487,23 @@ watch(filename, (newFilename, _) => {
 
 async function saveFile() {
   filename.value = userFilename.value
-  let success = await postDataOrPopupError(`/session/${props.session}/put_file_contents`, {
-    text: codeMirrorContent.value,
-    encoding: fileEncoding.value,
-    filename: filename.value,
-    current_dir: pwd.value
-  })
-  if (success) {
-    addPopup("green", "保存成功", `文件${filename.value}已经成功保存`)
-  } else {
-    addPopup("red", "保存失败", `文件${filename.value}保存失败`)
+  try {
+    let success = await postDataOrPopupError(`/session/${props.session}/put_file_contents`, {
+      text: codeMirrorContent.value,
+      encoding: fileEncoding.value,
+      filename: filename.value,
+      current_dir: pwd.value
+    })
+    if (success) {
+      addPopup("green", "保存成功", `文件${filename.value}已经成功保存`)
+    } else {
+      addPopup("red", "保存失败", `文件${filename.value}保存失败`)
+    }
+  } finally {
+    await listDir(pwd.value)
+
   }
-  await listDir(pwd.value)
+
 
 }
 
@@ -576,8 +581,8 @@ function readableFilePerm(filePerm) {
             v-model="userFilename">
         </div>
         <div class="file-actions shadow">
-            <input type="text" name="encoding" id="file-actions-encoding" placeholder="文件编码" v-model="fileEncoding">
-            <button class="button" @click="saveFile">保存</button>
+          <input type="text" name="encoding" id="file-actions-encoding" placeholder="文件编码" v-model="fileEncoding">
+          <button class="button" @click="saveFile">保存</button>
         </div>
       </div>
 
@@ -802,7 +807,7 @@ input[type="text"] {
   font-size: 16px;
   color: var(--font-color-white);
   margin-right: 10px;
-  
+
 }
 
 .upload-progress {

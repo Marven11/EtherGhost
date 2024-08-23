@@ -109,7 +109,7 @@ PUT_FILE_CONTENT_PHP = compress_phpcode_template(
     """
 $filePath = FILE_PATH;
 $fileContent = base64_decode(FILE_CONTENT);
-if(!is_file($filePath) && is_writeable($filePath)) {
+if(!is_file($filePath) || !is_writeable($filePath)) {
     decoder_echo("WRONG_NO_PERMISSION");
 }else{
     $content = file_put_contents($filePath, $fileContent);
