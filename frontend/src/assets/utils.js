@@ -77,7 +77,7 @@ export function parseDataOrPopupError(resp) {
       errorClass = Error
     }
     addPopup("red", title, resp.data.msg)
-    throw errorClass(resp.data.msg)
+    throw new errorClass(resp.data.msg)
   }
   return resp.data.data
 }

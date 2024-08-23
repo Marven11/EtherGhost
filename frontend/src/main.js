@@ -17,6 +17,7 @@ import { createRouter, createWebHashHistory } from "vue-router";
 import Terminal from 'vue-web-terminal'
 //  亮色主题：vue-web-terminal/lib/theme/light.css
 import './assets/vue-web-terminal.css'
+import AwdActionsMain from "./components/AwdActionsMain.vue";
 
 
 const routes = [
@@ -45,6 +46,7 @@ const routes = [
     })
   },
   { path: "/shell-command/:session", component: ShellCommandMain, props: true },
+  { path: "/awd-actions/:session", component: AwdActionsMain, props: true },
   { path: "/file-browser/:session", component: FileBrowserMain, props: true },
   { path: "/php-eval/:session", component: PhpEvalMain, props: true },
   { path: "/emulated-antsword/:session", component: EmulatedAntswordMain, props: true },

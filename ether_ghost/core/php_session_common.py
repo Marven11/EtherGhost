@@ -354,7 +354,7 @@ if (PHP_OS === 'Linux') {
     }
     foreach ($_ENV as $key => $value) {
         if(preg_match($regex, $key)
-        && preg_match("/.{1,10}\{/i", $value)) {
+        && preg_match("/.{1,10}\\{/i", $value)) {
             $flags .=  "env $key = $value | ";
         }
     }
