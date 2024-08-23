@@ -21,6 +21,20 @@ function getPopup(id) {
   return selectedPopups[0]
 }
 
+function delPopup(id) {
+  setTimeout(() => {
+    let popup = getPopup(id)
+    if (popup) {
+      popup.state = "hide"
+    }
+  }, 0)
+  setTimeout(() => {
+    const idx = popups.value.findIndex(popup => popup.id == id)
+    if (idx > -1) {
+      popups.value.splice(idx, 1)
+    }
+  }, 1000)
+}
 
 function addPopup(color, title, message) {
   const id = Date.now() + Math.floor(Math.random() * 100000)
@@ -32,19 +46,7 @@ function addPopup(color, title, message) {
     state: "show"
   }
   popups.value.push(popup)
-
-  setTimeout(() => {
-    let popup = getPopup(id)
-    if (popup) {
-      popup.state = "hide"
-    }
-  }, POPUP_SHOW_TIME)
-  setTimeout(() => {
-    const idx = popups.value.findIndex(popup => popup.id == id)
-    if(idx > -1) {
-      popups.value.splice(idx, 1)
-    }
-  }, POPUP_SHOW_TIME + 1000)
+  setTimeout(() => delPopup(id), POPUP_SHOW_TIME)
 }
 
 defineExpose({ addPopup })
@@ -53,7 +55,8 @@ defineExpose({ addPopup })
 
 <template>
   <div class="popups" v-if="popups.length != 0">
-    <div class="popup shadow" v-for="popup in popups" :color="popup.color" :state="popup.state">
+    <div class="popup shadow" v-for="popup in popups" :color="popup.color" :state="popup.state"
+      @click="delPopup(popup.id)">
       <div class="popup-title-line">
         <div class="popup-icon">
           <IconCross v-if="popup.color == 'red'" />
@@ -90,7 +93,8 @@ defineExpose({ addPopup })
   transition: opacity 0.5s ease;
 }
 
-.popup, .popup * {
+.popup,
+.popup * {
   animation: slide-in 0.5s ease-in-out;
 }
 
