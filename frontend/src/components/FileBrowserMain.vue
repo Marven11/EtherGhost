@@ -445,7 +445,7 @@ const codeMirrorContent = ref("")
 const codeMirrorTheme = EditorView.theme({
   "&": {
     "background-color": "var(--background-color-2)",
-    "font-size": "24px",
+    "font-size": "20px",
   },
 }, { dark: true })
 
@@ -535,53 +535,55 @@ function readableFilePerm(filePerm) {
 </script>
 
 <template>
-  <form action="" class="filepath-input" @submit="onUserInputPwd">
-    <input v-model="userPwd" id="filepath-input" class="shadow" type="text" placeholder="/var/www/html">
-    <div class="filepath-icon shadow" @click="onUserInputPwd">
-      <IconRun />
-    </div>
-    <div class="filepath-icon shadow" @click="() => {
-      listDir(pwd);
-      userPwd = pwd;
-    }">
-      <IconLoad />
-    </div>
-  </form>
   <div class="file-panel">
-    <div class="folder-panel scrollbar shadow" @click.right.stop="onRightClickEmpty">
-      <div class="folder-entry" v-for="[entryIndex, entry] in entries.entries()" @dblclick="onDoubleClickEntry"
-        @click.right.stop="onRightClickEntry" :data-entry-index="entryIndex">
-        <div class="folder-entry-icon">
-          <component :is="entry.icon"></component>
+    <div class="folder-control">
+      <form action="" class="filepath-input" @submit="onUserInputPwd">
+        <input v-model="userPwd" id="filepath-input" class="shadow" type="text" placeholder="/var/www/html">
+        <div class="filepath-icon shadow" @click="onUserInputPwd">
+          <IconRun />
         </div>
-        <div class="folder-entry-info">
-          <p class="folder-entry-name">
-            {{ entry.name }}
-          </p>
-          <div class="folder-entry-meta">
-            {{ readableFilePerm(entry.permission) }} {{ readableFileSize(entry.filesize) }}
+        <div class="filepath-icon shadow" @click="() => {
+          listDir(pwd);
+          userPwd = pwd;
+        }">
+          <IconLoad />
+        </div>
+      </form>
+      <div class="folder-panel scrollbar shadow" @click.right.stop="onRightClickEmpty">
+        <div class="folder-entry" v-for="[entryIndex, entry] in entries.entries()" @dblclick="onDoubleClickEntry"
+          @click.right.stop="onRightClickEntry" :data-entry-index="entryIndex">
+          <div class="folder-entry-icon">
+            <component :is="entry.icon"></component>
           </div>
-        </div>
+          <div class="folder-entry-info">
+            <p class="folder-entry-name">
+              {{ entry.name }}
+            </p>
+            <div class="folder-entry-meta">
+              {{ readableFilePerm(entry.permission) }} {{ readableFileSize(entry.filesize) }}
+            </div>
+          </div>
 
+        </div>
       </div>
     </div>
+
     <div class="file-content-panel">
-      <div class="files-title">
-        <input type="text" name="filename" id="files-title-filename" placeholder="passwd" class="shadow"
-          v-model="userFilename">
+      <div class="file-control">
+
+        <div class="files-title">
+          <input type="text" name="filename" id="files-title-filename" placeholder="passwd" class="shadow"
+            v-model="userFilename">
+        </div>
+        <div class="file-actions shadow">
+            <input type="text" name="encoding" id="file-actions-encoding" placeholder="文件编码" v-model="fileEncoding">
+            <button class="button" @click="saveFile">保存</button>
+        </div>
       </div>
+
       <div class="files-content scrollbar shadow">
         <codemirror v-model="codeMirrorContent" placeholder="Content goes here..." :autofocus="true"
           :indent-with-tab="true" :tab-size="4" :extensions="codeMirrorExtensions" @ready="codeMirrorReady" />
-      </div>
-      <div class="files-control shadow">
-        <div class="file-control-left">
-          <p>文件编码: </p>
-          <input type="text" name="encoding" id="files-control-encoding" v-model="fileEncoding">
-        </div>
-        <div class="file-control-right">
-          <button class="button" @click="saveFile">保存</button>
-        </div>
       </div>
     </div>
   </div>
@@ -645,7 +647,7 @@ function readableFilePerm(filePerm) {
 }
 
 input[type="text"] {
-  font-size: 30px;
+  font-size: 26px;
   text-indent: 10px;
   color: var(--font-color-white);
   border: none;
@@ -656,11 +658,12 @@ input[type="text"] {
 .filepath-input input {
   background-color: var(--background-color-2);
   flex-grow: 1;
+  min-width: 50px;
 }
 
 .filepath-icon {
-  height: 60px;
-  width: 60px;
+  flex-grow: 1;
+  min-width: 60px;
   margin-left: 10px;
   display: flex;
   justify-content: center;
@@ -684,11 +687,18 @@ input[type="text"] {
   margin-top: 20px;
 }
 
-.folder-panel {
+.folder-control {
   width: 30%;
-  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
   margin-right: 30px;
-  height: 100%;
+
+}
+
+.folder-panel {
+  flex-grow: 1;
+  margin-top: 20px;
+  height: 60%;
   border-radius: 20px;
   background-color: var(--background-color-2);
   padding-top: 20px;
@@ -699,7 +709,7 @@ input[type="text"] {
 
 .folder-entry {
   display: flex;
-  height: 80px;
+  height: 65px;
   padding-right: 50px;
   align-items: center;
   flex-direction: row;
@@ -717,13 +727,14 @@ input[type="text"] {
 }
 
 .folder-entry-info {
+  font-size: 14px;
   display: flex;
   flex-direction: column;
 }
 
 .folder-entry-name {
   color: var(--font-color-white);
-  font-size: 30px;
+  font-size: 24px;
   margin: 0;
 }
 
@@ -739,9 +750,16 @@ input[type="text"] {
   flex-direction: column;
 }
 
+.file-control {
+  display: flex;
+  flex-direction: row;
+}
+
 .files-title {
-  height: 70px;
-  width: 100%;
+  height: 60px;
+  width: 50%;
+  margin-right: 20px;
+  flex-grow: 1;
   flex-shrink: 0;
 }
 
@@ -751,7 +769,7 @@ input[type="text"] {
   height: 100%;
   width: 100%;
   background-color: var(--background-color-2);
-  font-size: 30px;
+  font-size: 28px;
 }
 
 .files-content {
@@ -764,12 +782,11 @@ input[type="text"] {
   overflow: auto;
 }
 
-.files-control {
+.file-actions {
   display: flex;
   flex-direction: row;
   align-items: center;
   background-color: var(--background-color-2);
-  margin-top: 20px;
   border-radius: 20px;
   padding-left: 20px;
   padding-right: 20px;
@@ -778,19 +795,14 @@ input[type="text"] {
   justify-content: space-between;
 }
 
-.file-control-left,
-.file-control-right {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
-.files-control input {
+.file-actions input {
   height: 40px;
-  width: 100px;
+  max-width: 100px;
   background-color: var(--background-color-3);
   font-size: 16px;
   color: var(--font-color-white);
+  margin-right: 10px;
+  
 }
 
 .upload-progress {

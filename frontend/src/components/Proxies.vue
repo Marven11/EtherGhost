@@ -237,7 +237,7 @@ setTimeout(() => {
 .add-proxy input,
 .add-proxy select {
   height: 50px;
-  min-width: 50px;
+  min-width: 100px;
   border-radius: 20px;
   border: none;
   outline: 2px solid #ffffff00;
@@ -260,6 +260,10 @@ setTimeout(() => {
 
 .add-proxy input:not(:focus)[data-valid="true"] {
   outline: 2px solid var(--green);
+}
+
+.add-proxy input[type="text"] {
+  max-width: 150px;
 }
 
 .opened-proxies {

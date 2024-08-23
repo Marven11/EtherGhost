@@ -41,7 +41,7 @@ main {
   height: 50vh;
   width: 90%;
   flex-grow: 1;
-  margin-top: 50px;
+  margin-top: 30px;
   display: flex;
   flex-direction: column;
 }
