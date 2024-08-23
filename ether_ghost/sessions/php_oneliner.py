@@ -19,7 +19,7 @@ from ..core.base import (
     ConnOptionGroup,
     get_http_client,
 )
-from ..core.php import PHPWebshell, php_webshell_conn_options
+from ..core.php_session_common import PHPWebshell, php_webshell_conn_options
 
 logger = logging.getLogger("core.sessions.php_oneline")
 
