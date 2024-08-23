@@ -15,7 +15,12 @@ from ..core.base import (
     ConnOptionGroup,
     get_http_client,
 )
-from ..core.php_session_common import PHPWebshell, php_webshell_conn_options
+from ..core.php_session_common import (
+    PHPWebshellActions,
+    PHPWebshellCommunication,
+    php_webshell_action_options,
+    php_webshell_communication_options,
+)
 
 logger = logging.getLogger("core.sessions.php_behinder")
 
@@ -51,7 +56,7 @@ def behinder_xor(payload: str, key: bytes):
 
 
 @register_session
-class PHPWebshellBehinderAES(PHPWebshell):
+class PHPWebshellBehinderAES(PHPWebshellCommunication, PHPWebshellActions):
     session_type = "BEHINDER_PHP_AES"
     readable_name = "冰蝎AES"
     conn_options: t.List[ConnOptionGroup] = [
@@ -96,7 +101,8 @@ class PHPWebshellBehinderAES(PHPWebshell):
                     alternatives=None,
                 ),
             ]
-            + php_webshell_conn_options,
+            + php_webshell_communication_options
+            + php_webshell_action_options,
         },
     ]
 
@@ -133,7 +139,7 @@ class PHPWebshellBehinderAES(PHPWebshell):
 
 
 @register_session
-class PHPWebshellBehinderXor(PHPWebshell):
+class PHPWebshellBehinderXor(PHPWebshellCommunication, PHPWebshellActions):
     session_type = "BEHINDER_PHP_XOR"
     readable_name = "冰蝎XOR"
     conn_options: t.List[ConnOptionGroup] = [
@@ -160,8 +166,7 @@ class PHPWebshellBehinderXor(PHPWebshell):
         },
         {
             "name": "高级连接配置",
-            "options": php_webshell_conn_options
-            + [
+            "options": [
                 ConnOption(
                     id="timeout_refresh_client",
                     name="超时更换HTTP Session",
@@ -178,7 +183,9 @@ class PHPWebshellBehinderXor(PHPWebshell):
                     default_value=True,
                     alternatives=None,
                 ),
-            ],
+            ]
+            + php_webshell_communication_options
+            + php_webshell_action_options,
         },
     ]
 

@@ -19,7 +19,12 @@ from ..core.base import (
     ConnOptionGroup,
     get_http_client,
 )
-from ..core.php_session_common import PHPWebshell, php_webshell_conn_options
+from ..core.php_session_common import (
+    PHPWebshellActions,
+    PHPWebshellCommunication,
+    php_webshell_action_options,
+    php_webshell_communication_options,
+)
 
 logger = logging.getLogger("core.sessions.php_oneline")
 
@@ -80,23 +85,9 @@ def eval_antsword_encoder(filename: str, pwd: str, php_payload: str) -> dict:
     )
     return json.loads(nodejs_eval(code, [pwd, json.dumps(data)]))
 
-    # with tempfile.NamedTemporaryFile("w", suffix=".js") as f:
-    #     f.write(code)
-    #     f.flush()
-    #     proc = subprocess.Popen(
-    #         ["node", f.name, pwd, json.dumps(data)], stdout=subprocess.PIPE
-    #     )
-    #     proc.wait()
-    #     if proc.returncode != 0:
-    #         raise exceptions.ServerError(
-    #             f"蚁剑Encoder执行错误，返回值为{proc.returncode}"
-    #         )
-    #     stdout, _ = proc.communicate()
-    #     return json.loads(stdout)
-
 
 @register_session
-class PHPWebshellOneliner(PHPWebshell):
+class PHPWebshellOneliner(PHPWebshellCommunication, PHPWebshellActions):
     """一句话的php webshell"""
 
     session_type = "ONELINE_PHP"
@@ -139,7 +130,7 @@ class PHPWebshellOneliner(PHPWebshell):
             "options": [
                 ConnOption(
                     id="http_params_obfs",
-                    name="HTTP参数混淆",
+                    name="HTTP POST参数混淆",
                     type="checkbox",
                     placeholder=None,
                     default_value=True,
@@ -176,7 +167,8 @@ class PHPWebshellOneliner(PHPWebshell):
                     ],
                 ),
             ]
-            + php_webshell_conn_options,
+            + php_webshell_communication_options
+            + php_webshell_action_options,
         },
         {
             "name": "自定义HTTP参数",
