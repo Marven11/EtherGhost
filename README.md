@@ -1,8 +1,10 @@
 # 游魂
 
-[文档](./docs.md)
+![头图](./assets/social-preview.jpg)
 
-[下载](./assets/ether_ghost.exe)
+<!-- social preview from https://pixabay.com/photos/fog-forest-conifers-trees-1535201/ -->
+
+[文档](./docs.md) [下载](./assets/ether_ghost.exe)
 
 游魂是一个开源的Webshell管理器，提供更为方便的界面和更为简单易用的功能，可配合或代替其他webshell管理器，帮助用户在各类渗透场景中控制目标机器。
 
