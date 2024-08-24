@@ -55,7 +55,7 @@ defineExpose({ addPopup })
 
 <template>
   <div class="popups" v-if="popups.length != 0">
-    <div class="popup shadow" v-for="popup in popups" :color="popup.color" :state="popup.state"
+    <div class="popup shadow-box" v-for="popup in popups" :color="popup.color" :state="popup.state"
       @click="delPopup(popup.id)">
       <div class="popup-title-line">
         <div class="popup-icon">

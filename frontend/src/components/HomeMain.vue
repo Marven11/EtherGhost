@@ -174,7 +174,7 @@ async function onDeleteSessionConfirm(userConfirm) {
 <template>
   <div class="main-panel">
     <div class="sessions" v-if="sessions.length != 0">
-      <div class="session shadow" v-for="session in sessions" @click.right="event => onClickIconOthers(event, session.id)">
+      <div class="session shadow-box" v-for="session in sessions" @click.right="event => onClickIconOthers(event, session.id)">
         <div class="session-top">
           <div class="session-name">
             <p>
@@ -216,7 +216,7 @@ async function onDeleteSessionConfirm(userConfirm) {
     </div>
   </transition>
 
-  <div class="add-webshell-button shadow" @click="store.session = ''; router.push('/webshell-editor/')">
+  <div class="add-webshell-button shadow-box" @click="store.session = ''; router.push('/webshell-editor/')">
     <IconPlus />
   </div>
   <transition>

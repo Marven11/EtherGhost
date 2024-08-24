@@ -547,18 +547,18 @@ function readableFilePerm(filePerm) {
   <div class="file-panel">
     <div class="folder-control">
       <form action="" class="filepath-input" @submit="onUserInputPwd">
-        <input v-model="userPwd" id="filepath-input" class="shadow" type="text" placeholder="/var/www/html">
-        <div class="filepath-icon shadow" @click="onUserInputPwd">
+        <input v-model="userPwd" id="filepath-input" class="shadow-box" type="text" placeholder="/var/www/html">
+        <div class="filepath-icon shadow-box" @click="onUserInputPwd">
           <IconRun />
         </div>
-        <div class="filepath-icon shadow" @click="() => {
+        <div class="filepath-icon shadow-box" @click="() => {
           listDir(pwd);
           userPwd = pwd;
         }">
           <IconLoad />
         </div>
       </form>
-      <div class="folder-panel scrollbar shadow" @click.right.stop="onRightClickEmpty">
+      <div class="folder-panel scrollbar shadow-box" @click.right.stop="onRightClickEmpty">
         <div class="folder-entry" v-for="[entryIndex, entry] in entries.entries()" @dblclick="onDoubleClickEntry"
           @click.right.stop="onRightClickEntry" :data-entry-index="entryIndex">
           <div class="folder-entry-icon">
@@ -581,16 +581,16 @@ function readableFilePerm(filePerm) {
       <div class="file-control">
 
         <div class="files-title">
-          <input type="text" name="filename" id="files-title-filename" placeholder="passwd" class="shadow"
+          <input type="text" name="filename" id="files-title-filename" placeholder="passwd" class="shadow-box"
             v-model="userFilename">
         </div>
-        <div class="file-actions shadow">
+        <div class="file-actions shadow-box">
           <input type="text" name="encoding" id="file-actions-encoding" placeholder="文件编码" v-model="fileEncoding">
           <button class="button" @click="saveFile">保存</button>
         </div>
       </div>
 
-      <div class="files-content scrollbar shadow">
+      <div class="files-content scrollbar shadow-box">
         <codemirror v-model="codeMirrorContent" placeholder="Content goes here..." :autofocus="true"
           :indent-with-tab="true" :tab-size="4" :extensions="codeMirrorExtensions" @ready="codeMirrorReady" />
       </div>

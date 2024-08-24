@@ -68,13 +68,13 @@ const showInputBox = ref(false)
 <template>
   <form action="" class="command-input" @submit="onExecuteCommand">
     <input id="command-input" type="text" placeholder="cat /etc/passwd" v-model="commandInput"
-      :readonly="commandInputReadonly" class="shadow">
-    <div class="icon-run shadow" @click="onExecuteCommand">
+      :readonly="commandInputReadonly" class="shadow-box">
+    <div class="icon-run shadow-box" @click="onExecuteCommand">
       <IconRun />
     </div>
   </form>
   <div class="command-output">
-    <textarea name="command-output" id="command-output" class="shadow" readonly :value="commandOutput"></textarea>
+    <textarea name="command-output" id="command-output" class="shadow-box" readonly :value="commandOutput"></textarea>
   </div>
   <transition>
     <InputBox v-if="showInputBox" title="测试标题" note="测试测试，这是一个测试" :requireInput="true"

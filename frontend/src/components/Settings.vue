@@ -132,7 +132,7 @@ async function onTestProxy() {
 
 <template>
   <div class="option-group" v-for="group in optionsGroups">
-    <p class="group-title shadow">
+    <p class="group-title shadow-box">
       {{ group.name }}
     </p>
     <div class="option" v-for="option in group.options">
@@ -157,7 +157,7 @@ async function onTestProxy() {
       <p v-else>内部错误：未知选项类型 {{ option.type }}</p>
     </div>
   </div>
-  <div class="submit-buttons shadow">
+  <div class="submit-buttons shadow-box">
     <div class="submit-button" @click="() => router.go(-1)">
       丢弃
     </div>
@@ -165,7 +165,7 @@ async function onTestProxy() {
       保存
     </div>
   </div>
-  <div class="actions shadow">
+  <div class="actions shadow-box">
     <button class="button" @click="onTestProxy">测试代理</button>
     <select name="testProxySites" id="testProxySites" v-model="testProxySite">
       <option value="apple">苹果服务器</option>

@@ -318,6 +318,10 @@ header[data-bg-transition="true"] {
   transition: background 0.8s ease;
 }
 
+body[data-theme="glass"] header {
+  backdrop-filter: blur(20px);
+}
+
 .header-title {
   display: flex;
   align-items: left;

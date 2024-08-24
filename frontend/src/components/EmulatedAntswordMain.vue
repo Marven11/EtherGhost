@@ -15,7 +15,7 @@ if (props.session) {
 
 <template>
   <div class="info-main">
-    <div class="info-panel shadow">
+    <div class="info-panel shadow-box">
       <h1>对接蚁剑</h1>
       <p>使用以下信息让蚁剑通过游魂连接webshell</p>
       <table>

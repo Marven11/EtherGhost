@@ -149,10 +149,10 @@ while (1) {
 <template>
   <div class="actionmain">
     <div class="action-group">
-      <p class="group-title shadow">
+      <p class="group-title shadow-box">
         一键日站
       </p>
-      <div class="actions shadow">
+      <div class="actions shadow-box">
         <button class="action" title="检查对面服务器是否健在" @click="postCode(helloWorldCode)">
           一键你好（测试用）
         </button>
@@ -181,9 +181,9 @@ while (1) {
       </div>
     </div>
     <div class="action-input">
-      <input type="text" class="shadow" v-model="actionInput" placeholder="如果action需要额外的信息在这里输入">
+      <input type="text" class="shadow-box" v-model="actionInput" placeholder="如果action需要额外的信息在这里输入">
     </div>
-    <textarea class="action-result shadow" v-model="actionResult">
+    <textarea class="action-result shadow-box" v-model="actionResult">
 
   </textarea>
 

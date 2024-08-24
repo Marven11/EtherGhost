@@ -38,7 +38,7 @@ setTimeout(updateInfo, 0)
 </script>
 
 <template>
-  <div class="actions shadow">
+  <div class="actions shadow-box">
     <button class="action-button" @click="openPhpInfo">
       打开PHPINFO
     </button>
@@ -50,7 +50,7 @@ setTimeout(updateInfo, 0)
     </button>
   </div>
   <div class="info-panel">
-    <table class="infos shadow">
+    <table class="infos shadow-box">
       <tr class="info" v-for="[i, info] in infos.entries()">
         <td class="info-data" :data-tail="i != 0">{{ info.key }}</td>
         <td class="info-data" :data-tail="i != 0">{{ info.value }}</td>

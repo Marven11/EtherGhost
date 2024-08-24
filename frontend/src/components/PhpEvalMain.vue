@@ -127,12 +127,12 @@ include $temp_file;
 <template>
   <div class="panels">
     <div class="left-panel">
-      <div class="php-code shadow">
+      <div class="php-code shadow-box">
         <codemirror v-model="codeMirrorContent" placeholder="var_dump('exploit!');" :autofocus="true"
           :indent-with-tab="true" :tab-size="4" :extensions="codeMirrorExtensions" @ready="codeMirrorReady"
           @keydown.ctrl.enter="onCtrlEnter" />
       </div>
-      <div class="actions shadow">
+      <div class="actions shadow-box">
         <button class="button" title="自动判断使用eval还是include执行，快捷键Ctrl+Enter" @click="onExecute">自动选择模式执行</button>
         <button class="button" @click="onPhpEval">使用eval执行</button>
         <button class="button" @click="onPhpInclude">使用include执行</button>
@@ -140,7 +140,7 @@ include $temp_file;
     </div>
     <div class="right-panel">
       <div class="php-output">
-        <textarea name="php-output" id="php-output" class="shadow" readonly :value="codeOutput"></textarea>
+        <textarea name="php-output" id="php-output" class="shadow-box" readonly :value="codeOutput"></textarea>
       </div>
     </div>
   </div>

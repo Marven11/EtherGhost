@@ -150,7 +150,7 @@ setTimeout(() => {
 </script>
 
 <template>
-  <div class="add-proxy shadow">
+  <div class="add-proxy shadow-box">
     <form action="" class="add-proxy-form" @submit.prevent="createProxy">
       <select name="proxy_type" id="" v-model="addProxyInput.type">
         <option value="">选择代理类型</option>
@@ -183,7 +183,7 @@ setTimeout(() => {
       <input type="button" value="添加代理" @click="createProxy">
     </form>
   </div>
-  <table class="opened-proxies shadow">
+  <table class="opened-proxies shadow-box">
     <tr class="opened-proxies-row">
       <th class="open-proxies-head">Session</th>
       <th class="open-proxies-head">代理类型</th>

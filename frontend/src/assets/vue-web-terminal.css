@@ -59,5 +59,8 @@
   /* font-family: Monaco, Lucida Console, monospace; */
   font-family: 'FiraCode', 'Courier New', Courier, monospace !important;
   /* font-variant-ligatures: none; */
+}
 
+body[data-theme="glass"] .t-window {
+  backdrop-filter: blur(20px);
 }

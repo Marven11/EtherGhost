@@ -18,10 +18,10 @@
 }
 
 [data-theme="white"],
-[data-theme="red"], 
-[data-theme="yellow"], 
-[data-theme="green"], 
-[data-theme="blue"]{
+[data-theme="red"],
+[data-theme="yellow"],
+[data-theme="green"],
+[data-theme="blue"] {
     --background-color-1: #2a303c;
     --background-color-2: #262b35;
     --background-color-3: #20252e;
@@ -30,6 +30,7 @@
     --font-color-black: #091307;
     --font-color-primary: #b1cbd5;
     --font-color-secondary: #64748b;
+    --background-blur: 20px;
 }
 
 [data-theme="white"] {
@@ -66,10 +67,23 @@
 
 body,
 html {
+    margin: 0;
+    transition: background 0.8s ease;
+}
+
+body[data-theme="glass"] {
     /* background-color: var(--background-color-1); */
-    background-image: url("./bg.jpg");
+    background-image: url("http://127.0.0.1:8022/utils/background_image");
     background-size: cover;
     background-attachment: fixed;
-    /* backg */
-    margin: 0;
+    background-color: transparent;
+}
+
+body[data-theme="white"],
+body[data-theme="red"],
+body[data-theme="yellow"],
+body[data-theme="green"],
+body[data-theme="blue"] {
+    background-image: none;
+    background-color: var(--background-color-1);
 }

@@ -31,5 +31,6 @@ watch(
   () => currentSettings.theme,
   (newValue, oldValue) => {
     store.theme = newValue
+    document.querySelector("body").dataset["theme"] = store.theme
   }
 )

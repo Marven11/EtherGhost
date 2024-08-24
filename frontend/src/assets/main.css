@@ -40,6 +40,10 @@
   background-color: var(--font-color-secondary);
 }
 
-.shadow {
+.shadow-box {
   box-shadow: 0 0 10px rgba(15, 15, 15, 0.5);
+}
+
+body[data-theme="glass"] .shadow-box {
+  backdrop-filter: blur(20px);
 }
