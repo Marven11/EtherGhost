@@ -73,7 +73,7 @@ html {
 
 body[data-theme="glass"] {
     /* background-color: var(--background-color-1); */
-    background-image: url("http://127.0.0.1:8022/utils/background_image");
+    background-image: url("/utils/background_image");
     background-size: cover;
     background-attachment: fixed;
     background-color: transparent;

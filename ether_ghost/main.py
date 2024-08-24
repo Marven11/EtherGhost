@@ -530,6 +530,15 @@ async def forward_proxy_delete(listen_port: int):
     return {"code": 0, "data": True}
 
 
+@app.get("/utils/background_image")
+async def background_image():
+    for ext in ["png", "jpg", "webp"]:
+        filepath = const.DATA_FOLDER / f"bg.{ext}"
+        if filepath.exists():
+            return FileResponse(path=filepath)
+    raise HTTPException(status_code=404, detail="Image not found")
+
+
 @app.get("/utils/fetch_downloaded_file/{file_id}")
 async def fetch_downloaded_file(file_id: UUID):
     if file_id not in temp_files:
