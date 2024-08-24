@@ -78,7 +78,7 @@ const connectionOptionGroup = {
 const othersOptionGroup = {
   name: "其他配置",
   options: [
-  {
+    {
       id: "filesizeUnit",
       name: "文件大小单位",
       type: "select",
@@ -135,26 +135,28 @@ async function onTestProxy() {
     <p class="group-title shadow-box">
       {{ group.name }}
     </p>
-    <div class="option" v-for="option in group.options">
-      <div class="option-name">
-        {{ option.name }}
+    <div class="options">
+      <div class="option" v-for="option in group.options">
+        <div class="option-name">
+          {{ option.name }}
+        </div>
+        <input v-if="option.type == 'text'" :type="option.type" :name="option.id" v-model="currentSettings[option.id]"
+          :placeholder="option.placeholder" :id="'option-' + option.id">
+        <select v-else-if="option.type == 'select'" :name="option.id" :id="'option-' + option.id"
+          v-model="currentSettings[option.id]">
+          <option disabled value="">选择一个</option>
+          <option v-for="alternative in option.alternatives" :value="alternative.value">
+            {{ alternative.name }}
+          </option>
+        </select>
+        <div v-else-if="option.type == 'checkbox'" class="input-checkbox" :id="'option-' + option.id"
+          :checked="currentSettings[option.id]" @click="changeClickboxOption(option.id)">
+          <input type="hidden" :name="option.id" :id="'option-' + option.id" v-model="currentSettings[option.id]">
+          <IconCheck v-if="currentSettings[option.id]" />
+          <IconCross v-else />
+        </div>
+        <p v-else>内部错误：未知选项类型 {{ option.type }}</p>
       </div>
-      <input v-if="option.type == 'text'" :type="option.type" :name="option.id" v-model="currentSettings[option.id]"
-        :placeholder="option.placeholder" :id="'option-' + option.id">
-      <select v-else-if="option.type == 'select'" :name="option.id" :id="'option-' + option.id"
-        v-model="currentSettings[option.id]">
-        <option disabled value="">选择一个</option>
-        <option v-for="alternative in option.alternatives" :value="alternative.value">
-          {{ alternative.name }}
-        </option>
-      </select>
-      <div v-else-if="option.type == 'checkbox'" class="input-checkbox" :id="'option-' + option.id"
-        :checked="currentSettings[option.id]" @click="changeClickboxOption(option.id)">
-        <input type="hidden" :name="option.id" :id="'option-' + option.id" v-model="currentSettings[option.id]">
-        <IconCheck v-if="currentSettings[option.id]" />
-        <IconCross v-else />
-      </div>
-      <p v-else>内部错误：未知选项类型 {{ option.type }}</p>
     </div>
   </div>
   <div class="submit-buttons shadow-box">
@@ -202,6 +204,21 @@ async function onTestProxy() {
   border-radius: 20px;
   margin-bottom: 10px;
 }
+
+.options {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+body[data-theme="glass"] .options {
+  border-radius: 20px;
+  background-color: #00000015;
+  backdrop-filter: blur(20px);
+  padding: 10px 20px;
+  margin-top: 5px;
+}
+
 
 .option {
   display: flex;

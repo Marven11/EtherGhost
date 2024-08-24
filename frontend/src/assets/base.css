@@ -30,7 +30,6 @@
     --font-color-black: #091307;
     --font-color-primary: #b1cbd5;
     --font-color-secondary: #64748b;
-    --background-blur: 20px;
 }
 
 [data-theme="white"] {
@@ -68,7 +67,6 @@
 body,
 html {
     margin: 0;
-    transition: background 0.8s ease;
 }
 
 body[data-theme="glass"] {

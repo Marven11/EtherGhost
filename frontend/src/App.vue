@@ -12,7 +12,7 @@ setTimeout(async () => {
     currentSettings[key] = settings[key]
   }
   // evil hack to ensure color transition enabled after theme color being set
-  setTimeout(() => store.header_background_transition = true, 100)
+  setTimeout(() => store.theme_background_transition = true, 100)
 }, 0)
 
 </script>

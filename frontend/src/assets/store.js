@@ -6,12 +6,12 @@ export const popupsRef = ref(null)
 export const store = reactive({
   session: "",
   sessionName: "",
-  theme: "white",
-  header_background_transition: false,
+  theme: "",
+  theme_background_transition: false,
 })
 
 export const currentSettings = reactive({
-  theme: "white",
+  theme: "",
   filesizeUnit: 1024
 })
 

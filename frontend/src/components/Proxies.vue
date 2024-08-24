@@ -268,7 +268,7 @@ setTimeout(() => {
 
 .opened-proxies {
   margin-top: 20px;
-  background-color: #00000015;
+  background-color: var(--background-color-2);
   width: 100%;
   height: max-content;
   color: var(--font-color-primary);

@@ -245,7 +245,7 @@ function historyForward() {
 </script>
 
 <template>
-  <header :data-bg-transition="store.header_background_transition">
+  <header :data-bg-transition="store.theme_background_transition">
     <div class="header-title">
       <h1>
         游魂

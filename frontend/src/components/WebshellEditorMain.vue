@@ -110,7 +110,7 @@ function getCurrentSession() {
   for (const group of optionsGroups.value) {
     for (const option of group.options) {
       doAssert(["text", "checkbox", "select"].includes(option.type), "内部错误：没有这类选项")
-      if (optionValues[option.id] === undefined || optionValues[option.id] == null ) {
+      if (optionValues[option.id] === undefined || optionValues[option.id] == null) {
         addPopup("red", `选项${option.name}未填写`, `选项${option.name}仍未填写，无法获取当前配置！`)
         return undefined
       }
@@ -183,27 +183,30 @@ function onSelectElementChange(option) {
     <p class="group-title shadow-box">
       {{ group.name }}
     </p>
-    <div class="option" v-for="option in group.options">
-      <div class="option-name">
-        {{ option.name }}
+    <div class="options">
+      <div class="option" v-for="option in group.options">
+        <div class="option-name">
+          {{ option.name }}
+        </div>
+        <input v-if="option.type == 'text'" :type="option.type" :name="option.id" v-model="optionValues[option.id]"
+          :placeholder="option.placeholder" :id="'option-' + option.id">
+        <select v-else-if="option.type == 'select'" :name="option.id" :id="'option-' + option.id"
+          v-model="optionValues[option.id]" @change="onSelectElementChange(option)">
+          <option disabled value="">选择一个</option>
+          <option v-for="alternative in option.alternatives" :value="alternative.value">
+            {{ alternative.name }}
+          </option>
+        </select>
+        <div v-else-if="option.type == 'checkbox'" class="input-checkbox" :id="'option-' + option.id"
+          :checked="optionValues[option.id]" @click="changeClickboxOption(option.id)" :title="option.placeholder">
+          <input type="hidden" :name="option.id" :id="'option-' + option.id" v-model="optionValues[option.id]">
+          <IconCheck v-if="optionValues[option.id]" />
+          <IconCross v-else />
+        </div>
+        <p v-else>内部错误：未知选项类型 {{ option.type }}</p>
       </div>
-      <input v-if="option.type == 'text'" :type="option.type" :name="option.id" v-model="optionValues[option.id]"
-        :placeholder="option.placeholder" :id="'option-' + option.id">
-      <select v-else-if="option.type == 'select'" :name="option.id" :id="'option-' + option.id"
-        v-model="optionValues[option.id]" @change="onSelectElementChange(option)">
-        <option disabled value="">选择一个</option>
-        <option v-for="alternative in option.alternatives" :value="alternative.value">
-          {{ alternative.name }}
-        </option>
-      </select>
-      <div v-else-if="option.type == 'checkbox'" class="input-checkbox" :id="'option-' + option.id"
-        :checked="optionValues[option.id]" @click="changeClickboxOption(option.id)" :title="option.placeholder">
-        <input type="hidden" :name="option.id" :id="'option-' + option.id" v-model="optionValues[option.id]">
-        <IconCheck v-if="optionValues[option.id]" />
-        <IconCross v-else />
-      </div>
-      <p v-else>内部错误：未知选项类型 {{ option.type }}</p>
     </div>
+
   </div>
   <div class="submit-buttons shadow-box">
     <div class="submit-button" @click="() => router.go(-1)">
@@ -242,6 +245,21 @@ function onSelectElementChange(option) {
   border-radius: 20px;
   margin-bottom: 10px;
 }
+
+.options {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+body[data-theme="glass"] .options {
+  border-radius: 20px;
+  background-color: #00000015;
+  backdrop-filter: blur(20px);
+  padding: 10px 20px;
+  margin-top: 5px;
+}
+
 
 .option {
   display: flex;

@@ -62,6 +62,7 @@ watch(clickMenu, () => {
   padding-top: 20px;
   padding-bottom: 20px;
   box-shadow: 0 0 15px rgba(15, 15, 15, 0.3);
+  backdrop-filter: blur(20px);
 }
 
 .click-menu-item {
