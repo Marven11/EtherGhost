@@ -26,6 +26,7 @@
 - HTTP填充垃圾数据
 - 自定义encoder和decoder
   - 支持导入部分蚁剑encoder和decoder
+- 自定义主题和背景图片（？）
 - 。。。。。。
 
 
@@ -60,7 +61,7 @@
 
 ## 为什么不用蚁剑？
 
-我自从学习渗透开始就一直在用蚁剑，蚁剑是一个非常优秀的webshell管理器，但是在我碰到一系列问题想要二开蚁剑的时候才发现蚁剑的架构存在很多问题，无法实现我想要的功能。具体来说：
+我自从学习渗透开始就一直在用蚁剑，蚁剑是一个非常优秀的webshell管理器，但是在我想要二开蚁剑的时候才发现蚁剑的架构存在一些问题，无法实现我想要的功能。具体来说：
 
 - 蚁剑基于早已过时的Electron 4，其Chromium内核存在多个安全漏洞，存在被反制的风险。同时Electron 4的开发环境难以配置，给二开带来困难。
 - 蚁剑的PHP webshell不支持GET参数传参，在CTF环境下较为不便
@@ -69,7 +70,7 @@
 - 蚁剑的encoder需要经过复杂配置之后才可支持AES和RSA加密
 - 虽然蚁剑可以使用php_raw配合encoder连接冰蝎webshell，但蚁剑的插件生态仅支持php类型的webshell，无法在冰蝎webshell上使用各类插件
 
-当然蚁剑的encoder生态和插件生态还是很丰富的，encoder可以通过让python调用nodejs直接使用，插件移植难度比较大，可以让游魂假装是一个webshell，接受蚁剑传来的代码就可以解决。
+蚁剑的encoder生态和插件生态还是很丰富的，encoder可以通过让python调用nodejs直接使用，插件移植难度比较大，可以让游魂假装是一个webshell，接受蚁剑传来的代码就可以解决。
 
 ## TODO
 
@@ -88,7 +89,7 @@
 - 支持冰蝎4.1的自定义类型webshell
 - 批量测试webshell是否存活
 - 数据库连接功能
-- pyinstaller打包，给windows用户提供一个绿色的exe
+- [done] pyinstaller打包，给windows用户提供一个绿色的exe
 - 写安装使用的文档，然后把文档分割为多个文件，存到`docs/`里
 - 让用户决定是否将AES密钥在session中持久化
 

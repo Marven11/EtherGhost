@@ -1,4 +1,4 @@
-# 示例：自定义Encoder
+# 如何自定义Encoder
 
 TODO: 做一个添加encoder的页面
 
@@ -17,7 +17,7 @@ def encode(code: str):
 
 注意：encode函数的返回值可以是str或bytes，代表需要执行的PHP代码
 
-# 示例：自定义Decoder
+# 如何自定义Decoder
 
 TODO: 做一个添加decoder的页面
 
@@ -40,7 +40,7 @@ def decode(s: str) -> str:
 
 最后重启游魂即可在webshell编辑页面看到decoder
 
-# 示例：将蚁剑的encoder和decoder导入到游魂中
+# 如何将蚁剑的encoder和decoder导入到游魂中
 
 首先根据启动时打印的路径打开游魂的配置文件夹
 
@@ -77,6 +77,10 @@ module.exports = {
 完成后可以在webshell编辑界面看到encoder
 
 注意：游魂不支持和蚁剑内部设计高度相关的某些环境变量，某些encoder需要进行修改才能使用
+
+# 如何自定义壁纸
+
+把壁纸重命名为`bg.jpg`, `bg.png`或者`bg.webp`丢到游魂的配置文件夹（启动时打印的路径），然后在游魂的设置页面把主题改成“玻璃”
 
 # Q&A: 为什么正向代理有Vessel和伪正向两种代理？Vessel是什么？
 
