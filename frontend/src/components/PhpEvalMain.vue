@@ -211,7 +211,7 @@ include $temp_file;
   width: 100%;
   height: 100%;
   background-color: var(--background-color-2);
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
   border-radius: 20px;
   font-size: 24px;
   padding: 20px;
@@ -222,6 +222,6 @@ include $temp_file;
 
 svg {
   width: 35px;
-  stroke: var(--font-color-white);
+  stroke: var(--font-color-primary);
 }
 </style>

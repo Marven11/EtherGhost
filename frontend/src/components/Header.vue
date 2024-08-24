@@ -333,7 +333,7 @@ header[data-bg-transition="true"] {
 
 .header-title p {
   font-size: 16px;
-  color: var(--font-color-grey);
+  color: var(--font-color-secodary);
   margin: 0;
 }
 

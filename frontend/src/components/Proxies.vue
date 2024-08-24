@@ -242,7 +242,7 @@ setTimeout(() => {
   border: none;
   outline: 2px solid #ffffff00;
   background-color: var(--background-color-1);
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
   font-size: 18px;
   padding-left: 10px;
   padding-right: 10px;
@@ -251,7 +251,7 @@ setTimeout(() => {
 
 .add-proxy input:focus,
 .add-proxy select:focus {
-  outline: 2px solid var(--font-color-grey);
+  outline: 2px solid var(--font-color-secodary);
 }
 
 .add-proxy input:not(:focus)[data-valid="false"] {
@@ -271,7 +271,7 @@ setTimeout(() => {
   background-color: #00000015;
   width: 100%;
   height: max-content;
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
   font-size: 20px;
   border-radius: 20px;
   padding-left: 20px;

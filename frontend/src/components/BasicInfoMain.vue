@@ -80,7 +80,7 @@ setTimeout(updateInfo, 0)
   outline: none;
   border: none;
   background-color: var(--background-color-3);
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
   margin-right: 10px;
 }
 
@@ -100,7 +100,7 @@ setTimeout(updateInfo, 0)
 .info {
   height: 60px;
   font-size: 20px;
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
 }
 
 .info-data {

@@ -90,7 +90,7 @@ const showInputBox = ref(false)
 
 .command-input input {
   background-color: var(--background-color-2);
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
   border: none;
   border-radius: 20px;
   margin-right: 20px;
@@ -115,7 +115,7 @@ const showInputBox = ref(false)
 
 .icon-run:hover {
   background-color: var(--background-color-3);
-  outline: 2px solid var(--font-color-grey);
+  outline: 2px solid var(--font-color-secodary);
 }
 
 .command-output {
@@ -128,7 +128,7 @@ const showInputBox = ref(false)
   width: 100%;
   height: 100%;
   background-color: var(--background-color-2);
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
   border-radius: 20px;
   font-size: 24px;
   padding: 20px;
@@ -139,6 +139,6 @@ const showInputBox = ref(false)
 
 svg {
   width: 35px;
-  stroke: var(--font-color-white);
+  stroke: var(--font-color-primary);
 }
 </style>

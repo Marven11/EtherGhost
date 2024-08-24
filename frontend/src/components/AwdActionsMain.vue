@@ -210,7 +210,7 @@ while (1) {
 
 .group-title {
   background-color: var(--background-color-2);
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
   width: 100%;
   display: flex;
   align-items: center;
@@ -238,7 +238,7 @@ while (1) {
 
 .action {
   background-color: var(--background-color-3);
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
   padding: 20px;
   height: 100px;
   outline: none;
@@ -266,7 +266,7 @@ while (1) {
   border: none;
   border-radius: 20px;
   font-size: 24px;
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
   padding-left: 15px;
   padding-right: 15px;
   margin-bottom: 30px;
@@ -286,7 +286,7 @@ while (1) {
   border-radius: 20px;
 
   font-size: 20px;
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
   padding: 10px;
 }
 </style>

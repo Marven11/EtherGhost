@@ -27,7 +27,7 @@ import { addPopup } from "@/assets/utils"
   top: 97%;
   width: 50%;
   height: 80%;
-  background-color: var(--background-color-grey);
+  background-color: var(--background-color-hover);
   border-radius: 20px;
   transition: all 0.5s ease;
 }

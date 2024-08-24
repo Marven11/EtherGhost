@@ -93,7 +93,7 @@ function onClickBackground(event) {
   width: 30%;
   min-width: 400px;
   background-color: var(--background-color-1);
-  color: var(--font-color-grey);
+  color: var(--font-color-secodary);
   border-radius: 20px;
   display: flex;
   align-items: center;
@@ -101,13 +101,13 @@ function onClickBackground(event) {
 }
 
 .input-box-title {
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
   margin: 0;
   margin-top: 20px;
 }
 
 .input-box-note {
-  color: var(--font-color-grey);
+  color: var(--font-color-secodary);
   margin-bottom: 50px;
 }
 
@@ -118,7 +118,7 @@ function onClickBackground(event) {
   height: 60px;
   width: 80%;
   border-radius: 20px;
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
   font-size: 20px;
   text-indent: 10px;
   margin-bottom: 30px;
@@ -137,7 +137,7 @@ function onClickBackground(event) {
   width: 20%;
   height: 50%;
   background-color: var(--background-color-2);
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
   outline: none;
   border: none;
   border-radius: 20px;

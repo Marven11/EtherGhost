@@ -57,7 +57,7 @@ watch(clickMenu, () => {
 <style scoped>
 .click-menu {
   position: absolute;
-  background-color: var(--background-color-grey);
+  background-color: var(--background-color-hover);
   border-radius: 20px;
   padding-top: 20px;
   padding-bottom: 20px;
@@ -71,7 +71,7 @@ watch(clickMenu, () => {
   align-items: center;
   padding-left: 20px;
   padding-right: 20px;
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
   user-select: none;
   transition: background 0.3s ease;
 }
@@ -96,8 +96,8 @@ svg {
 }
 
 *[color="white"] {
-  stroke: var(--white);
-  color: var(--white);
+  stroke: var(--font-color-primary);
+  color: var(--font-color-primary);
 }
 
 *[color="red"] {

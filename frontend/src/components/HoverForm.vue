@@ -64,7 +64,7 @@ function onClickBackground(event) {
   width: 30%;
   min-width: 500px;
   background-color: var(--background-color-1);
-  color: var(--font-color-grey);
+  color: var(--font-color-secodary);
   border-radius: 20px;
   display: flex;
   align-items: center;
@@ -79,7 +79,7 @@ function onClickBackground(event) {
 }
 
 .hover-form-main .hover-form-title {
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
   margin: 0;
   margin-top: 20px;
 }
@@ -95,7 +95,7 @@ function onClickBackground(event) {
 
 .hover-form-main .hover-form-line p {
   font-size: 20px;
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
   margin-left: 20px;
   margin-right: 20px;
 }
@@ -123,7 +123,7 @@ function onClickBackground(event) {
 }
 
 .hover-form-main .input-file input::file-selector-button {
-  background-color: var(--font-color-white);
+  background-color: var(--font-color-primary);
   border-radius: 20px;
   padding-left: 10px;
   padding-right: 10px;
@@ -138,7 +138,7 @@ function onClickBackground(event) {
   outline: none;
   border: none;
   border-radius: 20px;
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
   font-size: 20px;
   padding-left: 10px;
   padding-right: 10px;
@@ -147,10 +147,10 @@ function onClickBackground(event) {
 .hover-form-main .hover-form input[type="button"] {
   height: 50px;
   width: 100px;
-  outline: 2px dashed var(--font-color-grey);
+  outline: 2px dashed var(--font-color-secodary);
   border: none;
   border-radius: 20px;
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
   font-size: 16px;
   transition: background 0.3s ease;
 }

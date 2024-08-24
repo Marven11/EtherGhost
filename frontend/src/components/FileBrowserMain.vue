@@ -447,6 +447,10 @@ const codeMirrorTheme = EditorView.theme({
     "background-color": "var(--background-color-2)",
     "font-size": "20px",
   },
+  ".cm-gutters *": {
+    "background-color": "var(--background-color-3)",
+    
+  }
 }, { dark: true })
 
 const codeMirrorExtensions = shallowRef([codeMirrorTheme, oneDark])
@@ -654,7 +658,7 @@ function readableFilePerm(filePerm) {
 input[type="text"] {
   font-size: 26px;
   text-indent: 10px;
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
   border: none;
   outline: none;
   border-radius: 20px;
@@ -681,7 +685,7 @@ input[type="text"] {
 
 .filepath-icon:hover {
   background-color: var(--background-color-3);
-  outline: 2px solid var(--font-color-grey);
+  outline: 2px solid var(--font-color-secodary);
 }
 
 .file-panel {
@@ -738,13 +742,13 @@ input[type="text"] {
 }
 
 .folder-entry-name {
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
   font-size: 24px;
   margin: 0;
 }
 
 .folder-entry-meta {
-  color: var(--font-color-grey);
+  color: var(--font-color-secodary);
 
 }
 
@@ -795,7 +799,7 @@ input[type="text"] {
   border-radius: 20px;
   padding-left: 20px;
   padding-right: 20px;
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
   flex-shrink: 0;
   justify-content: space-between;
 }
@@ -805,14 +809,14 @@ input[type="text"] {
   max-width: 100px;
   background-color: var(--background-color-3);
   font-size: 16px;
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
   margin-right: 10px;
 
 }
 
 .upload-progress {
   padding: 20px;
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
 }
 
 .upload-progress p {
@@ -840,7 +844,7 @@ input[type="text"] {
 }
 
 .upload-progress-meta {
-  color: var(--font-color-grey);
+  color: var(--font-color-secodary);
 }
 
 .upload-progress-percentage {
@@ -857,6 +861,6 @@ input[type="text"] {
 
 svg {
   width: 40px;
-  stroke: var(--font-color-white);
+  stroke: var(--font-color-primary);
 }
 </style>

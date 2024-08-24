@@ -252,12 +252,12 @@ async function onDeleteSessionConfirm(userConfirm) {
 .no-session-panel svg {
   width: 24%;
   height: 24%;
-  stroke: var(--font-color-grey);
+  stroke: var(--font-color-secodary);
 }
 
 .no-session-panel p {
   font-size: 24px;
-  color: var(--font-color-grey);
+  color: var(--font-color-secodary);
 }
 
 .session {
@@ -265,7 +265,7 @@ async function onDeleteSessionConfirm(userConfirm) {
   flex-direction: column;
   height: 180px;
   background-color: var(--background-color-2);
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
   margin-bottom: 40px;
   padding-left: 25px;
   padding-right: 25px;
@@ -299,7 +299,7 @@ async function onDeleteSessionConfirm(userConfirm) {
 }
 
 .session-middle {
-  color: var(--font-color-grey);
+  color: var(--font-color-secodary);
   flex-grow: 1;
 }
 
@@ -313,7 +313,7 @@ async function onDeleteSessionConfirm(userConfirm) {
 
 .session-bottom p {
   margin: 0;
-  color: var(--font-color-grey);
+  color: var(--font-color-secodary);
   font-size: 14px;
 }
 
@@ -330,7 +330,7 @@ async function onDeleteSessionConfirm(userConfirm) {
 
 .add-webshell-button svg {
   width: 50px;
-  stroke: var(--font-color-white);
+  stroke: var(--font-color-primary);
   margin: 10px;
 }
 
@@ -340,6 +340,6 @@ async function onDeleteSessionConfirm(userConfirm) {
 
 svg {
   width: 35px;
-  stroke: var(--font-color-white);
+  stroke: var(--font-color-primary);
 }
 </style>

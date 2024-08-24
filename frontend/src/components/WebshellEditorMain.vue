@@ -230,7 +230,7 @@ function onSelectElementChange(option) {
 
 .group-title {
   background-color: var(--background-color-2);
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
   width: 100%;
   display: flex;
   align-items: center;
@@ -248,7 +248,7 @@ function onSelectElementChange(option) {
   flex-direction: row;
   align-items: center;
   justify-content: start;
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
   height: 50px;
   font-size: 20px;
 }
@@ -271,7 +271,7 @@ function onSelectElementChange(option) {
   outline: none;
   border: none;
   border-radius: 8px;
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
   height: 40px;
   min-width: 100px;
   font-size: 16px;
@@ -283,7 +283,7 @@ input {
   background-color: #00000015;
   border: none;
   outline: none;
-  color: var(--font-color-white);
+  color: var(--font-color-primary);
 }
 
 .input-checkbox {
@@ -291,8 +291,8 @@ input {
   height: 30px;
   border-radius: 8px;
   background-color: #00000015;
-  outline: 2px dashed var(--font-color-grey);
-  stroke: var(--font-color-grey);
+  outline: 2px dashed var(--font-color-secodary);
+  stroke: var(--font-color-secodary);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -304,8 +304,8 @@ input {
 }
 
 .input-checkbox[checked=true] {
-  background-color: var(--font-color-white);
-  stroke: var(--font-color-grey);
+  background-color: var(--font-color-primary);
+  stroke: var(--font-color-secodary);
 }
 
 .input-checkbox svg {
@@ -334,8 +334,8 @@ input {
   border-radius: 12px;
 
   background-color: var(--background-color-3);
-  color: var(--font-color-white);
-  outline: 2px dashed var(--font-color-grey);
+  color: var(--font-color-primary);
+  outline: 2px dashed var(--font-color-secodary);
   font-size: 20px;
 
   display: flex;
