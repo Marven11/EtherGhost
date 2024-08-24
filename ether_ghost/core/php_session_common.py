@@ -109,7 +109,9 @@ PUT_FILE_CONTENT_PHP = compress_phpcode_template(
     """
 $filePath = FILE_PATH;
 $fileContent = base64_decode(FILE_CONTENT);
-if(!is_file($filePath) || !is_writeable($filePath)) {
+if(!is_file($filePath) && !is_writeable(dirname($filePath))) {
+    decoder_echo("WRONG_NO_PERMISSION_FOLDER");
+}else if(is_file($filePath) && !is_writeable($filePath)) {
     decoder_echo("WRONG_NO_PERMISSION");
 }else{
     $content = file_put_contents($filePath, $fileContent);
@@ -765,6 +767,8 @@ class PHPWebshellActions(PHPSessionInterface):
             "FILE_PATH", string_repr(filepath)
         ).replace("FILE_CONTENT", string_repr(base64_encode(content)))
         result = await self.submit(php_code)
+        if result == "WRONG_NO_PERMISSION_FOLDER":
+            raise exceptions.FileError("文件不存在且没有权限向文件夹写入文件")
         if result == "WRONG_NOT_FILE":
             raise exceptions.FileError("目标不是一个文件")
         if result == "WRONG_NO_PERMISSION":
