@@ -671,8 +671,9 @@ input[type="text"] {
 }
 
 .filepath-icon {
-  flex-grow: 1;
-  min-width: 60px;
+  flex-grow: 0;
+  flex-shrink: 0;
+  width: 60px;
   margin-left: 10px;
   display: flex;
   justify-content: center;
