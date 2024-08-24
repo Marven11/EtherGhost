@@ -291,8 +291,8 @@ input {
   height: 30px;
   border-radius: 8px;
   background-color: #00000015;
-  outline: 2px dashed var(--font-color-secodary);
-  stroke: var(--font-color-secodary);
+  outline: 2px dashed var(--font-color-secondary);
+  stroke: var(--font-color-secondary);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -305,7 +305,7 @@ input {
 
 .input-checkbox[checked=true] {
   background-color: var(--font-color-primary);
-  stroke: var(--font-color-secodary);
+  stroke: var(--font-color-secondary);
 }
 
 .input-checkbox svg {
@@ -335,7 +335,7 @@ input {
 
   background-color: var(--background-color-3);
   color: var(--font-color-primary);
-  outline: 2px dashed var(--font-color-secodary);
+  outline: 2px dashed var(--font-color-secondary);
   font-size: 20px;
 
   display: flex;

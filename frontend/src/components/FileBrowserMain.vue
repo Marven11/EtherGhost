@@ -685,7 +685,7 @@ input[type="text"] {
 
 .filepath-icon:hover {
   background-color: var(--background-color-3);
-  outline: 2px solid var(--font-color-secodary);
+  outline: 2px solid var(--font-color-secondary);
 }
 
 .file-panel {
@@ -748,7 +748,7 @@ input[type="text"] {
 }
 
 .folder-entry-meta {
-  color: var(--font-color-secodary);
+  color: var(--font-color-secondary);
 
 }
 
@@ -844,7 +844,7 @@ input[type="text"] {
 }
 
 .upload-progress-meta {
-  color: var(--font-color-secodary);
+  color: var(--font-color-secondary);
 }
 
 .upload-progress-percentage {

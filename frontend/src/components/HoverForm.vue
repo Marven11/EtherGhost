@@ -64,7 +64,7 @@ function onClickBackground(event) {
   width: 30%;
   min-width: 500px;
   background-color: var(--background-color-1);
-  color: var(--font-color-secodary);
+  color: var(--font-color-secondary);
   border-radius: 20px;
   display: flex;
   align-items: center;
@@ -147,7 +147,7 @@ function onClickBackground(event) {
 .hover-form-main .hover-form input[type="button"] {
   height: 50px;
   width: 100px;
-  outline: 2px dashed var(--font-color-secodary);
+  outline: 2px dashed var(--font-color-secondary);
   border: none;
   border-radius: 20px;
   color: var(--font-color-primary);

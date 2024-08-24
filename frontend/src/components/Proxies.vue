@@ -251,7 +251,7 @@ setTimeout(() => {
 
 .add-proxy input:focus,
 .add-proxy select:focus {
-  outline: 2px solid var(--font-color-secodary);
+  outline: 2px solid var(--font-color-secondary);
 }
 
 .add-proxy input:not(:focus)[data-valid="false"] {

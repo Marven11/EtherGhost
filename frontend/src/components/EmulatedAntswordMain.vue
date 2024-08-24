@@ -49,7 +49,7 @@ if (props.session) {
   height: max-content;
   width: 50%;
   border-radius: 20px;
-  color: var(--font-color-secodary);
+  color: var(--font-color-secondary);
   padding: 20px;
 }
 
@@ -61,7 +61,7 @@ if (props.session) {
 .info-panel table {
   width: 100%;
   font-size: 20px;
-  color: var(--font-color-secodary);
+  color: var(--font-color-secondary);
 }
 
 .info-panel td {

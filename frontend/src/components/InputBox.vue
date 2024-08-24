@@ -93,7 +93,7 @@ function onClickBackground(event) {
   width: 30%;
   min-width: 400px;
   background-color: var(--background-color-1);
-  color: var(--font-color-secodary);
+  color: var(--font-color-secondary);
   border-radius: 20px;
   display: flex;
   align-items: center;
@@ -107,7 +107,7 @@ function onClickBackground(event) {
 }
 
 .input-box-note {
-  color: var(--font-color-secodary);
+  color: var(--font-color-secondary);
   margin-bottom: 50px;
 }
 

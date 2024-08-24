@@ -8,7 +8,7 @@
   --t-header-font-color: var(--white);
   --t-tag-font-color: var(--font-color-primary);
   --t-cursor-color: var(--font-color-primary);
-  --t-cmd-key-color: #ffd118;
+  --t-cmd-key-color: var(--yellow);
   --t-cmd-arg-color: #c0c0ff;
   --t-cmd-splitter-color: #808085;
   --t-link-color: antiquewhite;
@@ -36,12 +36,12 @@
   --t-log-box-hover-script-background-color: #2a2c34;
   --t-log-box-folded-background-color: #042f36;
   --t-log-box-folded-hover-background-color: #515157;
-  --t-log-fold-icon-color: var(--font-color-secodary);
+  --t-log-fold-icon-color: var(--font-color-secondary);
   --t-log-fold-icon-background-color: #191b24;
-  --t-log-fold-icon-border-color: var(--font-color-secodary);
+  --t-log-fold-icon-border-color: var(--font-color-secondary);
   --t-log-fold-icon-active-color: #191b24;
-  --t-log-fold-icon-active-background-color: var(--font-color-secodary);
-  --t-log-fold-line-color: var(--font-color-secodary);
+  --t-log-fold-icon-active-background-color: var(--font-color-secondary);
+  --t-log-fold-line-color: var(--font-color-secondary);
   --t-cmd-tips-background-color: #544a4a;
   --t-cmd-tips-font-color: #4ca5c1;
   --t-cmd-tips-active-background-color: #5c6ec9;

@@ -37,7 +37,7 @@
 .scrollbar::-webkit-scrollbar-thumb {
   border-radius: 10px;
   transition: all 1s ease;
-  background-color: var(--font-color-secodary);
+  background-color: var(--font-color-secondary);
 }
 
 .shadow {

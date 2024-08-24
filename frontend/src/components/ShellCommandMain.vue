@@ -115,7 +115,7 @@ const showInputBox = ref(false)
 
 .icon-run:hover {
   background-color: var(--background-color-3);
-  outline: 2px solid var(--font-color-secodary);
+  outline: 2px solid var(--font-color-secondary);
 }
 
 .command-output {

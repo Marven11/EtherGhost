@@ -252,12 +252,12 @@ async function onDeleteSessionConfirm(userConfirm) {
 .no-session-panel svg {
   width: 24%;
   height: 24%;
-  stroke: var(--font-color-secodary);
+  stroke: var(--font-color-secondary);
 }
 
 .no-session-panel p {
   font-size: 24px;
-  color: var(--font-color-secodary);
+  color: var(--font-color-secondary);
 }
 
 .session {
@@ -299,7 +299,7 @@ async function onDeleteSessionConfirm(userConfirm) {
 }
 
 .session-middle {
-  color: var(--font-color-secodary);
+  color: var(--font-color-secondary);
   flex-grow: 1;
 }
 
@@ -313,7 +313,7 @@ async function onDeleteSessionConfirm(userConfirm) {
 
 .session-bottom p {
   margin: 0;
-  color: var(--font-color-secodary);
+  color: var(--font-color-secondary);
   font-size: 14px;
 }
 
