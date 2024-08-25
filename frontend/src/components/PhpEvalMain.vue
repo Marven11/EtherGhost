@@ -22,6 +22,7 @@ if (props.session) {
 // --- Editor ---
 // ##############
 
+// TODO: fix css here
 const phpPlain = ref(true)
 const codeMirrorView = shallowRef()
 const codeMirrorContent = ref("")

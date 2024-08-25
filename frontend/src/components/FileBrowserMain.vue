@@ -434,6 +434,8 @@ function onRightClickEmpty(event) {
 // --- File editor and CodeMirror ---
 // ##################################
 
+// TODO: change font color etc for glass theme
+
 const userFilename = ref("")
 let filename = ref("")
 let fileEncoding = ref("")

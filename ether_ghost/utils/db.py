@@ -83,7 +83,7 @@ def info_to_model(info: SessionInfo) -> SessionInfoModel:
 
 # 操作数据库
 
-
+# TODO: list session by created time
 def list_sessions() -> t.List[SessionInfo]:
     """列出数据库中所有的session"""
     return [model_to_info(model) for model in orm_session.query(SessionInfoModel).all()]
