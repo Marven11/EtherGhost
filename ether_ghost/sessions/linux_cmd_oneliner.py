@@ -13,6 +13,7 @@ from ..core.base import (
     ConnOption,
     ConnOptionGroup,
     DirectoryEntry,
+    BasicInfoEntry,
     get_http_client,
 )
 
@@ -44,6 +45,13 @@ md5sum {filepath}
 
 DOWNLOAD_FILE_CHUNK_CODE = """
 tail -c +{offset} {filepath} | head -c {chunk_size} | base64 -w 0 || echo "#"FAILED
+"""
+
+GET_BASICINFO_CODE = """
+for cmd in {cmds}
+do
+  echo "start$cmd|"$($cmd | base64 -w 0)"stop"
+done
 """
 
 
@@ -289,6 +297,40 @@ class LinuxCmdOneLiner:
         coros = [download_chunk(i) for i in range(1, filesize + 1, chunk_size)]
         chunks = await asyncio.gather(*coros)
         return b"".join(chunks)
+
+    async def send_bytes_over_tcp(
+        self,
+        host: str,
+        port: int,
+        content: bytes,
+        send_method: t.Union[str, None] = None,
+    ) -> t.Union[bytes, None]:
+        """把一串字节通过TCP发送到其他机器上，可以指定对应的发送方法"""
+        raise exceptions.ServerError(
+            "不支持此功能，你不会想用命令执行传HTTP吧？"
+        )  # 可以是可以，用nc或者bash可以做，但是暂时不实现这个功能
+
+    async def get_send_tcp_support_methods(self) -> t.List[str]:
+        """得到发送字节支持的TCP方法"""
+        return []
+
+    async def get_basicinfo(self):
+        # TODO: 多加一点命令
+        cmds = ["uname -a", "whoami", "id", "groups", "pwd"]
+        info = GET_BASICINFO_CODE.format(cmds=shell_command(cmds))
+        result = []
+        for line in (await self.submit(info)).splitlines():
+            line = line.strip().removeprefix("start").removesuffix("stop")
+            if "|" not in line:
+                print(f"{line=}")
+                continue
+            cmd, output_b64 = line.split("|", maxsplit=1)
+            try:
+                output = base64.b64decode(output_b64.strip()).decode()
+            except Exception:
+                continue
+            result.append(BasicInfoEntry(key=cmd, value=output))
+        return result
 
     async def submit(self, payload: t.Union[str, t.List[str]]):
         start1, start2, stop = random_string(6), random_string(6), random_string(12)
