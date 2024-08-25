@@ -1,6 +1,9 @@
+import asyncio
 import typing as t
 import logging
-
+import base64
+import shlex
+import hashlib
 import httpx
 
 from ..core import exceptions
@@ -9,6 +12,7 @@ from ..core.base import (
     register_session,
     ConnOption,
     ConnOptionGroup,
+    DirectoryEntry,
     get_http_client,
 )
 
@@ -21,6 +25,40 @@ echo "{start1}""{start2}";
 ({code})
 echo {stop}
 """
+
+UPLOAD_FILE_CHUNK_CODE = """
+file=`mktemp`
+echo {chunk_b64} | base64 -d > $file
+echo DONE "$file"
+""".strip()
+
+UPLOAD_FILE_MERGE_CODE = """
+cat {files} > {filepath}
+rm {files}
+"""
+
+UPLOAD_FILE_CHECK_CODE = """
+which md5sum >/dev/null || echo no_md5sum
+md5sum {filepath} 
+"""
+
+DOWNLOAD_FILE_CHUNK_CODE = """
+tail -c +{offset} {filepath} | head -c {chunk_size} | base64 -w 0 || echo "#"FAILED
+"""
+
+
+def shell_command(args: t.List[str]):
+    """转译命令或命令参数"""
+    return " ".join(shlex.quote(arg) for arg in args)
+
+
+def parse_file_permission(perm: str):
+    result = ""
+    for i in range(0, 9, 3):
+        part = perm[i : i + 3]
+        digit_bin = "".join("0" if c == "-" else "1" for c in part)
+        result += str(int(digit_bin, 2))
+    return result
 
 
 @register_session
@@ -74,12 +112,193 @@ class LinuxCmdOneLiner:
     async def execute_cmd(self, cmd):
         return await self.submit(cmd)
 
-    async def submit(self, payload: str):
+    async def test_usablility(self):
+        toprint = random_string(12)
+        return toprint in (await self.submit(["echo", toprint]))
+
+    async def get_pwd(self):
+        return (await self.submit("pwd")).strip()
+
+    async def _list_dir(self, dir_path) -> t.List[DirectoryEntry]:
+        # 不仅列出文件夹，在给定的是文件时给出文件的详细信息
+
+        # yes, we are parsing output of `ls`, although we shoudn't
+        command_output = await self.submit(
+            shell_command(["ls", "-la", dir_path]) + " && echo finished"
+        )
+        result = []
+        if "finished" not in command_output:
+            return None
+        for line in command_output.splitlines():
+            parts = line.split(maxsplit=8)
+            if len(parts) < 9:
+                continue
+            perm = parts[0]
+            filesize = parts[4]
+            name = parts[8]  # it would be `aaa -> bbb` when it is symlink
+
+            try:
+                filesize = int(filesize)
+            except Exception as exc:
+                raise exceptions.FileError("无法解析文件大小") from exc
+
+            filetype = perm[0]
+            perm = parse_file_permission(perm[1:10])
+            filetype = {"f": "file", "d": "dir", "l": "link"}.get(filetype, "unknown")
+            if filetype == "link":
+                filetype == "link-dir" if name.endswith("/") else "link-file"
+                name = name.split(" ->")[0]
+            result.append(
+                DirectoryEntry(
+                    name=name,
+                    permission=perm,
+                    filesize=int(filesize),
+                )
+            )
+        return result
+
+    async def list_dir(self, dir_path) -> t.List[DirectoryEntry]:
+        result = await self._list_dir(dir_path)
+        if result:
+            return result
+        return [
+            DirectoryEntry(name="..", permission="555", filesize=-1, entry_type="dir")
+        ]
+
+    async def get_file_contents(self, filepath: str, max_size: int = 1024 * 200):
+        ls_result = await self.list_dir(filepath)
+        if not ls_result or ls_result[0].filesize > max_size:
+            raise exceptions.FileError(f"文件大小太大(>{max_size}B)，建议下载编辑")
+        content_b64 = await self.submit(["base64", "-w", "0", filepath])
+        return base64.b64decode(content_b64)
+
+    async def put_file_contents(self, filepath: str, content: bytes):
+        content_b64 = base64.b64encode(content).decode()
+        cmd = (
+            f"{shell_command(['echo', content_b64])} | "
+            + f"base64 -d > {shlex.quote(filepath)} && echo finished"
+        )
+        result = await self.submit(cmd)
+        return result.strip() == "finished"
+
+    async def delete_file(self, filepath: str):
+        cmd = shell_command(["rm", filepath]) + " && echo finished"
+        result = await self.submit(cmd)
+        return result.strip() == "finished"
+
+    async def move_file(self, filepath, new_filepath):
+        cmd = shell_command(["mv", filepath, new_filepath]) + " && echo finished"
+        result = await self.submit(cmd)
+        if result.strip() != "finished":
+            raise exceptions.FileError("移动失败")
+
+    async def upload_file(self, filepath, content, callback):
+        result_touch = await self.submit(
+            shell_command(["touch", filepath]) + " && echo finished"
+        )
+        if result_touch.strip() != "finished":
+            raise exceptions.FileError("文件上传失败：无法新建文件")
+
+        sem = asyncio.Semaphore(4)
+        chunk_size = 1000
+        done_coro = 0
+        done_bytes = 0
+        coros = []
+
+        async def upload_chunk(chunk: bytes):
+            nonlocal done_coro, done_bytes
+            code = UPLOAD_FILE_CHUNK_CODE.format(
+                chunk_b64=base64.b64encode(chunk).decode()
+            )
+            async with sem:
+                await asyncio.sleep(0.01)
+                result = await self.submit(code)
+                done_coro += 1
+                done_bytes += len(chunk)
+                if callback:
+                    callback(
+                        done_coro=done_coro,
+                        max_coro=len(coros),
+                        done_bytes=done_bytes,
+                        max_bytes=len(content),
+                    )
+            if "DONE" not in result:
+                raise exceptions.FileError("上传分块失败")
+
+            return result.strip().removeprefix("DONE").strip()
+
+        coros = [
+            upload_chunk(content[i : i + chunk_size])
+            for i in range(0, len(content), chunk_size)
+        ]
+        uploaded_chunks = await asyncio.gather(*coros)
+        code = UPLOAD_FILE_MERGE_CODE.format(
+            files=shell_command(uploaded_chunks), filepath=shlex.quote(filepath)
+        )
+        await self.submit(code)
+        checkfile = await self.submit(
+            UPLOAD_FILE_CHECK_CODE.format(filepath=shlex.quote(filepath))
+        )
+        if "no_md5sum" in checkfile:
+            return True  # we cannot check it
+        if hashlib.md5(content).hexdigest() not in checkfile:
+            raise exceptions.FileError("上传失败：MD5验证失败")
+        return True
+
+    async def download_file(self, filepath: str, callback=None):
+        pass
+        ls_result = await self.list_dir(filepath)
+        if not ls_result:
+            raise exceptions.FileError("读取文件大小失败，也许文件不存在？")
+        filesize = ls_result[0].filesize
+
+        # TODO: 允许用户自定义
+        sem = asyncio.Semaphore(4)
+        chunk_size = 1000
+        done_coro = 0
+        done_bytes = 0
+        coros = []
+
+        async def download_chunk(offset: int):
+            nonlocal done_coro, coros, done_bytes
+            # 这里的offset从1开始
+            code = DOWNLOAD_FILE_CHUNK_CODE.format(
+                offset=offset,
+                filepath=shlex.quote(filepath),
+                chunk_size=str(chunk_size),
+            )
+            async with sem:
+                await asyncio.sleep(0.01)  # we don't ddos
+                result = await self.submit(code)
+                done_coro += 1
+                done_bytes += chunk_size  # TODO: fix me
+                if callback:
+                    callback(
+                        done_coro=done_coro,
+                        max_coro=len(coros),
+                        done_bytes=min(done_bytes, filesize),
+                        max_bytes=filesize,
+                    )
+            if "#FAILED" in result:
+                raise exceptions.FileError("无法读取文件") from exc
+            try:
+                return base64.b64decode(result.strip())
+            except Exception as exc:
+                raise exceptions.FileError("无法base64解码分块") from exc
+
+        coros = [download_chunk(i) for i in range(1, filesize + 1, chunk_size)]
+        chunks = await asyncio.gather(*coros)
+        return b"".join(chunks)
+
+    async def submit(self, payload: t.Union[str, t.List[str]]):
         start1, start2, stop = random_string(6), random_string(6), random_string(12)
         # we use f-string here because shell commands normally don't
         # has brackets unlike php code
         code = WRAPPER_CODE.format(
-            start1=start1, start2=start2, code=payload, stop=stop
+            start1=start1,
+            start2=start2,
+            code=payload if isinstance(payload, str) else shell_command(payload),
+            stop=stop,
         )
         status_code, html = await self.submit_http(code)
         if status_code == 404:
