@@ -1,6 +1,7 @@
 import json
 import random
 import base64
+import string
 from uuid import uuid4
 from pathlib import Path
 
@@ -11,6 +12,11 @@ with open(DIR / "eng_words_map.json", "r", encoding="utf-8") as f:
 
 with open(DIR / "phone_5.json", "r", encoding="utf-8") as f:
     phone_5 = json.load(f)
+
+
+# TODO: use this function in other places for readability
+def random_string(length: int, chars=string.ascii_lowercase + string.digits):
+    return "".join(random.choices(chars, k=length))
 
 
 def random_choose_from(words_weight: dict) -> str:
@@ -43,6 +49,7 @@ def random_phone_number():
     region = random_choose_from(phone_5[isp])
     return isp + region + str(random.randint(1000000, 9999999))
 
+
 # TODO: test it on real waf
 def random_data():
     p = random.randint(1, 100)
@@ -52,7 +59,9 @@ def random_data():
         return str(uuid4())
     if p < 60:
         garbage = bytes.fromhex(
-            "".join(random.choices("1234567890abcdef", k=random.randint(1000, 2000) * 2))
+            "".join(
+                random.choices("1234567890abcdef", k=random.randint(1000, 2000) * 2)
+            )
         )
         return base64.b64encode(garbage).decode()
     return random_phone_number()
