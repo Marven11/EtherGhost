@@ -1,7 +1,5 @@
 # 如何自定义Encoder
 
-TODO: 做一个添加encoder的页面
-
 首先根据启动时打印的路径打开游魂的配置文件夹，找到其中的`modules/php_encoders`文件夹
 
 新建python文件（如`example.py`）并往其中写入以下内容：
@@ -18,8 +16,6 @@ def encode(code: str):
 注意：encode函数的返回值可以是str或bytes，代表需要执行的PHP代码
 
 # 如何自定义Decoder
-
-TODO: 做一个添加decoder的页面
 
 首先根据启动时打印的路径打开游魂的配置文件夹，找到其中的`modules/php_decoders`文件夹
 
@@ -81,6 +77,12 @@ module.exports = {
 # 如何自定义壁纸
 
 把壁纸重命名为`bg.jpg`, `bg.png`或者`bg.webp`丢到游魂的配置文件夹（启动时打印的路径），然后在游魂的设置页面把主题改成“玻璃”
+
+# Q&A: 为什么不支持在网页端添加encoder和decoder?
+
+Encoder和Decoder会在服务端启动的时候作为代码被加载，如果蓝队登陆了红队的游魂则可以通过添加Encoder的方式控制服务器
+
+所以为了防止RCE漏洞，游魂不应该支持在网页端添加encoder和decoder
 
 # Q&A: 为什么正向代理有Vessel和伪正向两种代理？Vessel是什么？
 
