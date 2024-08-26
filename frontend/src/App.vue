@@ -7,12 +7,12 @@ import { ref } from "vue";
 
 
 setTimeout(async () => {
+  // evil hack to ensure color transition enabled after theme color being set
+  setTimeout(() => store.theme_background_transition = true, 100)
   let settings = await getDataOrPopupError("/settings")
   for (let key of Object.keys(settings)) {
     currentSettings[key] = settings[key]
   }
-  // evil hack to ensure color transition enabled after theme color being set
-  setTimeout(() => store.theme_background_transition = true, 100)
 }, 0)
 
 </script>

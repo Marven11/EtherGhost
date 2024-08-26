@@ -77,7 +77,7 @@ async function createProxy() {
       "port": parseInt(addProxyInput.port),
       "send_method": addProxyInput.send_method ? addProxyInput.send_method : null,
     }
-    const _ = await postDataOrPopupError("/forward_proxy/create_psudo_proxy", data)
+    await postDataOrPopupError("/forward_proxy/create_psudo_proxy", data)
     addPopup("green", "代理添加成功", `到${addProxyInput.host}:${addProxyInput.port}的代理添加成功`)
     Object.keys(addProxyInput).forEach(key => {
       addProxyInput[key] = ""
@@ -125,7 +125,6 @@ watch(() => addProxyInput.session_id, async (newValue, oldValue) => {
   if (!supportedSendMethods[newValue]) {
     supportedSendMethods[newValue] = await getDataOrPopupError(`/session/${newValue}/supported_send_tcp_methods`)
   }
-  console.log(supportedSendMethods[newValue])
 })
 
 setTimeout(async () => {
