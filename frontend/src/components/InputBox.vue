@@ -33,8 +33,8 @@ function onClickCancel(event) {
 function onClickBackground(event) {
   event.preventDefault()
   let target = event.target
-  while(target) {
-    if(target.classList.contains("input-box")) {
+  while (target) {
+    if (target.classList.contains("input-box")) {
       return;
     }
     target = target.parentElement
@@ -79,6 +79,10 @@ function onClickBackground(event) {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+body[data-theme="glass"] .input-box-main {
+  backdrop-filter: blur(20px);
 }
 
 .input-box-background {
