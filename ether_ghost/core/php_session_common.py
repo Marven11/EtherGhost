@@ -1034,7 +1034,7 @@ class PHPWebshellActions(PHPSessionInterface):
         raise NotImplementedError("子类提供这个函数以驱动这些Actions函数")
 
 
-class PHPWebshellCommunication:
+class PHPWebshellCommunication(PHPWebshellActions):
     """
     这里实现了
     - 在HTML输出中精确找到对应的php代码输出
@@ -1043,10 +1043,13 @@ class PHPWebshellCommunication:
 
     这个类需要子类提供submit_http函数，在submit_http的功能之上提供submit函数
 
-    继承时放在PHPWebshellActions之前
+    继承这个类时放在PHPWebshellActions之前
     """
 
     def __init__(self, conn: t.Union[None, dict]):
+        # 这里的super()调用的是兄弟类PHPWebshelLAction等的__init__函数
+        # 所以需要传一个conn
+        super().__init__(conn)  # type: ignore
         # conn是webshell从前端或者数据库接来的字典，可能是上一个版本，没有添加某项的connection info
         # 所以其中的任何一项都可能不存在，需要使用get取默认值
         options = conn if conn is not None else {}
