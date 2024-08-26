@@ -12,7 +12,7 @@ const userInput = ref(props.value)
 const emit = defineEmits(["result"])
 const inputBox = ref(null)
 
-function onClickConfirm(event) {
+function onConfirm(event) {
   event.preventDefault()
   if (props.requireInput) {
     emit("result", userInput.value)
@@ -21,7 +21,7 @@ function onClickConfirm(event) {
   }
 }
 
-function onClickCancel(event) {
+function onCancel(event) {
   event.preventDefault()
   if (props.requireInput) {
     emit("result", undefined)
@@ -58,10 +58,11 @@ function onClickBackground(event) {
         {{ props.note }}
       </p>
 
-      <input v-if="props.requireInput" type="text" class="input-box-input" placeholder="testtest" v-model="userInput">
+      <input v-if="props.requireInput" type="text" class="input-box-input" placeholder="testtest" v-model="userInput"
+        @keypress.enter="onConfirm">
       <div class="input-box-buttons">
-        <input class="input-box-button" type="button" value="取消" @click="onClickCancel">
-        <input class="input-box-button" type="button" value="确认" @click="onClickConfirm">
+        <input class="input-box-button" type="button" value="取消" @click="onCancel">
+        <input class="input-box-button" type="button" value="确认" @click="onConfirm">
       </div>
 
     </div>
