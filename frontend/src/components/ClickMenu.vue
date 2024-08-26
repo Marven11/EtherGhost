@@ -78,7 +78,7 @@ watch(clickMenu, () => {
 }
 
 .click-menu-item:hover {
-  background-color: #ffffff15;
+  background-color: #00000015;
 }
 
 .click-menu-icon {
