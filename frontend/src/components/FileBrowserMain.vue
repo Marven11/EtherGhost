@@ -244,13 +244,6 @@ const menuItemsAll = [
     "entry_type": ["file", "link-file"]
   },
   {
-    "name": "open_terminal_here",
-    "text": "在此处打开终端",
-    "icon": IconTerminal,
-    "color": "white",
-    "entry_type": ["empty", "file", "link-file", "dir", "link-dir"]
-  },
-  {
     "name": "new_file",
     "text": "新建文件",
     "icon": IconFileNew,
@@ -272,13 +265,6 @@ const menuItemsAll = [
     "entry_type": ["file", "link-file"]
   },
   {
-    "name": "rename_file",
-    "text": "重命名",
-    "icon": IconPenSquare,
-    "color": "white",
-    "entry_type": ["file", "link-file", "dir", "link-dir"]
-  },
-  {
     "name": "delete_file",
     "text": "删除文件",
     "icon": IconDelete,
@@ -286,11 +272,32 @@ const menuItemsAll = [
     "entry_type": ["file", "link-file"]
   },
   {
+    "name": "open_terminal_here",
+    "text": "在此处打开终端",
+    "icon": IconTerminal,
+    "color": "white",
+    "entry_type": ["empty", "file", "link-file", "dir", "link-dir"]
+  },
+  {
+    "name": "rename_file",
+    "text": "重命名",
+    "icon": IconPenSquare,
+    "color": "white",
+    "entry_type": ["file", "link-file", "dir", "link-dir"]
+  },
+  {
     "name": "open_dir",
     "text": "打开文件夹",
     "icon": IconDirectory,
     "color": "white",
     "entry_type": ["dir", "link-dir"]
+  },
+  {
+    "name": "new_dir",
+    "text": "新建文件夹",
+    "icon": IconDirectory,
+    "color": "white",
+    "entry_type": ["empty", "file", "link-file", "dir", "link-dir"]
   },
 ]
 const ClickMenuFolderEntry = ClickMenuManager([
@@ -312,6 +319,9 @@ const ClickMenuFolderEntry = ClickMenuManager([
     confirmRenameFile(clickMenuEntry.name)
   } else if (item.name == "delete_file") {
     confirmDeleteFile(clickMenuEntry.name)
+  } else if (item.name == "new_dir") {
+    confirmNewDir()
+
   } else if (item.name == "open_terminal_here") {
     router.push({
       path: `/terminal/${props.session}`,
@@ -319,8 +329,7 @@ const ClickMenuFolderEntry = ClickMenuManager([
         pwd: pwd.value
       }
     })
-  }
-  else {
+  } else {
     addPopup("red", "内部错误", `没有实现动作：${item.name}`)
   }
 })
@@ -335,23 +344,27 @@ function confirmNewFile() {
   inputBoxCallback = async filename => {
     if (!filename) {
       showInputBox.value = false
+      return
+    }
+    try {
+      let success = await postDataOrPopupError(`/session/${props.session}/put_file_contents`, {
+        text: "",
+        encoding: "utf-8",
+        filename: filename,
+        current_dir: pwd.value
+      })
+      if (success) {
+        addPopup("green", "新建成功", `文件${filename}已经成功创建`)
+      } else {
+        addPopup("red", "新建失败", `文件${filename}创建失败`)
+      }
+    } finally {
+      showInputBox.value = false
+    }
 
-    }
-    let success = await postDataOrPopupError(`/session/${props.session}/put_file_contents`, {
-      text: "",
-      encoding: "utf-8",
-      filename: filename,
-      current_dir: pwd.value
-    })
-    if (success) {
-      addPopup("green", "新建文件成功", `文件${filename}已经成功新建`)
-    } else {
-      addPopup("red", "新建失败", `文件${filename}新建失败`)
-    }
     await listDir(pwd.value)
 
     viewNewFile(filename)
-    showInputBox.value = false
   }
 }
 
@@ -413,6 +426,40 @@ function confirmDeleteFile(filename) {
 
     }
 
+  }
+}
+
+function confirmNewDir() {
+  showInputBox.value = true
+  inputBoxTitle.value = "新建文件夹"
+  inputBoxNote.value = "输入文件夹的名称"
+  inputBoxRequireInput.value = true
+  inputBoxCallback = async dirname => {
+    if (!dirname) {
+      showInputBox.value = false
+      return
+    }
+    try {
+      let dirpath = await getDataOrPopupError("/utils/join_path", {
+        params: {
+          folder: pwd.value,
+          entry: dirname
+        }
+      })
+      let success = await getDataOrPopupError(`/session/${props.session}/mkdir`, {
+        params: {
+          dirpath: dirpath
+        }
+      })
+      if (success) {
+        addPopup("green", "新建成功", `文件夹${dirname}已经成功创建`)
+      } else {
+        addPopup("red", "新建失败", `文件夹${dirname}创建失败`)
+      }
+    } finally {
+      showInputBox.value = false
+    }
+    await listDir(pwd.value)
   }
 }
 
