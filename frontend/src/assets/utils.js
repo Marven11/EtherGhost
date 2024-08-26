@@ -2,23 +2,6 @@ import axios from "axios"
 import { popupsRef, currentSettings } from "./store"
 import { ref, shallowRef } from "vue"
 
-export function hello() {
-  console.log("Hello, World!")
-}
-
-export async function joinPath(folder, entry) {
-  return await getDataOrPopupError("/utils/join_path", {
-    params: {
-      folder: folder,
-      entry: entry
-    }
-  })
-}
-
-export function getCurrentApiUrl() {
-  return window.location.origin.includes("5173") ? `http://${window.location.hostname}:8022` : window.location.origin
-}
-
 class UserError extends Error {
   constructor(message) {
     super(message);
@@ -41,6 +24,19 @@ class TargetError extends Error {
     this.name = "TargetError";
     this.message = `受控端错误：${message}`
   }
+}
+
+export async function joinPath(folder, entry) {
+  return await getDataOrPopupError("/utils/join_path", {
+    params: {
+      folder: folder,
+      entry: entry
+    }
+  })
+}
+
+export function getCurrentApiUrl() {
+  return window.location.origin.includes("5173") ? `http://${window.location.hostname}:8022` : window.location.origin
 }
 
 export function doAssert(result, msg) {

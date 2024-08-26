@@ -1,6 +1,10 @@
 import { reactive, ref, watch } from 'vue'
 import { getDataOrPopupError } from './utils'
 
+// 这里的popupsRef是一个指向Popups compoment的ref
+// Popups全局唯一，只有App.vue里有一个
+// 为了添加popup，其他模块需要取到这里的Popups ref然后调用里面的函数
+
 export const popupsRef = ref(null)
 
 export const store = reactive({

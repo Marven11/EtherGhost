@@ -1,12 +1,11 @@
 <script setup>
 
-import { reactive, ref, shallowRef, watch } from "vue";
-import { getDataOrPopupError, postDataOrPopupError, addPopup, doAssert } from "@/assets/utils"
+import { ref, shallowRef } from "vue";
+import { getDataOrPopupError, postDataOrPopupError, addPopup } from "@/assets/utils"
 import IconCross from './icons/iconCross.vue'
 import IconCheck from './icons/iconCheck.vue'
 import { store, currentSettings } from "@/assets/store";
 import { useRouter } from "vue-router"
-import axios from "axios";
 
 const router = useRouter()
 const props = defineProps({
