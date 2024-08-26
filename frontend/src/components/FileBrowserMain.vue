@@ -24,6 +24,7 @@ import { store } from "@/assets/store"
 // --- CodeMirror Stuff
 import { EditorView } from "@codemirror/view"
 import { oneDark } from '@codemirror/theme-one-dark'
+import { noctisLilac } from 'thememirror';
 
 import { css } from '@codemirror/lang-css'
 import { cpp } from '@codemirror/lang-cpp'
@@ -434,8 +435,6 @@ function onRightClickEmpty(event) {
 // --- File editor and CodeMirror ---
 // ##################################
 
-// TODO: change font color etc for glass theme
-
 const userFilename = ref("")
 let filename = ref("")
 let fileEncoding = ref("")
@@ -451,18 +450,18 @@ const codeMirrorTheme = EditorView.theme({
   },
   ".cm-gutters *": {
     "background-color": "var(--background-color-3)",
-    
+
   }
 }, { dark: true })
 
-const codeMirrorExtensions = shallowRef([codeMirrorTheme, oneDark])
+const codeMirrorExtensions = shallowRef([codeMirrorTheme, (store.theme == "glass" ? noctisLilac : oneDark)])
 
 function codeMirrorReady(payload) {
   codeMirrorView.value = payload.view
 }
 
 watch(fileExtension, (newFileExtension, _) => {
-  let extensions = [codeMirrorTheme, oneDark];
+  let extensions = [codeMirrorTheme, (store.theme == "glass" ? noctisLilac : oneDark)];
   let highlightings = [
     { suffix: ["cpp"], extension: () => cpp() },
     { suffix: ["css"], extension: () => css() },

@@ -3,6 +3,7 @@ import { ref, shallowRef, watch } from "vue";
 import { Codemirror } from 'vue-codemirror'
 import { php } from '@codemirror/lang-php'
 import { oneDark } from '@codemirror/theme-one-dark'
+import { noctisLilac } from "thememirror";
 import { EditorView } from "@codemirror/view"
 
 import { addPopup, getCurrentApiUrl, postDataOrPopupError } from "@/assets/utils";
@@ -22,7 +23,6 @@ if (props.session) {
 // --- Editor ---
 // ##############
 
-// TODO: fix css here
 const phpPlain = ref(true)
 const codeMirrorView = shallowRef()
 const codeMirrorContent = ref("")
@@ -36,7 +36,12 @@ const codeMirrorTheme = EditorView.theme({
 const codeMirrorExtensions = shallowRef([])
 
 function updateCodeMirrorExtension() {
-  codeMirrorExtensions.value = [codeMirrorTheme, oneDark, codeMirrorTheme, php({ plain: phpPlain.value })]
+  codeMirrorExtensions.value = [
+    codeMirrorTheme,
+    (store.theme == "glass" ? noctisLilac : oneDark),
+    codeMirrorTheme,
+    php({ plain: phpPlain.value })
+  ]
 }
 
 function codeMirrorReady(payload) {
