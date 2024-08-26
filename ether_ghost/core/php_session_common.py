@@ -842,6 +842,7 @@ class PHPWebshellActions(PHPSessionInterface):
         self, filepath: str, content: bytes, callback: t.Union[t.Callable, None] = None
     ) -> bool:
         sem = asyncio.Semaphore(self.max_coro)
+        write_state_lock = asyncio.Lock()
         chunk_size = self.chunk_size
         done_coro = 0
         done_bytes = 0
@@ -863,7 +864,7 @@ class PHPWebshellActions(PHPSessionInterface):
             async with sem:
                 await asyncio.sleep(0.01)  # we don't ddos
                 result = await self.submit(code)
-                # TODO: 在这里加锁，适配GIL模式
+            async with write_state_lock:
                 done_coro += 1
                 done_bytes += len(chunk)
                 if callback:
@@ -921,6 +922,7 @@ class PHPWebshellActions(PHPSessionInterface):
             )
 
         sem = asyncio.Semaphore(self.max_coro)
+        write_state_lock = asyncio.Lock()
         chunk_size = self.chunk_size
         done_coro = 0
         done_bytes = 0
@@ -936,6 +938,7 @@ class PHPWebshellActions(PHPSessionInterface):
             async with sem:
                 await asyncio.sleep(0.01)  # we don't ddos
                 result = await self.submit(code)
+            async with write_state_lock:
                 done_coro += 1
                 done_bytes += chunk_size  # TODO: fix me
                 if callback:

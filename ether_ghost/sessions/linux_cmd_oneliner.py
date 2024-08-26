@@ -215,6 +215,7 @@ class LinuxCmdOneLiner:
             raise exceptions.FileError("文件上传失败：无法新建文件")
 
         sem = asyncio.Semaphore(4)
+        write_state_lock = asyncio.Lock()
         chunk_size = 1000
         done_coro = 0
         done_bytes = 0
@@ -228,6 +229,7 @@ class LinuxCmdOneLiner:
             async with sem:
                 await asyncio.sleep(0.01)
                 result = await self.submit(code)
+            async with write_state_lock:
                 done_coro += 1
                 done_bytes += len(chunk)
                 if callback:
@@ -269,6 +271,7 @@ class LinuxCmdOneLiner:
 
         # TODO: 允许用户自定义
         sem = asyncio.Semaphore(4)
+        write_state_lock = asyncio.Lock()
         chunk_size = 1000
         done_coro = 0
         done_bytes = 0
@@ -285,6 +288,7 @@ class LinuxCmdOneLiner:
             async with sem:
                 await asyncio.sleep(0.01)  # we don't ddos
                 result = await self.submit(code)
+            async with write_state_lock:
                 done_coro += 1
                 done_bytes += chunk_size  # TODO: fix me
                 if callback:
@@ -295,7 +299,7 @@ class LinuxCmdOneLiner:
                         max_bytes=filesize,
                     )
             if "#FAILED" in result:
-                raise exceptions.FileError("无法读取文件") from exc
+                raise exceptions.FileError("无法读取文件")
             try:
                 return base64.b64decode(result.strip())
             except Exception as exc:

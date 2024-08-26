@@ -52,7 +52,6 @@ class BasicInfoEntry:
 # 所以Session对象基本上是无状态的，状态会在请求结束后被丢弃
 
 
-# TODO: make it a real interface
 class SessionInterface:
     """Session接口"""
 
