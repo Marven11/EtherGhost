@@ -27,9 +27,10 @@ async function psudoExec(command) {
       }
     })).trim()
   }
+  // TODO: correctly escape pwd.value
   const result_text = await getDataOrPopupError(`/session/${props.session}/execute_cmd`, {
     params: {
-      cmd: `cd ${pwd.value}; (${command}) 2>&1`
+      cmd: `cd '${pwd.value}'; (${command}) 2>&1`
     }
   })
   return result_text
@@ -38,7 +39,7 @@ async function psudoExec(command) {
 async function onExecCmd(key, command, success, failed) {
 
   // TODO: fix this regexp, it stop user cd to special directory
-  if (key == "cd" && /^cd +[-_a-zA-Z0-9\/]+$/.test(command)) {
+  if (key == "cd" && /^cd +[^;&\|]+$/.test(command)) {
     let result
     try {
       result = await psudoExec(command + "; pwd")
