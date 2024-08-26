@@ -1,10 +1,7 @@
 import typing as t
-import hashlib
 import logging
 import base64
 
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad
 import httpx
 
 from ..core import exceptions

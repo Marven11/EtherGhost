@@ -117,7 +117,7 @@ class LinuxCmdOneLiner:
         self.https_verify = session_conn.get("https_verify", False)
         self.client = get_http_client(verify=self.https_verify)
 
-    async def execute_cmd(self, cmd):
+    async def execute_cmd(self, cmd: str):
         return await self.submit(cmd)
 
     async def test_usablility(self):
@@ -127,7 +127,7 @@ class LinuxCmdOneLiner:
     async def get_pwd(self):
         return (await self.submit("pwd")).strip()
 
-    async def _list_dir(self, dir_path) -> t.List[DirectoryEntry]:
+    async def _list_dir(self, dir_path: str) -> t.Union[t.List[DirectoryEntry], None]:
         # 不仅列出文件夹，在给定的是文件时给出文件的详细信息
 
         # yes, we are parsing output of `ls`, although we shoudn't
@@ -165,7 +165,7 @@ class LinuxCmdOneLiner:
             )
         return result
 
-    async def list_dir(self, dir_path) -> t.List[DirectoryEntry]:
+    async def list_dir(self, dir_path: str) -> t.List[DirectoryEntry]:
         result = await self._list_dir(dir_path)
         if result:
             return result
@@ -173,7 +173,7 @@ class LinuxCmdOneLiner:
             DirectoryEntry(name="..", permission="555", filesize=-1, entry_type="dir")
         ]
 
-    async def mkdir(self, dir_path):
+    async def mkdir(self, dir_path: str):
         result = await self.submit(
             shell_command(["mkdir", dir_path]) + " && echo finished"
         )
@@ -201,13 +201,15 @@ class LinuxCmdOneLiner:
         result = await self.submit(cmd)
         return result.strip() == "finished"
 
-    async def move_file(self, filepath, new_filepath):
+    async def move_file(self, filepath: str, new_filepath: str):
         cmd = shell_command(["mv", filepath, new_filepath]) + " && echo finished"
         result = await self.submit(cmd)
         if result.strip() != "finished":
             raise exceptions.FileError("移动失败")
 
-    async def upload_file(self, filepath, content, callback):
+    async def upload_file(
+        self, filepath: str, content: bytes, callback: t.Union[t.Callable, None] = None
+    ) -> bool:
         result_touch = await self.submit(
             shell_command(["touch", filepath]) + " && echo finished"
         )
@@ -219,7 +221,7 @@ class LinuxCmdOneLiner:
         chunk_size = 1000
         done_coro = 0
         done_bytes = 0
-        coros = []
+        coros: t.List[t.Awaitable] = []
 
         async def upload_chunk(chunk: bytes):
             nonlocal done_coro, done_bytes
@@ -275,7 +277,7 @@ class LinuxCmdOneLiner:
         chunk_size = 1000
         done_coro = 0
         done_bytes = 0
-        coros = []
+        coros: t.List[t.Awaitable] = []
 
         async def download_chunk(offset: int):
             nonlocal done_coro, coros, done_bytes

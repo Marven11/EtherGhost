@@ -14,7 +14,6 @@ from .session_types import (
 SESSION_CACHE_TIMEOUT = 300
 session_store: t.Dict[UUID, t.Tuple[int, core.SessionInterface]] = {}
 location_readable = {"US": "🇺🇸"}
-session_con_converters = {}
 
 
 def session_info_to_session(session_info: SessionInfo) -> core.SessionInterface:

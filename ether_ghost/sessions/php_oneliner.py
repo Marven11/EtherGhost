@@ -17,6 +17,7 @@ from ..core.base import (
     register_session,
     ConnOption,
     ConnOptionGroup,
+    ConnOptionAlternative,
     get_http_client,
 )
 from ..core.php_session_common import (
@@ -35,6 +36,9 @@ logger = logging.getLogger("core.sessions.php_oneline")
 # 这样至少可以避免游魂启动后被反制
 
 antsword_encoders = [file.name for file in const.ANTSWORD_ENCODER_FOLDER.glob("*.js")]
+antsword_encoders_alternatives: t.List[ConnOptionAlternative] = [
+    {"name": filename, "value": filename} for filename in antsword_encoders
+]
 
 
 def add_obfs_data(data: t.Dict[str, t.Any], min_count, max_count):
@@ -160,10 +164,7 @@ class PHPWebshellOneliner(PHPWebshellCommunication, PHPWebshellActions):
                     default_value="none",
                     alternatives=[
                         {"name": "无", "value": "none"},
-                        *[
-                            {"name": filename, "value": filename}
-                            for filename in antsword_encoders
-                        ],
+                        *antsword_encoders_alternatives,
                     ],
                 ),
             ]
@@ -250,7 +251,7 @@ class PHPWebshellOneliner(PHPWebshellCommunication, PHPWebshellActions):
         self.timeout_refresh_client = session_conn.get("timeout_refresh_client", False)
         self.chunked_request = int(session_conn.get("chunked_request", 0))
         self.https_verify = session_conn.get("https_verify", False)
-        self.timeout = float(session_conn.get("timeout", 0))
+        self.timeout: t.Union[float, None] = float(session_conn.get("timeout", 0))
 
         self.method = self.password_method
         if session_conn.get("http_request_method", ""):

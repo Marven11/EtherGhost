@@ -39,7 +39,6 @@ class DirectoryEntry:
     filesize: int
     entry_type: t.Literal["dir", "file", "link-dir", "link-file", "unknown"] = "file"
 
-
 @dataclass
 class BasicInfoEntry:
     """有关session的一项基本信息"""

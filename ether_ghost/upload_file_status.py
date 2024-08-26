@@ -2,11 +2,13 @@ from contextlib import contextmanager
 import typing as t
 import uuid
 
-upload_file_status = {}
+upload_file_status: t.Dict[
+    uuid.UUID, t.Dict[t.Tuple[str, str], t.Tuple[float, int, int]]
+] = {}
 
 
 @contextmanager
-def record_upload_file(session_id: t.Union[uuid.UUID, str], folder: str, filename: str):
+def record_upload_file(session_id: uuid.UUID, folder: str, filename: str):
 
     if session_id not in upload_file_status:
         upload_file_status[session_id] = {}
@@ -29,7 +31,7 @@ def record_upload_file(session_id: t.Union[uuid.UUID, str], folder: str, filenam
             del upload_file_status[session_id]
 
 
-def get_session_uploading_file(session_id):
+def get_session_uploading_file(session_id: uuid.UUID):
     return [
         {
             "folder": folder,

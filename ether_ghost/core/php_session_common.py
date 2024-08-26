@@ -29,11 +29,19 @@ from .base import (
     DirectoryEntry,
     BasicInfoEntry,
     ConnOption,
+    ConnOptionAlternative,
 )
 
 logger = logging.getLogger("core.php")
 
 user_agent = random_user_agent()
+
+custom_encoders_alternatives: t.List[ConnOptionAlternative] = [
+    {"name": custom_encoder, "value": custom_encoder}
+    for custom_encoder in custom_encoders.list_custom_encoders()
+]
+
+Submitter = t.Callable[[str], t.Coroutine[t.Any, t.Any, str]]
 
 
 def compress_phpcode_template(s):
@@ -672,10 +680,7 @@ php_webshell_communication_options = [
         alternatives=[
             {"name": "base64", "value": "base64"},
             {"name": "raw", "value": "raw"},
-            *[
-                {"name": custom_encoder, "value": custom_encoder}
-                for custom_encoder in custom_encoders.list_custom_encoders()
-            ],
+            *custom_encoders_alternatives,
         ],
     ),
     ConnOption(
@@ -846,7 +851,7 @@ class PHPWebshellActions(PHPSessionInterface):
         chunk_size = self.chunk_size
         done_coro = 0
         done_bytes = 0
-        coros = []
+        coros: t.List[t.Awaitable] = []
 
         result = await self.submit(
             UPLOAD_FILE_CHECK_PERMISSION_PHP.replace("FILEPATH", string_repr(filepath))
@@ -926,7 +931,7 @@ class PHPWebshellActions(PHPSessionInterface):
         chunk_size = self.chunk_size
         done_coro = 0
         done_bytes = 0
-        coros = []
+        coros: t.List[t.Awaitable] = []
 
         async def download_chunk(offset: int):
             nonlocal done_coro, coros, done_bytes
@@ -1021,15 +1026,15 @@ class PHPWebshellActions(PHPSessionInterface):
         json_result = await self.submit(GET_BASIC_INFO_PHP)
         try:
             raw_result = json.loads(json_result)
-            result = [
-                {
-                    "key": (
+            result: t.List[BasicInfoEntry] = [
+                BasicInfoEntry(
+                    key=(
                         basic_info_names[entry["key"]]
                         if entry["key"] in basic_info_names
                         else entry["key"]
                     ),
-                    "value": entry["value"],
-                }
+                    value=entry["value"],
+                )
                 for entry in raw_result
             ]
             return result
@@ -1129,9 +1134,7 @@ class PHPWebshellCommunication(PHPWebshellActions):
                     pubkey, submitter
                 )
 
-    def sessionize_payload_wrapper(
-        self, submitter: t.Callable[[str], t.Awaitable[str]]
-    ) -> t.Callable[[str], t.Awaitable[str]]:
+    def sessionize_payload_wrapper(self, submitter: Submitter) -> Submitter:
         @functools.wraps(submitter)
         async def wrap(payload: str) -> str:
             payloads = to_sessionize_payload(payload)
@@ -1147,28 +1150,18 @@ class PHPWebshellCommunication(PHPWebshellActions):
 
         return wrap
 
-    def antireplay_wrapper(
-        self, submitter: t.Callable[[str], t.Awaitable[str]]
-    ) -> t.Callable[[str], t.Awaitable[str]]:
+    def antireplay_wrapper(self, submitter: Submitter) -> Submitter:
         @functools.wraps(submitter)
         async def wrap(payload: str) -> str:
             session_name = f"replay_key_{uuid.uuid4()}"
             key = await submitter(
                 ANTIREPLAY_GENKEY_PHP.replace("SESSION_NAME", session_name)
             )
-            try:
-                key = int(key)
-            except Exception as exc:
-                raise exceptions.TargetRuntimeError(
-                    "部署反重放失败，无法从服务器获得对应的key"
-                ) from exc
             payload_b64 = base64_encode(payload)
             code = (
                 ANTIREPLAY_VERIFY_PHP.replace("SESSION_NAME", string_repr(session_name))
-                .replace("KEY", str(key))
+                .replace("KEY", key)
                 .replace("PAYLOAD_B64", string_repr(payload_b64))
-                .strip()
-                .replace("    ", "")
             )
             result = await submitter(code)
             if result == "WRONG_NO_SESSION":
@@ -1179,18 +1172,14 @@ class PHPWebshellCommunication(PHPWebshellActions):
 
         return wrap
 
-    def bypass_opendir_wrapper(
-        self, submitter: t.Callable[[str], t.Awaitable[str]]
-    ) -> t.Callable[[str], t.Awaitable[str]]:
+    def bypass_opendir_wrapper(self, submitter: Submitter) -> Submitter:
         @functools.wraps(submitter)
         async def wrap(payload: str) -> str:
             return await submitter(BYPASS_OPEN_BASEDIR_PHP.replace("PAYLOAD", payload))
 
         return wrap
 
-    def encryption_wrapper(
-        self, submitter: t.Callable[[str], t.Awaitable[str]]
-    ) -> t.Callable[[str], t.Awaitable[str]]:
+    def encryption_wrapper(self, submitter: Submitter) -> Submitter:
 
         @functools.wraps(submitter)
         async def wrap(payload: str) -> str:
@@ -1275,7 +1264,7 @@ class PHPWebshellCommunication(PHPWebshellActions):
 
     async def submit(self, payload: str) -> str:
         # sessionize_payload
-        submitter = self.submit_unwrapped
+        submitter: Submitter = self.submit_unwrapped
         if self.sessionize_payload:
             submitter = self.sessionize_payload_wrapper(submitter)
         if self.antireplay:
