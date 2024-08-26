@@ -240,6 +240,15 @@ async def session_list_dir(session_id: UUID, current_dir: str):
     return {"code": 0, "data": result}
 
 
+@app.get("/session/{session_id}/mkdir")
+@catch_user_error
+async def session_mkdir(session_id: UUID, dirpath: str):
+    """使用session创建某个目录"""
+    session: SessionInterface = session_manager.get_session_by_id(session_id)
+    await session.mkdir(dirpath)
+    return {"code": 0, "data": True}
+
+
 @app.get("/session/{session_id}/move_file")
 @catch_user_error
 async def session_move_file(session_id: UUID, filepath: str, new_filepath):

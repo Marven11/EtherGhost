@@ -51,6 +51,7 @@ class BasicInfoEntry:
 # Session对象会在处理一个请求的时候创建，请求结束时立即丢弃
 # 所以Session对象基本上是无状态的，状态会在请求结束后被丢弃
 
+
 # TODO: make it a real interface
 class SessionInterface:
     """Session接口"""
@@ -65,6 +66,10 @@ class SessionInterface:
 
     async def list_dir(self, dir_path: str) -> t.List[DirectoryEntry]:
         """列出某个文件夹中的内容，包括`.`和`..`，如果没有内容则会填充`..`"""
+        raise NotImplementedError()
+
+    async def mkdir(self, dir_path: str) -> None:
+        """创建文件夹"""
         raise NotImplementedError()
 
     async def get_file_contents(

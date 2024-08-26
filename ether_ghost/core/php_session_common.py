@@ -87,6 +87,26 @@ decoder_echo(json_encode($result));
 """
 )
 
+MKDIR_PHP = compress_phpcode_template(
+    """
+$path = PATH;
+if(!is_dir(dirname($path))){
+    decoder_echo("WRONG_NO_PARENT");
+}else if(file_exists($path)) {
+    decoder_echo("WRONG_EXISTS");
+}else if(!is_writeable(dirname($path))) {
+    decoder_echo("WRONG_NO_PERMISSION");
+}else{
+    $result = mkdir($path);
+    if($result) {
+        decoder_echo("OK");
+    }else{
+        decoder_echo("WRONG_UNKNOWN");
+    }
+}
+"""
+)
+
 GET_FILE_CONTENT_PHP = compress_phpcode_template(
     """
 $filePath = FILE_PATH;
@@ -119,7 +139,6 @@ if(!is_file($filePath) && !is_writeable(dirname($filePath))) {
 }
 """
 )
-
 
 DELETE_FILE_PHP = compress_phpcode_template(
     """
@@ -378,6 +397,7 @@ if (PHP_OS === 'Linux') {
 decoder_echo(json_encode($infos));
 """
 )
+
 DOWNLOAD_PHPINFO_PHP = compress_phpcode_template(
     """
 ob_start();
@@ -753,6 +773,19 @@ class PHPWebshellActions(PHPSessionInterface):
                 ),
             )
         return result
+
+    async def mkdir(self, dir_path: str):
+        result = await self.submit(MKDIR_PHP.replace("PATH", string_repr(dir_path)))
+        if result == "WRONG_NO_PARENT":
+            raise exceptions.FileError("上级文件夹不存在")
+        if result == "WRONG_EXISTS":
+            raise exceptions.FileError("目标已存在")
+        if result == "WRONG_NO_PERMISSION":
+            raise exceptions.FileError("没有权限创建文件夹")
+        if result == "WRONG_UNKNOWN":
+            raise exceptions.UnknownError("因未知原因创建文件夹失败")
+        if result != "OK":
+            raise exceptions.UnknownError("创建文件夹时代码执行失败")
 
     async def get_file_contents(
         self, filepath: str, max_size: int = 1024 * 200

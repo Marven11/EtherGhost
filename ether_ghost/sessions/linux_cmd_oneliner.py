@@ -173,6 +173,13 @@ class LinuxCmdOneLiner:
             DirectoryEntry(name="..", permission="555", filesize=-1, entry_type="dir")
         ]
 
+    async def mkdir(self, dir_path):
+        result = await self.submit(
+            shell_command(["mkdir", dir_path]) + " && echo finished"
+        )
+        if result.strip() != "finished":
+            raise exceptions.FileError("创建文件夹失败")
+
     async def get_file_contents(self, filepath: str, max_size: int = 1024 * 200):
         ls_result = await self.list_dir(filepath)
         if not ls_result or ls_result[0].filesize > max_size:
