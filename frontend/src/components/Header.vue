@@ -17,16 +17,10 @@ import ClickMenu from "./ClickMenu.vue"
 import IconSpider from "@/components/icons/iconSpider.vue"
 import IconLeft from "@/components/icons/iconLeft.vue"
 import IconRight from "@/components/icons/iconRight.vue"
+import IconKnife from "@/components/icons/iconKnife.vue"
 
 const router = useRouter()
-const navigateIconSpecs = [
-  {
-    type: "home",
-    component: IconHome,
-    uri: "/",
-    tooltip: "回到主页，打开其他webshell"
-  },
-]
+
 const iconSpecs = [
   {
     type: "home",
@@ -162,6 +156,13 @@ const clickMenuOthers = ClickMenuManager(
       icon: IconSpider,
       color: "white",
       link: "/emulated-antsword/SESSION"
+    },
+    {
+      name: "awd_actions",
+      text: "AWD攻击搅史",
+      icon: IconKnife,
+      color: "white",
+      link: "/awd-actions/SESSION"
     },
     {
       name: "edit_session",

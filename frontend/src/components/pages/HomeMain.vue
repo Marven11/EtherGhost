@@ -21,6 +21,7 @@ import axios from "axios"
 import { getCurrentApiUrl } from "@/assets/utils";
 import { store } from "@/assets/store";
 import IconSpider from "@/components/icons/iconSpider.vue";
+import IconKnife from "@/components/icons/iconKnife.vue";
 
 
 const sessions = ref([
@@ -84,6 +85,13 @@ const ClickMenuSession = ClickMenuManager(
       "icon": IconSpider,
       "color": "white",
       "link": "/emulated-antsword/SESSION"
+    },
+    {
+      "name": "awd_actions",
+      "text": "AWD攻击搅史",
+      "icon": IconKnife,
+      "color": "white",
+      "link": "/awd-actions/SESSION"
     },
     {
       "name": "edit_session",
