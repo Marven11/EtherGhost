@@ -106,6 +106,22 @@ class LinuxCmdOneLiner:
                     default_value=True,
                     alternatives=None,
                 ),
+                ConnOption(
+                    id="updownload_chunk_size",
+                    name="文件上传下载分块大小",
+                    type="text",
+                    placeholder="文件上传下载的分块大小，单位为字节，建议在1KB-1024KB之间",
+                    default_value="1024",
+                    alternatives=None,
+                ),
+                ConnOption(
+                    id="updownload_max_coroutine",
+                    name="文件上传下载并发量",
+                    type="text",
+                    placeholder="控制文件上传和下载时的最大协程数量",
+                    default_value="4",
+                    alternatives=None,
+                ),
             ],
         },
     ]
@@ -116,6 +132,10 @@ class LinuxCmdOneLiner:
         self.password = session_conn["password"]
         self.https_verify = session_conn.get("https_verify", False)
         self.client = get_http_client(verify=self.https_verify)
+
+        # for upload file and download file
+        self.chunk_size = int(session_conn.get("updownload_chunk_size", 1024))
+        self.max_coro = int(session_conn.get("updownload_max_coroutine", 4))
 
     async def execute_cmd(self, cmd: str):
         return await self.submit(cmd)
@@ -154,7 +174,7 @@ class LinuxCmdOneLiner:
             perm = parse_file_permission(perm[1:10])
             filetype = {"f": "file", "d": "dir", "l": "link"}.get(filetype, "unknown")
             if filetype == "link":
-                filetype == "link-dir" if name.endswith("/") else "link-file"
+                filetype = "link-dir" if name.endswith("/") else "link-file"
                 name = name.split(" ->")[0]
             result.append(
                 DirectoryEntry(
@@ -216,9 +236,9 @@ class LinuxCmdOneLiner:
         if result_touch.strip() != "finished":
             raise exceptions.FileError("文件上传失败：无法新建文件")
 
-        sem = asyncio.Semaphore(4)
+        sem = asyncio.Semaphore(self.max_coro)
         write_state_lock = asyncio.Lock()
-        chunk_size = 1000
+        chunk_size = self.chunk_size
         done_coro = 0
         done_bytes = 0
         coros: t.List[t.Awaitable] = []
@@ -265,16 +285,14 @@ class LinuxCmdOneLiner:
         return True
 
     async def download_file(self, filepath: str, callback=None):
-        pass
         ls_result = await self.list_dir(filepath)
         if not ls_result:
             raise exceptions.FileError("读取文件大小失败，也许文件不存在？")
         filesize = ls_result[0].filesize
 
-        # TODO: 允许用户自定义
-        sem = asyncio.Semaphore(4)
+        sem = asyncio.Semaphore(self.max_coro)
         write_state_lock = asyncio.Lock()
-        chunk_size = 1000
+        chunk_size = self.chunk_size
         done_coro = 0
         done_bytes = 0
         coros: t.List[t.Awaitable] = []
