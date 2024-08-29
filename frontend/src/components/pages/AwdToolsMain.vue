@@ -51,9 +51,9 @@ const blackPageHtml = computed(() => {
 const helloWorldCode = `
 $name = base64_decode('{action_input_base64}');
 if($name == "") {
-  echo "请在输入框中输入名字";
+  echo "你好，现在的时间戳是" . time();;
 }else{
-  echo "Hello, $name";
+  echo "你好，$name";
 }
 `
 
