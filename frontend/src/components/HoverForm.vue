@@ -119,11 +119,13 @@ function onClickBackground(event) {
 }
 
 .hover-form-main .input-file input {
+  background-color: #ffffff00;
   height: 60%;
 }
 
 .hover-form-main .input-file input::file-selector-button {
-  background-color: var(--font-color-primary);
+  background-color: var(--background-color-3);
+  color: var(--font-color-primary);
   border-radius: 20px;
   padding-left: 10px;
   padding-right: 10px;
