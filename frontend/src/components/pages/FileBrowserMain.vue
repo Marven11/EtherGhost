@@ -13,10 +13,10 @@ import IconSymlinkDirectory from "@/components/icons/iconSymlinkDirectory.vue"
 import IconDelete from "@/components/icons/iconDelete.vue"
 
 import { ref, shallowRef, watch } from "vue";
-import ClickMenu from "../ClickMenu.vue"
-import HoverForm from "../HoverForm.vue"
-import HoverStatus from "../HoverBox.vue"
-import InputBox from "../InputBox.vue"
+import ClickMenu from "@/components/ClickMenu.vue"
+import HoverForm from "@/components/HoverForm.vue"
+import HoverStatus from "@/components/HoverBox.vue"
+import InputBox from "@/components/InputBox.vue"
 import { Codemirror } from 'vue-codemirror'
 import { getDataOrPopupError, postDataOrPopupError, addPopup, joinPath, ClickMenuManager, readableFileSize } from "@/assets/utils"
 import { store } from "@/assets/store"

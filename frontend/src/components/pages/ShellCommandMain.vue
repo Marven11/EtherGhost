@@ -3,7 +3,7 @@ import { getDataOrPopupError } from "@/assets/utils";
 import IconRun from "@/components/icons/iconRun.vue"
 import { ref } from "vue";
 import { store } from "@/assets/store";
-import InputBox from "../InputBox.vue"
+import InputBox from "@/components/InputBox.vue"
 
 
 const props = defineProps({

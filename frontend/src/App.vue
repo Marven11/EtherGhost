@@ -1,8 +1,8 @@
 <script setup>
-import Header from "./components/Header.vue"
-import { store, popupsRef, currentSettings } from "./assets/store"
+import Header from "@/components/Header.vue"
+import { store, popupsRef, currentSettings } from "@/assets/store"
 import Popups from "@/components/Popups.vue"
-import { getDataOrPopupError } from "./assets/utils";
+import { getDataOrPopupError } from "@/assets/utils";
 import { ref } from "vue";
 
 

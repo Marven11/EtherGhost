@@ -12,10 +12,10 @@ import IconProxy from "@/components/icons/iconProxy.vue"
 import IconTerminal from "@/components/icons/iconTerminal.vue"
 
 
-import ClickMenu from "../ClickMenu.vue"
+import ClickMenu from "@/components/ClickMenu.vue"
 import { addPopup, ClickMenuManager, getDataOrPopupError, parseDataOrPopupError } from "@/assets/utils";
 import { useRouter } from "vue-router"
-import InputBox from "../InputBox.vue"
+import InputBox from "@/components/InputBox.vue"
 import axios from "axios"
 
 import { getCurrentApiUrl } from "@/assets/utils";
