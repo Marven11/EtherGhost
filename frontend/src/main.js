@@ -3,21 +3,21 @@ import "./assets/main.css";
 import { createApp } from "vue";
 import App from "./App.vue";
 
-import Settings from "./components/Settings.vue";
-import WebshellEditorMain from "./components/WebshellEditorMain.vue";
-import HomeMain from "./components/HomeMain.vue";
-import TerminalMain from "./components/TerminalMain.vue";
-import ShellCommandMain from "./components/ShellCommandMain.vue";
-import FileBrowserMain from "./components/FileBrowserMain.vue";
-import PhpEvalMain from "./components/PhpEvalMain.vue";
-import EmulatedAntswordMain from "./components/EmulatedAntswordMain.vue";
-import BasicInfoMain from "./components/BasicInfoMain.vue";
-import Proxies from "./components/Proxies.vue";
+import Settings from "./components/pages/Settings.vue";
+import WebshellEditorMain from "./components/pages/WebshellEditorMain.vue";
+import HomeMain from "./components/pages/HomeMain.vue";
+import TerminalMain from "./components/pages/TerminalMain.vue";
+import ShellCommandMain from "./components/pages/ShellCommandMain.vue";
+import FileBrowserMain from "./components/pages/FileBrowserMain.vue";
+import PhpEvalMain from "./components/pages/PhpEvalMain.vue";
+import EmulatedAntswordMain from "./components/pages/EmulatedAntswordMain.vue";
+import BasicInfoMain from "./components/pages/BasicInfoMain.vue";
+import AwdActionsMain from "./components/pages/AwdActionsMain.vue";
+import Proxies from "./components/pages/Proxies.vue";
 import { createRouter, createWebHashHistory } from "vue-router";
 import Terminal from 'vue-web-terminal'
 //  亮色主题：vue-web-terminal/lib/theme/light.css
 import './assets/vue-web-terminal.css'
-import AwdActionsMain from "./components/AwdActionsMain.vue";
 
 
 const routes = [

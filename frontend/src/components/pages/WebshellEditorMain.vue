@@ -2,8 +2,8 @@
 
 import { reactive, shallowRef } from "vue";
 import { getDataOrPopupError, postDataOrPopupError, addPopup, doAssert } from "@/assets/utils"
-import IconCross from './icons/iconCross.vue'
-import IconCheck from './icons/iconCheck.vue'
+import IconCross from '../icons/iconCross.vue'
+import IconCheck from '../icons/iconCheck.vue'
 import { store } from "@/assets/store";
 import { useRouter } from "vue-router"
 

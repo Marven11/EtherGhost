@@ -1,22 +1,22 @@
 <script setup>
-import IconRun from "./icons/iconRun.vue"
-import IconDirectory from "./icons/iconDirectory.vue"
-import IconFile from "./icons/iconFile.vue"
-import IconFileDownload from "./icons/iconFileDownload.vue"
-import IconFileNew from "./icons/iconFileNew.vue"
-import IconFileUpload from "./icons/iconFileUpload.vue"
-import IconFileUnknown from "./icons/iconFileUnknown.vue"
-import IconPenSquare from "./icons/iconPenSquare.vue"
-import IconLoad from "./icons/iconLoad.vue"
-import IconSymlinkFile from "./icons/iconSymlinkFile.vue"
-import IconSymlinkDirectory from "./icons/iconSymlinkDirectory.vue"
-import IconDelete from "./icons/iconDelete.vue"
+import IconRun from "@/components/icons/iconRun.vue"
+import IconDirectory from "@/components/icons/iconDirectory.vue"
+import IconFile from "@/components/icons/iconFile.vue"
+import IconFileDownload from "@/components/icons/iconFileDownload.vue"
+import IconFileNew from "@/components/icons/iconFileNew.vue"
+import IconFileUpload from "@/components/icons/iconFileUpload.vue"
+import IconFileUnknown from "@/components/icons/iconFileUnknown.vue"
+import IconPenSquare from "@/components/icons/iconPenSquare.vue"
+import IconLoad from "@/components/icons/iconLoad.vue"
+import IconSymlinkFile from "@/components/icons/iconSymlinkFile.vue"
+import IconSymlinkDirectory from "@/components/icons/iconSymlinkDirectory.vue"
+import IconDelete from "@/components/icons/iconDelete.vue"
 
 import { ref, shallowRef, watch } from "vue";
-import ClickMenu from "./ClickMenu.vue"
-import HoverForm from "./HoverForm.vue"
-import HoverStatus from "./HoverBox.vue"
-import InputBox from "./InputBox.vue"
+import ClickMenu from "../ClickMenu.vue"
+import HoverForm from "../HoverForm.vue"
+import HoverStatus from "../HoverBox.vue"
+import InputBox from "../InputBox.vue"
 import { Codemirror } from 'vue-codemirror'
 import { getDataOrPopupError, postDataOrPopupError, addPopup, joinPath, ClickMenuManager, readableFileSize } from "@/assets/utils"
 import { store } from "@/assets/store"
@@ -39,7 +39,7 @@ import { yaml } from '@codemirror/lang-yaml'
 
 import { shell } from "@codemirror/legacy-modes/mode/shell"
 import { StreamLanguage } from "@codemirror/language"
-import IconTerminal from "./icons/iconTerminal.vue"
+import IconTerminal from "@/components/icons/iconTerminal.vue"
 import { useRouter } from "vue-router"
 
 const props = defineProps({

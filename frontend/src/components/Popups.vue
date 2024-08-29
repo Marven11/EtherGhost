@@ -1,9 +1,9 @@
 <script setup>
 import { ref } from "vue"
-import IconCross from "./icons/iconCross.vue"
-import IconCheck from "./icons/iconCheck.vue"
-import IconWarning from "./icons/iconWarning.vue"
-import IconPlus from "./icons/iconPlus.vue"
+import IconCross from "@/components/icons/iconCross.vue"
+import IconCheck from "@/components/icons/iconCheck.vue"
+import IconWarning from "@/components/icons/iconWarning.vue"
+import IconPlus from "@/components/icons/iconPlus.vue"
 import { doAssert } from "@/assets/utils"
 
 const POPUP_SHOW_TIME = 5000;

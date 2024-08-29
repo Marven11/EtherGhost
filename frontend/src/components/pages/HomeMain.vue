@@ -1,26 +1,26 @@
 <script setup>
 import { ref } from "vue";
-import IconCode from "./icons/iconCode.vue"
-import IconDelete from "./icons/iconDelete.vue"
-import IconEdit from "./icons/iconEdit.vue"
-import IconFileBrowser from "./icons/iconFileBrowser.vue"
-import IconHash from "./icons/iconHash.vue"
-import IconInfo from "./icons/iconInfo.vue"
-import IconOthers from "./icons/iconOthers.vue"
-import IconPlus from "./icons/iconPlus.vue"
-import IconProxy from "./icons/iconProxy.vue"
-import IconTerminal from "./icons/iconTerminal.vue"
+import IconCode from "@/components/icons/iconCode.vue"
+import IconDelete from "@/components/icons/iconDelete.vue"
+import IconEdit from "@/components/icons/iconEdit.vue"
+import IconFileBrowser from "@/components/icons/iconFileBrowser.vue"
+import IconHash from "@/components/icons/iconHash.vue"
+import IconInfo from "@/components/icons/iconInfo.vue"
+import IconOthers from "@/components/icons/iconOthers.vue"
+import IconPlus from "@/components/icons/iconPlus.vue"
+import IconProxy from "@/components/icons/iconProxy.vue"
+import IconTerminal from "@/components/icons/iconTerminal.vue"
 
 
-import ClickMenu from "./ClickMenu.vue"
+import ClickMenu from "../ClickMenu.vue"
 import { addPopup, ClickMenuManager, getDataOrPopupError, parseDataOrPopupError } from "@/assets/utils";
 import { useRouter } from "vue-router"
-import InputBox from "./InputBox.vue"
+import InputBox from "../InputBox.vue"
 import axios from "axios"
 
 import { getCurrentApiUrl } from "@/assets/utils";
 import { store } from "@/assets/store";
-import IconSpider from "./icons/iconSpider.vue";
+import IconSpider from "@/components/icons/iconSpider.vue";
 
 
 const sessions = ref([

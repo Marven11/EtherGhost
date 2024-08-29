@@ -2,7 +2,7 @@
 
 import { addPopup, getCurrentApiUrl, getDataOrPopupError, parseDataOrPopupError, postDataOrPopupError } from "@/assets/utils";
 import { reactive, ref, watch } from "vue";
-import iconCross from "./icons/iconCross.vue";
+import iconCross from "@/components/icons/iconCross.vue";
 import { store } from "@/assets/store";
 import axios from "axios";
 

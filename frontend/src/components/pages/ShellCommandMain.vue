@@ -1,9 +1,9 @@
 <script setup>
 import { getDataOrPopupError } from "@/assets/utils";
-import IconRun from "./icons/iconRun.vue"
+import IconRun from "@/components/icons/iconRun.vue"
 import { ref } from "vue";
 import { store } from "@/assets/store";
-import InputBox from "./InputBox.vue"
+import InputBox from "../InputBox.vue"
 
 
 const props = defineProps({
