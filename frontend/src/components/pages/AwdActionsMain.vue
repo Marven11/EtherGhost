@@ -105,6 +105,61 @@ if(!is_writable(dirname($filepath))) {
 }
 `
 
+const findWebshells = `
+function scanFiles($folder, $file_regexp)
+{
+    $result = [];
+    $files = glob($folder . '/*');
+    foreach ($files as $file) {
+        if (is_file($file) && preg_match($file_regexp, $file)) {
+            array_push($result, $file);
+        } elseif (is_dir($file)) {
+            $result = array_merge($result, scanFiles($file,  $file_regexp));
+        }
+    }
+    return $result;
+}
+
+$var_regexp = '@?\\$(\\[\\s*|\\s*\\]|\\{\\s*|\\s*\\}|\\$|@|[A-Za-z0-9._])+';
+$comment_regexp = '(\\s|\\/\\*.*?\\*\\/)*';
+$string_regexp = "('[^']+'" . '|"[^"]+")';
+
+$regexp = "/(eval|system|array_map|exec|shell_exec|wofeiwo|system|shell|" .
+    "webshell|assert|create_function|preg_replace|popen|pcntl_exec|ngel|" .
+    "reDuh|passthru|php_nst|phpspy|proc_open|call_user_func(_array)?|unserialize|" .
+    "ReflectionClass|ReflectionFunction|newInstanceArgs)\\\\(" .
+    "|{$comment_regexp}{$var_regexp}{$comment_regexp}\\({$comment_regexp}.*{$comment_regexp}\\)" . # $aaa(xxx);
+    "|{$string_regexp}\\^{$string_regexp}" . # string xor
+    "|\\\\(({$string_regexp}\\\\.?)*{$string_regexp}\\\\)\\\\({$comment_regexp}.*{$comment_regexp}\\\\)" . # ("sys"."tem")(xxx)
+    "/";
+$found = false;
+$filepath = base64_decode('{action_input_base64}');
+if($filepath == "") {
+  $filepath = $_SERVER['DOCUMENT_ROOT'];
+}
+if(!is_dir($filepath)) {
+  echo $filepath . "不是一个文件夹！";
+}
+
+foreach (scanFiles($filepath, "/php|php\\d|phtm|phtml|phar/") as $filepath) {
+  if (preg_match_all($regexp, file_get_contents($filepath), $matches)) {
+    $found = true;
+    $detected = "";
+    foreach ($matches[0] as $match) {
+      $detected = "    " . trim($match);
+    }
+    $display_filepath = json_encode($filepath);
+    if(preg_match("/^[-_a-zA-Z0-9\\.\\/]+$/", $filepath)) {
+      $display_filepath = $filepath;
+    }
+    echo $display_filepath . "\\n" . $detected . "\\n";
+  }
+}
+if(!$found) {
+  echo "没有找到webshell";
+}
+`
+
 const writeTrashCode = `
 ignore_user_abort(true);
 set_time_limit(0);
@@ -214,6 +269,10 @@ while (1) {
         <button class="action" title="将当前webshell转为不死马，顺带改一下文件的时间戳，如果需要维持其他文件请输入文件路径"
           @click="postCode(persistWebshell)">
           不死维持当前webshell
+        </button>
+        <button class="action" title="使用正则表达式找出当前服务器的所有webshell，可以手动指定扫描文件夹"
+          @click="postCode(findWebshells)">
+          webshell文件查杀
         </button>
       </div>
     </div>
