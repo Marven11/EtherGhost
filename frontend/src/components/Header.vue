@@ -158,11 +158,11 @@ const clickMenuOthers = ClickMenuManager(
       link: "/emulated-antsword/SESSION"
     },
     {
-      name: "awd_actions",
-      text: "AWD攻击搅史",
+      name: "awd_tools",
+      text: "AWD实用工具",
       icon: IconKnife,
       color: "white",
-      link: "/awd-actions/SESSION"
+      link: "/awd-tools/SESSION"
     },
     {
       name: "edit_session",

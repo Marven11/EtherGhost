@@ -12,7 +12,7 @@ import FileBrowserMain from "./components/pages/FileBrowserMain.vue";
 import PhpEvalMain from "./components/pages/PhpEvalMain.vue";
 import EmulatedAntswordMain from "./components/pages/EmulatedAntswordMain.vue";
 import BasicInfoMain from "./components/pages/BasicInfoMain.vue";
-import AwdActionsMain from "./components/pages/AwdActionsMain.vue";
+import AwdActionsMain from "./components/pages/AwdToolsMain.vue";
 import Proxies from "./components/pages/Proxies.vue";
 import { createRouter, createWebHashHistory } from "vue-router";
 import Terminal from 'vue-web-terminal'
@@ -46,7 +46,7 @@ const routes = [
     })
   },
   { path: "/shell-command/:session", component: ShellCommandMain, props: true },
-  { path: "/awd-actions/:session", component: AwdActionsMain, props: true },
+  { path: "/awd-tools/:session", component: AwdActionsMain, props: true },
   { path: "/file-browser/:session", component: FileBrowserMain, props: true },
   { path: "/php-eval/:session", component: PhpEvalMain, props: true },
   { path: "/emulated-antsword/:session", component: EmulatedAntswordMain, props: true },
