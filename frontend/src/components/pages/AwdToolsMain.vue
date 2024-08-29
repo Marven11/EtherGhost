@@ -141,7 +141,7 @@ if(!is_dir($filepath)) {
   echo $filepath . "不是一个文件夹！";
 }
 
-foreach (scanFiles($filepath, "/php|php\\d|phtm|phtml|phar/") as $filepath) {
+foreach (scanFiles($filepath, "/php|php\\d|phtm|phtml|phar$/") as $filepath) {
   if (preg_match_all($regexp, file_get_contents($filepath), $matches)) {
     $found = true;
     $detected = "";
