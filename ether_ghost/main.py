@@ -258,6 +258,14 @@ async def session_move_file(session_id: UUID, filepath: str, new_filepath):
     return {"code": 0, "data": True}
 
 
+@app.get("/session/{session_id}/copy_file")
+@catch_user_error
+async def session_copy_file(session_id: UUID, filepath: str, new_filepath):
+    """使用session复制某个文件"""
+    session: SessionInterface = session_manager.get_session_by_id(session_id)
+    await session.copy_file(filepath, new_filepath)
+    return {"code": 0, "data": True}
+
 @app.get("/session/{session_id}/get_file_contents")
 @catch_user_error
 async def session_get_file_contents(session_id: UUID, current_dir: str, filename: str):

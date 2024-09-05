@@ -88,6 +88,10 @@ class SessionInterface:
         """移动文件到新的目录"""
         raise NotImplementedError()
 
+    async def copy_file(self, filepath: str, new_filepath: str) -> None:
+        """复制一份当前文件到新的位置"""
+        raise NotImplementedError()
+
     async def upload_file(
         self, filepath: str, content: bytes, callback: t.Union[t.Callable, None] = None
     ) -> bool:

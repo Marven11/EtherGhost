@@ -227,6 +227,12 @@ class LinuxCmdOneLiner:
         if result.strip() != "finished":
             raise exceptions.FileError("移动失败")
 
+    async def copy_file(self, filepath: str, new_filepath: str):
+        cmd = shell_command(["cp", filepath, new_filepath]) + " && echo finished"
+        result = await self.submit(cmd)
+        if result.strip() != "finished":
+            raise exceptions.FileError("移动失败")
+
     async def upload_file(
         self, filepath: str, content: bytes, callback: t.Union[t.Callable, None] = None
     ) -> bool:

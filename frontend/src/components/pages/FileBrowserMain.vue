@@ -251,6 +251,13 @@ const menuItemsAll = [
     "entry_type": ["empty", "file", "link-file"]
   },
   {
+    "name": "duplicate_file",
+    "text": "复制一份新的文件",
+    "icon": IconFile,
+    "color": "white",
+    "entry_type": ["file", "link-file"]
+  },
+  {
     "name": "upload_file",
     "text": "上传文件",
     "icon": IconFileUpload,
@@ -317,6 +324,8 @@ const ClickMenuFolderEntry = ClickMenuManager([
     downloadFile(pwd.value, clickMenuEntry.name)
   } else if (item.name == "rename_file") {
     confirmRenameFile(clickMenuEntry.name)
+  } else if (item.name == "duplicate_file") {
+    confirmDuplicateFile(clickMenuEntry.name)
   } else if (item.name == "delete_file") {
     confirmDeleteFile(clickMenuEntry.name)
   } else if (item.name == "new_dir") {
@@ -390,6 +399,33 @@ function confirmRenameFile(filename) {
           addPopup("green", "重命名成功", `文件${filename}已经重命名`)
         } else {
           addPopup("red", "重命名失败", `文件${filename}重命名失败`)
+        }
+        listDir(pwd.value)
+      }
+    } finally {
+      showInputBox.value = false
+    }
+  }
+}
+
+function confirmDuplicateFile(filename) {
+  showInputBox.value = true
+  inputBoxTitle.value = "复制新的文件"
+  inputBoxNote.value = `输入新的文件名${filename}`
+  inputBoxRequireInput.value = true
+  inputBoxCallback = async new_filename => {
+    try {
+      if (new_filename) {
+        let result = await getDataOrPopupError(`/session/${props.session}/move_file`, {
+          params: {
+            filepath: (await joinPath(pwd.value, filename)),
+            new_filepath: (await joinPath(pwd.value, new_filename))
+          }
+        })
+        if (result) {
+          addPopup("green", "复制成功", `文件${filename}已经复制`)
+        } else {
+          addPopup("red", "复制失败", `文件${filename}复制失败`)
         }
         listDir(pwd.value)
       }
