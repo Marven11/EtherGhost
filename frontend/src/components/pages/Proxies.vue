@@ -19,7 +19,7 @@ const sessions = ref([])
 const supportedSendMethods = reactive({})
 
 const readableProxyType = {
-  vessel_forward_tcp: "Vessel正向TCP代理",
+  vessel_forward_tcp: "正向TCP代理（Vessel内存马）",
   psudo_forward_proxy: "伪正向代理（仅支持HTTP）",
 }
 
