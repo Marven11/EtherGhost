@@ -43,13 +43,17 @@ img {float: right; border: 0;}
 hr {width: 934px; background-color: #ccc; border: 0; height: 1px;}
 </style>
   `
-  const url = URL.createObjectURL(new Blob([style + sanitizeHtml(result.data, {
+  const html = sanitizeHtml(result.data, {
+    allowedTags: sanitizeHtml.defaults.allowedTags.concat(["a"]),
     allowedAttributes: {
-      'div': ['class'],
-      'td': ['class'],
-      'tr': ['class'],
     },
-  })], { type: 'text/html' }));
+    allowedClasses: {
+      "div": ["p", "e", "h", "v", "i", "center"],
+      "td": ["p", "e", "h", "v", "i"],
+      "tr": ["p", "e", "h", "v", "i"],
+    },
+  })
+  const url = URL.createObjectURL(new Blob([style + html], { type: 'text/html' }));
   window.open(url, "_blank")
 }
 
