@@ -89,7 +89,7 @@ defineExpose({ addPopup })
   background-color: #00000015;
   border-radius: 20px;
   margin-bottom: 20px;
-  height: 150px;
+  height: 8rem;
   transition: opacity 0.5s ease;
 }
 
@@ -139,7 +139,7 @@ defineExpose({ addPopup })
 }
 
 .popup-title {
-  font-size: 24px;
+  font-size: 1.2rem;
   margin: 0;
   margin-bottom: 10px;
   margin-top: 20px;

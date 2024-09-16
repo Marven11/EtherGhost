@@ -3,7 +3,7 @@ import Header from "@/components/Header.vue"
 import { store, popupsRef, currentSettings } from "@/assets/store"
 import Popups from "@/components/Popups.vue"
 import { getDataOrPopupError } from "@/assets/utils";
-import { ref } from "vue";
+import { ref, watch } from "vue";
 
 
 setTimeout(async () => {
@@ -14,6 +14,15 @@ setTimeout(async () => {
     currentSettings[key] = settings[key]
   }
 }, 0)
+
+watch(() => currentSettings.fontSize, (newValue) => {
+  let targetVal = newValue
+  if (newValue < 8 || newValue > 100) {
+    targetVal = 16
+  }
+  document.querySelector("html").style.fontSize = `${targetVal}px`
+
+})
 
 </script>
 
@@ -28,7 +37,7 @@ setTimeout(async () => {
   <Popups ref="popupsRef" />
 </template>
 
-<style scoped>
+<style>
 #root {
   display: flex;
   align-items: center;

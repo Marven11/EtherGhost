@@ -58,6 +58,13 @@ const userInterfaceOptionGroup = {
         },
       ]
     },
+    {
+      id: "fontSize",
+      name: "字体大小",
+      type: "text",
+      placeholder: "单位是pixel",
+      default_value: "16",
+    }
   ]
 }
 
