@@ -110,7 +110,7 @@ async def sender(
 ):
     while state["socket_open"]:
         # TODO: 允许用户设置这里的buffer大小
-        tosend = await reader.read(1024 * 32)
+        tosend = await reader.read(1024 * 128)
         if not tosend:
             state["socket_open"] = False
             return
@@ -126,6 +126,7 @@ async def sender(
                 raise e
             state["socket_open"] = False
             return
+        print(f"[>] sent {len(tosend)} B")
         state["last_communicate_time"] = time.perf_counter()
 
 
@@ -140,7 +141,7 @@ async def receiver(
             towrite = await call(
                 "tcp_socket_read",
                 socket_id,
-                1024 * 32,
+                1024 * 128,
                 timeout=1,
             )
         except exceptions.TargetRuntimeError as e:
@@ -159,6 +160,7 @@ async def receiver(
                 else REQUEST_INTERVAL_LONG
             )
             continue
+        print(f"[<] recv {len(towrite_bytes)} B")
         writer.write(towrite_bytes)
         state["last_communicate_time"] = time.perf_counter()
 
