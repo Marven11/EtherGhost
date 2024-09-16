@@ -66,12 +66,12 @@ watch(clickMenu, () => {
 }
 
 .click-menu-item {
-  height: 60px;
+  height: 3rem;
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding-left: 20px;
-  padding-right: 20px;
+  padding-left: 1rem;
+  padding-right: 1rem;
   color: var(--font-color-primary);
   user-select: none;
   transition: background 0.3s ease;
@@ -82,18 +82,14 @@ watch(clickMenu, () => {
 }
 
 .click-menu-icon {
-  width: 35px;
-  height: 35px;
-  margin-right: 5px;
+  width: 2rem;
+  height: 2rem;
+  margin-right: 10px;
 }
 
 .click-menu-item p {
-  font-size: 20px;
+  font-size: 1rem;
   margin: 0;
-}
-
-svg {
-  width: 35px;
 }
 
 *[color="white"] {

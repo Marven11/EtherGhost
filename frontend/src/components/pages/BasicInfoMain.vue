@@ -132,8 +132,8 @@ setTimeout(updateInfo, 0)
 }
 
 .info {
-  height: 60px;
-  font-size: 20px;
+  height: 3rem;
+  font-size: 1rem;
   color: var(--font-color-primary);
 }
 

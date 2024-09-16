@@ -321,7 +321,6 @@ while (1) {
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: 90%;
 }
 
 .action-group {
@@ -340,22 +339,22 @@ while (1) {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
+  font-size: 1.5rem;
   margin: 0;
-  padding-top: 20px;
-  padding-bottom: 20px;
-  border-radius: 20px;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  border-radius: 1rem;
   margin-bottom: 10px;
 }
 
 .actions {
   background-color: var(--background-color-2);
   width: 100%;
-  border-radius: 20px;
+  border-radius: 1rem;
   margin-top: 20px;
   flex-grow: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
   grid-gap: 20px;
   padding: 20px;
 }
@@ -363,12 +362,12 @@ while (1) {
 .action {
   background-color: var(--background-color-3);
   color: var(--font-color-primary);
-  padding: 20px;
-  min-height: 100px;
+  padding: 0.8rem;
+  min-height: 5rem;
   outline: none;
   border: none;
   border-radius: 20px;
-  font-size: 20px;
+  font-size: 1rem;
 }
 
 .action:hover {
@@ -384,12 +383,12 @@ while (1) {
 
 .action-input input {
   width: 100%;
-  height: 50px;
+  height: 2.3rem;
   background-color: var(--background-color-2);
   outline: none;
   border: none;
   border-radius: 20px;
-  font-size: 24px;
+  font-size: 1rem;
   color: var(--font-color-primary);
   padding-left: 15px;
   padding-right: 15px;
@@ -401,6 +400,7 @@ while (1) {
 .action-result {
   width: 80%;
   height: 100%;
+  min-height: 20rem;
   box-sizing: border-box;
   resize: none;
 
@@ -408,8 +408,9 @@ while (1) {
   outline: none;
   border: none;
   border-radius: 20px;
+  margin-bottom: 2rem;
 
-  font-size: 20px;
+  font-size: 1rem;
   color: var(--font-color-primary);
   padding: 10px;
 }

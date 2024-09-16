@@ -29,7 +29,7 @@ const codeMirrorContent = ref("")
 const codeMirrorTheme = EditorView.theme({
   "&": {
     "background-color": "var(--background-color-2)",
-    "font-size": "24px",
+    "font-size": "1rem",
   },
 }, { dark: true })
 
@@ -185,9 +185,8 @@ include $temp_file;
 
 
 .actions button {
-  min-height: 40px;
+  min-height: 2.5rem;
   height: max-content;
-
 }
 
 .actions button:hover {
@@ -197,9 +196,9 @@ include $temp_file;
 
 .php-code {
   flex-grow: 1;
-  border-radius: 20px;
-  padding-top: 20px;
-  padding-bottom: 20px;
+  border-radius: 1rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
   background-color: var(--background-color-2);
   overflow: auto;
 }

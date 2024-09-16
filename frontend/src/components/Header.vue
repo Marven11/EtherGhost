@@ -309,7 +309,7 @@ header {
   border-radius: 20px;
   background-color: var(--primary-color);
   width: 90%;
-  min-height: 120px;
+  min-height: 6rem;
   padding-left: 2%;
   padding-right: 2%;
   box-shadow: 0 0 10px rgba(15, 15, 15, 0.7);
@@ -331,20 +331,20 @@ body[data-theme="glass"] header {
 }
 
 .header-title h1 {
-  font-size: 40px;
+  font-size: 2rem;
   font-weight: bolder;
   margin: 0;
 }
 
 .header-title p {
-  font-size: 16px;
+  font-size: 1rem;
   color: var(--font-color-secondary);
   margin: 0;
 }
 
 .nav-space {
   flex-grow: 1;
-  max-width: 900px;
+  max-width: 50rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -354,7 +354,7 @@ nav {
   display: grid;
   width: 100%;
   justify-items: end;
-  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(3.125rem, 1fr));
 }
 
 @media (min-width: 600px) {
@@ -363,14 +363,12 @@ nav {
   }
 }
 
-
-
 .icon {
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 50px;
+  height: 3.125rem;
   border-radius: 200px;
   transition: background 0.3s ease;
 }
@@ -390,12 +388,12 @@ nav {
 .icon-delimiter {
   background-color: #00000015;
   height: 100%;
-  width: 5px;
+  width: 0.3125rem;
   border-radius: 20px;
 }
 
 svg {
-  width: 35px;
+  width: 1.875rem;
   color: var(--font-color-black);
   stroke: var(--font-color-black);
 }

@@ -182,7 +182,8 @@ async function onDeleteSessionConfirm(userConfirm) {
 <template>
   <div class="main-panel">
     <div class="sessions" v-if="sessions.length != 0">
-      <div class="session shadow-box" v-for="session in sessions" @click.right="event => onClickIconOthers(event, session.id)">
+      <div class="session shadow-box" v-for="session in sessions"
+        @click.right="event => onClickIconOthers(event, session.id)">
         <div class="session-top">
           <div class="session-name">
             <p>
@@ -243,7 +244,7 @@ async function onDeleteSessionConfirm(userConfirm) {
 
 .sessions {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
   column-gap: 2%;
   justify-content: space-between;
 }
@@ -271,7 +272,7 @@ async function onDeleteSessionConfirm(userConfirm) {
 .session {
   display: flex;
   flex-direction: column;
-  height: 180px;
+  height: 9rem;
   background-color: var(--background-color-2);
   color: var(--font-color-primary);
   margin-bottom: 40px;
@@ -292,22 +293,27 @@ async function onDeleteSessionConfirm(userConfirm) {
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  height: 40%;
-  margin-top: 5px;
+  height: 35%;
+  margin-top: 0.6rem;
 }
 
 .session-top svg {
   margin-top: 5px;
 }
 
-.session-top p {
+.session-name {
   margin: 0px;
-  font-size: 26px;
+  font-size: 1.2rem;
   font-weight: bold;
+}
+
+.session-name p {
+  margin: 0px;
 }
 
 .session-middle {
   color: var(--font-color-secondary);
+  font-size: 0.75rem;
   flex-grow: 1;
 }
 
@@ -322,13 +328,13 @@ async function onDeleteSessionConfirm(userConfirm) {
 .session-bottom p {
   margin: 0;
   color: var(--font-color-secondary);
-  font-size: 14px;
+  font-size: 0.75rem;
 }
 
 
 .add-webshell-button {
-  width: 70px;
-  height: 70px;
+  width: 3.5rem;
+  height: 3.5rem;
   background-color: #00000030;
   border-radius: 1000px;
   position: fixed;
@@ -337,9 +343,9 @@ async function onDeleteSessionConfirm(userConfirm) {
 }
 
 .add-webshell-button svg {
-  width: 50px;
+  width: 80%;
   stroke: var(--font-color-primary);
-  margin: 10px;
+  margin: 10%;
 }
 
 .add-webshell-button:hover {
@@ -347,7 +353,7 @@ async function onDeleteSessionConfirm(userConfirm) {
 }
 
 svg {
-  width: 35px;
+  width: 1.8rem;
   stroke: var(--font-color-primary);
 }
 </style>

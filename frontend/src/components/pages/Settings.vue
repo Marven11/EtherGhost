@@ -196,11 +196,11 @@ async function onTestProxy() {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
+  font-size: 1.5rem;
   margin: 0;
-  padding-top: 20px;
-  padding-bottom: 20px;
-  border-radius: 20px;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-radius: 0.75rem;
   margin-bottom: 10px;
 }
 
@@ -225,8 +225,9 @@ body[data-theme="glass"] .options {
   align-items: center;
   justify-content: start;
   color: var(--font-color-primary);
-  height: 50px;
-  font-size: 20px;
+  height: 2.2rem;
+  font-size: 1rem;
+  margin-top: 0.5rem;
 }
 
 .option-name {
@@ -234,23 +235,23 @@ body[data-theme="glass"] .options {
 }
 
 .option input[type="text"] {
-  height: 40px;
+  height: 100%;
   min-width: 200px;
   border-radius: 8px;
   flex-grow: 1;
-  font-size: 20px;
+  font-size: 1rem;
   text-indent: 10px;
 }
 
 .option select {
+  height: 100%;
   background-color: #00000015;
   outline: none;
   border: none;
   border-radius: 8px;
   color: var(--font-color-primary);
-  height: 40px;
   min-width: 100px;
-  font-size: 16px;
+  font-size: 1rem;
   padding-left: 10px;
 }
 
@@ -290,7 +291,7 @@ input {
 }
 
 .submit-buttons {
-  height: 100px;
+  min-height: 5rem;
   width: 60%;
   border-radius: 20px;
   margin-left: 20%;
@@ -304,7 +305,7 @@ input {
 
 .submit-button {
   height: 60%;
-  width: 30%;
+  width: 20%;
   margin-left: 20px;
   margin-right: 20px;
   border-radius: 12px;

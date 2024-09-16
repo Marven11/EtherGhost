@@ -529,7 +529,7 @@ const codeMirrorContent = ref("")
 const codeMirrorTheme = EditorView.theme({
   "&": {
     "background-color": "var(--background-color-2)",
-    "font-size": "20px",
+    "font-size": "1rem",
   },
   ".cm-gutters *": {
     "background-color": "var(--background-color-3)",
@@ -736,16 +736,16 @@ function readableFilePerm(filePerm) {
 <style scoped>
 .filepath-input {
   display: flex;
-  height: 60px;
+  height: 2.8rem;
 }
 
 input[type="text"] {
-  font-size: 26px;
+  font-size: 1.3rem;
   text-indent: 10px;
   color: var(--font-color-primary);
   border: none;
   outline: none;
-  border-radius: 20px;
+  border-radius: 1rem;
 }
 
 .filepath-input input {
@@ -757,13 +757,13 @@ input[type="text"] {
 .filepath-icon {
   flex-grow: 0;
   flex-shrink: 0;
-  width: 60px;
+  width: 2.8rem;
   margin-left: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: var(--background-color-2);
-  border-radius: 20px;
+  border-radius: 1rem;
   transition: all 0.3s ease;
   opacity: 1;
 }
@@ -771,6 +771,10 @@ input[type="text"] {
 .filepath-icon:hover {
   background-color: var(--background-color-3);
   outline: 2px solid var(--font-color-secondary);
+}
+
+.filepath-icon svg {
+  width: 1.8rem;
 }
 
 .file-panel {
@@ -782,7 +786,7 @@ input[type="text"] {
 }
 
 .folder-control {
-  width: 30%;
+  width: 25%;
   display: flex;
   flex-direction: column;
   margin-right: 30px;
@@ -793,7 +797,7 @@ input[type="text"] {
   flex-grow: 1;
   margin-top: 20px;
   height: 60%;
-  border-radius: 20px;
+  border-radius: 1rem;
   background-color: var(--background-color-2);
   padding-top: 20px;
   overflow: overlay;
@@ -803,7 +807,7 @@ input[type="text"] {
 
 .folder-entry {
   display: flex;
-  height: 65px;
+  height: 3.2rem;
   padding-right: 50px;
   align-items: center;
   flex-direction: row;
@@ -817,18 +821,22 @@ input[type="text"] {
 }
 
 .folder-entry-icon {
-  margin: 0px 20px;
+  margin: 0px 15px;
+}
+
+.folder-entry-icon svg {
+  width: 2rem;
 }
 
 .folder-entry-info {
-  font-size: 14px;
+  font-size: 0.8rem;
   display: flex;
   flex-direction: column;
 }
 
 .folder-entry-name {
   color: var(--font-color-primary);
-  font-size: 24px;
+  font-size: 1.2rem;
   margin: 0;
 }
 
@@ -850,7 +858,7 @@ input[type="text"] {
 }
 
 .files-title {
-  height: 60px;
+  height: 2.8rem;
   width: 50%;
   margin-right: 20px;
   flex-grow: 1;
@@ -863,13 +871,13 @@ input[type="text"] {
   height: 100%;
   width: 100%;
   background-color: var(--background-color-2);
-  font-size: 28px;
+  font-size: 1.3rem;
 }
 
 .files-content {
   flex-grow: 1;
   margin-top: 20px;
-  border-radius: 20px;
+  border-radius: 1rem;
   padding-top: 20px;
   padding-bottom: 20px;
   background-color: var(--background-color-2);
@@ -881,22 +889,28 @@ input[type="text"] {
   flex-direction: row;
   align-items: center;
   background-color: var(--background-color-2);
-  border-radius: 20px;
+  border-radius: 1rem;
   padding-left: 20px;
   padding-right: 20px;
+  height: 2.8rem;
   color: var(--font-color-primary);
   flex-shrink: 0;
   justify-content: space-between;
 }
 
 .file-actions input {
-  height: 40px;
+  height: 2rem;
   max-width: 100px;
   background-color: var(--background-color-3);
-  font-size: 16px;
+  font-size: 0.8rem;
   color: var(--font-color-primary);
   margin-right: 10px;
+}
 
+
+.file-actions button {
+  height: 2rem;
+  margin-right: 10px;
 }
 
 .upload-progress {
@@ -911,7 +925,7 @@ input[type="text"] {
 .upload-progress-file {
   background-color: #00000015;
   height: 100px;
-  border-radius: 20px;
+  border-radius: 1rem;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -941,11 +955,10 @@ input[type="text"] {
   justify-content: center;
   align-items: center;
   height: 70px;
-  border-radius: 20px;
+  border-radius: 1rem;
 }
 
 svg {
-  width: 40px;
   stroke: var(--font-color-primary);
 }
 </style>
