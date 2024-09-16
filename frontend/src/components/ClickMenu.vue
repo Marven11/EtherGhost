@@ -23,10 +23,10 @@ const menuItems = shallowRef([...props.menuItems])
 
 watch(clickMenu, () => {
   if (menuLeft.value + clickMenu.value.clientWidth > screen.width) {
-    menuLeft.value -= clickMenu.value.clientWidth
+    menuLeft.value -= (menuLeft.value + clickMenu.value.clientWidth - screen.width)
   }
   if (menuTop.value + clickMenu.value.clientHeight > screen.height) {
-    menuTop.value -= clickMenu.value.clientHeight
+    menuTop.value -= (menuTop.value + clickMenu.value.clientHeight - screen.height)
   }
   console.log(menuTop.value)
 })
@@ -39,7 +39,7 @@ watch(clickMenu, () => {
   <div class="click-menu" :style="`top: ${menuTop}px; left: ${menuLeft}px; `" ref="clickMenu">
     <div class="click-menu-item" v-for="menuItem in menuItems"
       @click="emit('clickItem', menuItem); emit('remove', true)"
-      @click.right.prevent="e => {emit('rightClickItem', e, menuItem); emit('remove', true)}">
+      @click.right.prevent="e => { emit('rightClickItem', e, menuItem); emit('remove', true) }">
       <div class="click-menu-icon" :color="menuItem.color">
         <component :is="menuItem.icon"></component>
       </div>
