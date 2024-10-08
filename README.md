@@ -59,6 +59,51 @@
   - 防流量重放
   - RSA+AES加密
 
+## 安装使用
+
+### Windows
+
+[下载绿色exe](./assets/ether_ghost_v0.1.0.exe)即可
+
+### Linux - 使用pip+venv
+
+安装并打开：
+
+```shell
+cd EtherGhost
+python -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+python -m ether_ghost
+```
+
+使用：
+
+```shell
+cd EtherGhost
+. .venv/bin/activate
+python -m ether_ghost
+```
+
+### Linux - 使用poetry
+
+安装并打开：
+
+```shell
+cd EtherGhost
+poetry install
+poetry shell
+python -m ether_ghost
+```
+
+使用：
+
+```shell
+cd EtherGhost
+poetry shell
+python -m ether_ghost
+```
+
 ## 为什么不用蚁剑？
 
 我自从学习渗透开始就一直在用蚁剑，蚁剑是一个非常优秀的webshell管理器，但是在我想要二开蚁剑的时候才发现蚁剑的架构存在一些问题，无法实现我想要的功能。具体来说：
