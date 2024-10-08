@@ -65,6 +65,14 @@
 
 [下载绿色exe](./assets/ether_ghost_v0.1.0.exe)即可
 
+### Linux - 使用pip
+
+```shell
+pip install ether-ghost
+ether_ghost # 启动
+# 或者python -m ether_ghost
+```
+
 ### Linux - 使用pip+venv
 
 安装并打开：
