@@ -8,6 +8,7 @@ import re
 import functools
 import base64
 import secrets
+import mimetypes
 from contextlib import asynccontextmanager
 from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
 from uuid import UUID, uuid4
@@ -103,6 +104,9 @@ app.add_middleware(
     allow_methods=["*"],  # 允许的 HTTP 方法
     allow_headers=["*"],  # 允许的头部信息
 )
+
+mimetypes.add_type('application/javascript', '.js')
+mimetypes.add_type('text/css', '.css')
 
 
 def write_temp_blob(filename: str, blob: bytes):
