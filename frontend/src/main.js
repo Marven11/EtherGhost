@@ -4,6 +4,7 @@ import { createApp } from "vue";
 import App from "./App.vue";
 
 import Settings from "./components/pages/Settings.vue";
+import AboutMain from "./components/pages/AboutMain.vue";
 import WebshellEditorMain from "./components/pages/WebshellEditorMain.vue";
 import HomeMain from "./components/pages/HomeMain.vue";
 import TerminalMain from "./components/pages/TerminalMain.vue";
@@ -35,6 +36,11 @@ const routes = [
   {
     path: "/settings/",
     component: Settings,
+    props: true,
+  },
+  {
+    path: "/about/",
+    component: AboutMain,
     props: true,
   },
   {
