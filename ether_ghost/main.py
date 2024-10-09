@@ -9,6 +9,7 @@ import functools
 import base64
 import secrets
 import mimetypes
+import pkg_resources
 from contextlib import asynccontextmanager
 from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
 from uuid import UUID, uuid4
@@ -105,8 +106,8 @@ app.add_middleware(
     allow_headers=["*"],  # 允许的头部信息
 )
 
-mimetypes.add_type('application/javascript', '.js')
-mimetypes.add_type('text/css', '.css')
+mimetypes.add_type("application/javascript", ".js")
+mimetypes.add_type("text/css", ".css")
 
 
 def write_temp_blob(filename: str, blob: bytes):
@@ -269,6 +270,7 @@ async def session_copy_file(session_id: UUID, filepath: str, new_filepath):
     session: SessionInterface = session_manager.get_session_by_id(session_id)
     await session.copy_file(filepath, new_filepath)
     return {"code": 0, "data": True}
+
 
 @app.get("/session/{session_id}/get_file_contents")
 @catch_user_error
@@ -549,6 +551,12 @@ async def forward_proxy_delete(listen_port: int):
         pass
     del tcp_forward_proxies[listen_port]
     return {"code": 0, "data": True}
+
+
+@app.get("/utils/version")
+async def version():
+    my_version = pkg_resources.get_distribution("ether_ghost").version
+    return {"code": 0, "data": my_version}
 
 
 @app.get("/utils/background_image")
