@@ -49,16 +49,6 @@ setTimeout(async () => {
 
 }
 
-.info-panel table {
-  width: 100%;
-  font-size: 20px;
-  color: var(--font-color-secondary);
-}
-
-.info-panel td {
-  min-width: 100px;
-}
-
 .info-value {
   font-weight: bold;
   color: var(--font-color-primary);

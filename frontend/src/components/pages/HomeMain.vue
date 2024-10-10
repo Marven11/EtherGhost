@@ -244,7 +244,7 @@ async function onDeleteSessionConfirm(userConfirm) {
 
 .sessions {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
   column-gap: 2%;
   justify-content: space-between;
 }
@@ -265,7 +265,7 @@ async function onDeleteSessionConfirm(userConfirm) {
 }
 
 .no-session-panel p {
-  font-size: 24px;
+  font-size: 1.5rem;
   color: var(--font-color-secondary);
 }
 

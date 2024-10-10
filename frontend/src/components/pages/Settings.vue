@@ -298,7 +298,7 @@ input {
 }
 
 .submit-buttons {
-  min-height: 5rem;
+  min-height: 6rem;
   width: 60%;
   border-radius: 20px;
   margin-left: 20%;
@@ -320,7 +320,7 @@ input {
   background-color: var(--background-color-3);
   color: var(--font-color-primary);
   outline: 2px dashed var(--font-color-secondary);
-  font-size: 20px;
+  font-size: 1.25rem;
 
   display: flex;
   align-items: center;
@@ -362,7 +362,7 @@ input {
   outline: 2px solid #ffffff00;
   background-color: var(--background-color-3);
   color: var(--font-color-primary);
-  font-size: 18px;
+  font-size: 1rem;
   padding-left: 10px;
   padding-right: 10px;
   transition: outline-color 0.3s ease;
