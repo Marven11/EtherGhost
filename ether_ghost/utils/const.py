@@ -39,4 +39,8 @@ ANTSWORD_DECODER_FOLDER = DATA_FOLDER / "AntSwordDecoder"
 ANTSWORD_DECODER_FOLDER.mkdir(exist_ok=True)
 
 
+UPDATE_CHECK_FILEPATH = DATA_FOLDER / "update_check_time.json"
+UPDATE_CHECK_INTERVAL = 86400 * 3
+
+
 STORE_URL = "sqlite:///" + (DATA_FOLDER / DB_FILENAME).as_posix()

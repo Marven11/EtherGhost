@@ -1,6 +1,8 @@
 """webui的后台部分"""
 
 import asyncio
+import json
+import time
 import logging
 import typing as t
 import tempfile
@@ -13,6 +15,7 @@ import pkg_resources
 from contextlib import asynccontextmanager
 from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
 from uuid import UUID, uuid4
+from packaging.version import Version
 
 import chardet
 from fastapi import (
@@ -108,6 +111,7 @@ app.add_middleware(
 
 mimetypes.add_type("application/javascript", ".js")
 mimetypes.add_type("text/css", ".css")
+lazy_check_update_lock = asyncio.Lock()
 
 
 def write_temp_blob(filename: str, blob: bytes):
@@ -147,6 +151,45 @@ def catch_user_error(fn):
             }
 
     return _wraps
+
+
+async def update_info_last():
+    update_check_info = None
+    try:
+        if const.UPDATE_CHECK_FILEPATH.exists():
+            update_check_info = json.loads(const.UPDATE_CHECK_FILEPATH.read_text())
+    except Exception:
+        update_check_info = None
+        try:
+            const.UPDATE_CHECK_FILEPATH.unlink()
+        except Exception as exc:
+            raise core.ServerError("无法读取上次检查结果且无法删除对应文件") from exc
+    return update_check_info
+
+
+async def update_info_fetch():
+
+    url = "https://pypi.org/pypi/ether-ghost/json"
+    try:
+        async with httpx.AsyncClient() as client:
+            data = (await client.get(url)).json()
+            versions = list(data["releases"].keys())
+            new_version = max(versions, key=Version)
+    except Exception as exc:
+        raise core.ServerError("无法从pypi获取当前的最新版本") from exc
+
+    current_version = pkg_resources.get_distribution("ether_ghost").version
+
+    update_check_info = {
+        "has_new_version": Version(new_version) > Version(current_version),
+        "last_check_time": int(time.time()),
+    }
+    try:
+        const.UPDATE_CHECK_FILEPATH.write_text(json.dumps(update_check_info))
+    except Exception as exc:
+        raise core.ServerError("无法写入文件") from exc
+
+    return update_check_info
 
 
 @app.get("/sessiontype")
@@ -557,6 +600,33 @@ async def forward_proxy_delete(listen_port: int):
 async def version():
     my_version = pkg_resources.get_distribution("ether_ghost").version
     return {"code": 0, "data": my_version}
+
+
+@app.get("/utils/lazy_check_update")
+async def lazy_check_update():
+    async with lazy_check_update_lock:
+        update_check_info = await update_info_last()
+    if (
+        update_check_info is not None
+        and time.time() - update_check_info["last_check_time"] < const.UPDATE_CHECK_INTERVAL
+    ):
+        return {
+            "code": 0,
+            "data": {
+                "lazy": True,
+                "has_new_version": update_check_info.get("has_new_version", False),
+            },
+        }
+    async with lazy_check_update_lock:
+        update_check_info = await update_info_fetch()
+
+    return {
+        "code": 0,
+        "data": {
+            "lazy": False,
+            "has_new_version": update_check_info.get("has_new_version", False),
+        },
+    }
 
 
 @app.get("/utils/background_image")
