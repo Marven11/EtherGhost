@@ -1,21 +1,22 @@
 """webui的后台部分"""
 
 import asyncio
-import json
-import time
-import logging
-import typing as t
-import tempfile
-import re
-import functools
 import base64
-import secrets
+import functools
+import json
+import logging
 import mimetypes
 import pkg_resources
+import re
+import secrets
+import tempfile
+import time
+import typing as t
+
 from contextlib import asynccontextmanager
+from packaging.version import Version
 from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
 from uuid import UUID, uuid4
-from packaging.version import Version
 
 import chardet
 from fastapi import (
@@ -31,8 +32,8 @@ from fastapi import (
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 import httpx
+from pydantic import BaseModel
 
 from .utils import db
 
@@ -608,7 +609,8 @@ async def lazy_check_update():
         update_check_info = await update_info_last()
     if (
         update_check_info is not None
-        and time.time() - update_check_info["last_check_time"] < const.UPDATE_CHECK_INTERVAL
+        and time.time() - update_check_info["last_check_time"]
+        < const.UPDATE_CHECK_INTERVAL
     ):
         return {
             "code": 0,
