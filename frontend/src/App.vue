@@ -2,9 +2,18 @@
 import Header from "@/components/Header.vue"
 import { store, popupsRef, currentSettings } from "@/assets/store"
 import Popups from "@/components/Popups.vue"
-import { getDataOrPopupError } from "@/assets/utils";
+import { addPopup, getDataOrPopupError } from "@/assets/utils";
 import { ref, watch } from "vue";
 
+
+async function lazyCheckUpdate() {
+  let updateCheckInfo = await getDataOrPopupError("/utils/lazy_check_update")
+  if (updateCheckInfo.has_new_version) {
+    addPopup("blue", "检测到新版！", "请到Github或pypi下载最新版")
+  }
+}
+
+setTimeout(lazyCheckUpdate, 0)
 
 setTimeout(async () => {
   // evil hack to ensure color transition enabled after theme color being set
@@ -21,7 +30,6 @@ watch(() => currentSettings.fontSize, (newValue) => {
     targetVal = 16
   }
   document.querySelector("html").style.fontSize = `${targetVal}px`
-
 })
 
 </script>
