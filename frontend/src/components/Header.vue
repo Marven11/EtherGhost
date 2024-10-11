@@ -18,6 +18,7 @@ import IconSpider from "@/components/icons/iconSpider.vue"
 import IconLeft from "@/components/icons/iconLeft.vue"
 import IconRight from "@/components/icons/iconRight.vue"
 import IconKnife from "@/components/icons/iconKnife.vue"
+import IconWarning from "./icons/iconWarning.vue"
 
 const router = useRouter()
 
@@ -165,6 +166,13 @@ const clickMenuOthers = ClickMenuManager(
       link: "/awd-tools/SESSION"
     },
     {
+      name: "about",
+      text: "关于本软件",
+      icon: IconWarning,
+      color: "white",
+      link: "/about"
+    },
+    {
       name: "edit_session",
       text: "修改webshell",
       icon: IconEdit,
@@ -173,7 +181,7 @@ const clickMenuOthers = ClickMenuManager(
     },
   ],
   (item) => {
-    if (!store.session) {
+    if (!store.session && item.link.indexOf("SESSION") != -1) {
       addPopup("red", "没有选中WebShell", "请先在主页选中Webshell")
     } else if (item.link) {
       const uri = item.link.replace("SESSION", store.session)
