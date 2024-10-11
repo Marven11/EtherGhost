@@ -133,18 +133,22 @@ python -m ether_ghost
   - 从蚁剑的本地目录导入蚁剑webshell
   - 从冰蝎的本地目录导入冰蝎webshell
   - [done] 以webshell形式对接蚁剑
-- [done] 下载phpinfo
-- [done] 显示机器信息
 - i18n
 - 改进文件管理的文件夹管理功能
-- [done] 真正的正向代理和~~反向代理~~
-  - PHP貌似很难支持绑定本地端口
 - 支持冰蝎4.1的自定义类型webshell
 - 批量测试webshell是否存活
 - 数据库连接功能
-- [done] pyinstaller打包，给windows用户提供一个绿色的exe
 - 写安装使用的文档，然后把文档分割为多个文件，存到`docs/`里
 - 让用户决定是否将AES密钥在session中持久化
+- 加密（或者至少混淆的）反弹Shell
+  - 可以用类似TCP正向代理的思路搞
+  - 或者绑定本地端口等着目标连过来
+- 一键生成webshell
+- [done] 下载phpinfo
+- [done] 显示机器信息
+- [done] 真正的正向代理和~~反向代理~~
+  - PHP貌似很难支持绑定本地端口
+- [done] pyinstaller打包，给windows用户提供一个绿色的exe
 
 ## 关于流量强加密功能
 
