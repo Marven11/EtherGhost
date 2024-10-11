@@ -112,7 +112,7 @@ app.add_middleware(
 
 mimetypes.add_type("application/javascript", ".js")
 mimetypes.add_type("text/css", ".css")
-lazy_check_update_lock = asyncio.Lock()
+update_check_lock = asyncio.Lock()
 
 
 def write_temp_blob(filename: str, blob: bytes):
@@ -184,6 +184,8 @@ async def update_info_fetch():
     update_check_info = {
         "has_new_version": Version(new_version) > Version(current_version),
         "last_check_time": int(time.time()),
+        "current_version": current_version,
+        "new_version": new_version,
     }
     try:
         const.UPDATE_CHECK_FILEPATH.write_text(json.dumps(update_check_info))
@@ -605,7 +607,7 @@ async def version():
 
 @app.get("/utils/lazy_check_update")
 async def lazy_check_update():
-    async with lazy_check_update_lock:
+    async with update_check_lock:
         update_check_info = await update_info_last()
     if (
         update_check_info is not None
@@ -619,7 +621,7 @@ async def lazy_check_update():
                 "has_new_version": update_check_info.get("has_new_version", False),
             },
         }
-    async with lazy_check_update_lock:
+    async with update_check_lock:
         update_check_info = await update_info_fetch()
 
     return {
@@ -627,6 +629,22 @@ async def lazy_check_update():
         "data": {
             "lazy": False,
             "has_new_version": update_check_info.get("has_new_version", False),
+        },
+    }
+
+
+@app.get("/utils/check_update")
+async def check_update():
+
+    async with update_check_lock:
+        update_check_info = await update_info_fetch()
+
+    return {
+        "code": 0,
+        "data": {
+            "has_new_version": update_check_info.get("has_new_version", False),
+            "current_version": update_check_info["current_version"],
+            "new_version": update_check_info["new_version"],
         },
     }
 
