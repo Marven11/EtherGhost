@@ -126,6 +126,10 @@ class SessionInterface:
         """获取当前的基本信息"""
         raise NotImplementedError()
 
+    async def open_reverse_shell(self, host: str, port: int) -> None:
+        """打开一个反弹shell"""
+        raise NotImplementedError()
+
 
 class PHPSessionInterface(SessionInterface):
     """PHP Session接口"""

