@@ -22,6 +22,7 @@ import { getCurrentApiUrl } from "@/assets/utils";
 import { store } from "@/assets/store";
 import IconSpider from "@/components/icons/iconSpider.vue";
 import IconKnife from "@/components/icons/iconKnife.vue";
+import IconPlug from "../icons/iconPlug.vue";
 
 
 const sessions = ref([
@@ -78,6 +79,13 @@ const ClickMenuSession = ClickMenuManager(
       "icon": IconHash,
       "color": "white",
       "link": "/shell-command/SESSION"
+    },
+    {
+      "name": "reverse_shell",
+      "text": "反弹Shell",
+      "icon": IconPlug,
+      "color": "white",
+      "link": "/reverse-shell/SESSION"
     },
     {
       "name": "emulated_antsword",

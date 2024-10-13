@@ -19,6 +19,7 @@ import IconLeft from "@/components/icons/iconLeft.vue"
 import IconRight from "@/components/icons/iconRight.vue"
 import IconKnife from "@/components/icons/iconKnife.vue"
 import IconWarning from "./icons/iconWarning.vue"
+import IconPlug from "./icons/iconPlug.vue"
 
 const router = useRouter()
 
@@ -59,7 +60,6 @@ const iconSpecs = [
     uri: "/proxies",
     tooltip: "打开代理"
   },
-
   {
     type: "others",
     component: IconOthers,
@@ -150,6 +150,13 @@ const clickMenuOthers = ClickMenuManager(
       icon: IconHash,
       color: "white",
       link: "/shell-command/SESSION"
+    },
+    {
+      name: "reverse_shell",
+      text: "反弹Shell",
+      icon: IconPlug,
+      color: "white",
+      link: "/reverse-shell/SESSION"
     },
     {
       name: "emulated_antsword",
