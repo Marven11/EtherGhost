@@ -19,6 +19,7 @@ import { createRouter, createWebHashHistory } from "vue-router";
 import Terminal from 'vue-web-terminal'
 //  亮色主题：vue-web-terminal/lib/theme/light.css
 import './assets/vue-web-terminal.css'
+import ReverseShellMain from "./components/pages/ReverseShellMain.vue";
 
 
 const routes = [
@@ -57,6 +58,7 @@ const routes = [
   { path: "/php-eval/:session", component: PhpEvalMain, props: true },
   { path: "/emulated-antsword/:session", component: EmulatedAntswordMain, props: true },
   { path: "/basic-info/:session", component: BasicInfoMain, props: true },
+  { path: "/reverse-shell/:session", component: ReverseShellMain, props: true },
   { path: "/proxies", component: Proxies, props: true },
   { path: "/proxies/:session", component: Proxies, props: true },
 ];
