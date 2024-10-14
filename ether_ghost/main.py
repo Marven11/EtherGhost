@@ -3,10 +3,11 @@
 import asyncio
 import base64
 import functools
+import importlib.metadata
 import json
 import logging
 import mimetypes
-import pkg_resources
+import importlib
 import re
 import secrets
 import tempfile
@@ -179,7 +180,7 @@ async def update_info_fetch():
     except Exception as exc:
         raise core.ServerError("无法从pypi获取当前的最新版本") from exc
 
-    current_version = pkg_resources.get_distribution("ether_ghost").version
+    current_version = importlib.metadata.version("ether_ghost")
 
     update_check_info = {
         "has_new_version": Version(new_version) > Version(current_version),
