@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ether_ghost"
-version = "0.1.1"
+version = "0.1.2"
 description = ""
 authors = ["Marven11 <110723864+Marven11@users.noreply.github.com>"]
 readme = "README.md"
