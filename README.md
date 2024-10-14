@@ -61,9 +61,15 @@
 
 ## 安装使用
 
-### Windows
+### Windows - 绿色exe
 
 [下载绿色exe](./assets/ether_ghost_v0.1.0.exe)即可
+
+> 绿色exe会被Windows Defender报毒，虽然我也不知道为什么，但是建议有条件的人自己用pyinstaller打包
+
+### Windows - 手动打包
+
+创建venv，安装所有依赖，然后查阅[pyinstaller_package.bat](./pyinstaller_package.bat)文件，将里面的虚拟环境路径换成你的`site-packages`文件夹，最后运行即可。
 
 ### Linux - 使用pip
 
