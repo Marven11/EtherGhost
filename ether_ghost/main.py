@@ -167,8 +167,10 @@ async def update_info_last():
         except Exception as exc:
             raise core.ServerError("无法读取上次检查结果且无法删除对应文件") from exc
     current_version = importlib.metadata.version("ether_ghost")
-    if current_version != update_check_info.get("current_version"):
+    if current_version != update_check_info["current_version"]:
         return None
+    if current_version != update_check_info["new_version"]:
+        print(f"发现新版本！{current_version} -> {update_check_info['new_version']}")
     return update_check_info
 
 
@@ -191,6 +193,8 @@ async def update_info_fetch():
         "current_version": current_version,
         "new_version": new_version,
     }
+    if current_version != update_check_info["new_version"]:
+        print(f"发现新版本！{current_version} -> {update_check_info['new_version']}")
     try:
         const.UPDATE_CHECK_FILEPATH.write_text(json.dumps(update_check_info))
     except Exception as exc:
@@ -636,6 +640,8 @@ async def lazy_check_update():
             "data": {
                 "lazy": True,
                 "has_new_version": update_check_info.get("has_new_version", False),
+                "current_version": update_check_info["current_version"],
+                "new_version": update_check_info["new_version"],
             },
         }
     async with update_check_lock:
@@ -646,6 +652,8 @@ async def lazy_check_update():
         "data": {
             "lazy": False,
             "has_new_version": update_check_info.get("has_new_version", False),
+            "current_version": update_check_info["current_version"],
+            "new_version": update_check_info["new_version"],
         },
     }
 
