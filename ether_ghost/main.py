@@ -618,8 +618,8 @@ async def forward_proxy_delete(listen_port: int):
 
 @app.get("/utils/version")
 async def version():
-    my_version = pkg_resources.get_distribution("ether_ghost").version
-    return {"code": 0, "data": my_version}
+    current_version = importlib.metadata.version("ether_ghost")
+    return {"code": 0, "data": current_version}
 
 
 @app.get("/utils/lazy_check_update")
