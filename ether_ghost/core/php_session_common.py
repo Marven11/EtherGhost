@@ -55,9 +55,11 @@ session_start();
 $decoder_hooks = array();
 function decoder_echo($s) {{
     global $decoder_hooks;
-    for($i = 0; $i < count($decoder_hooks); $i ++) {{
-        $f = $decoder_hooks[$i];
-        $s = $f($s);
+    if (is_array($decoder_hooks)) {{
+        for($i = 0; $i < count($decoder_hooks); $i ++) {{
+            $f = $decoder_hooks[$i];
+            $s = $f($s);
+        }}
     }}
     echo decoder_echo_raw($s);
 }}
