@@ -617,7 +617,6 @@ function aes_dec($encryptedData) {
         0,
         substr($data, 0, 16)
     );
-    unset($_SESSION[{session_name}]);
 }
 if(!isset($_SESSION[{session_name}])){
     decoder_echo("WRONG_NO_SESSION");
