@@ -166,6 +166,8 @@ async def update_info_last():
             const.UPDATE_CHECK_FILEPATH.unlink()
         except Exception as exc:
             raise core.ServerError("无法读取上次检查结果且无法删除对应文件") from exc
+    if update_check_info is None:
+        return None
     current_version = importlib.metadata.version("ether_ghost")
     if current_version != update_check_info["current_version"]:
         return None
