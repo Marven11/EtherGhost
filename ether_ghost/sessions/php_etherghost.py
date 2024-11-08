@@ -7,6 +7,7 @@ import random
 
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
+from Crypto.Util.strxor import strxor
 import httpx
 
 from ..core import exceptions
@@ -164,8 +165,8 @@ class PHPWebshellEtherGhostOpen(PHPWebshellCommunication, PHPWebshellActions):
         call = action.encode("utf-8") + data
 
         k = random.randbytes(8)
-        # TODO: improve performance
-        masked = bytes([n ^ k[i % 8] for i, n in enumerate(call)])
+        k_repeated = k * (len(call) // 8 + 1)
+        masked = strxor(call, k_repeated[:len(call)])
         raw_data = self.start_mask + k + masked + self.stop_mask
 
         status_code, response = await self.submit_raw(raw_data)
