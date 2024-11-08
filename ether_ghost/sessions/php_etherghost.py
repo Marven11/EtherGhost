@@ -33,44 +33,6 @@ from ..utils.cipher import (
 
 logger = logging.getLogger("core.sessions.php_etherghost")
 
-
-def md5_encode(s):
-    """将给定的字符串或字节序列转换成MD5"""
-    if isinstance(s, str):
-        s = s.encode()
-    return hashlib.md5(s).hexdigest()
-
-
-def base64_encode(s):
-    """将给定的字符串或字节序列编码成base64"""
-    if isinstance(s, str):
-        s = s.encode("utf-8")
-    return base64.b64encode(s).decode()
-
-
-def behinder_aes(payload: t.Union[str, bytes], key: bytes):
-    """将给定的payload按照冰蝎的格式进行AES加密"""
-    iv = b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-    cipher = AES.new(key, AES.MODE_CBC, iv=iv)
-    if isinstance(payload, str):
-        payload = ("1|" + payload).encode()
-    else:
-        payload = b"1|" + payload
-    payload_padded = pad(payload, AES.block_size)
-    return base64_encode(cipher.encrypt(payload_padded))
-
-
-def behinder_xor(payload: t.Union[str, bytes], key: bytes):
-    """将给定的payload按照冰蝎的格式进行Xor加密"""
-    if isinstance(payload, str):
-        payload_bytes = ("1|" + payload).encode()
-    else:
-        payload_bytes = b"1|" + payload
-
-    payload_xor = bytes([c ^ key[i + 1 & 15] for i, c in enumerate(payload_bytes)])
-    return base64_encode(payload_xor)
-
-
 @register_session
 class PHPWebshellEtherGhostOpen(PHPWebshellCommunication, PHPWebshellActions):
     session_type = "ETHERGHOST_PHP_OPEN"
@@ -174,7 +136,6 @@ class PHPWebshellEtherGhostOpen(PHPWebshellCommunication, PHPWebshellActions):
         )
 
     async def submit_raw(self, payload: bytes) -> t.Union[int, bytes]:
-        print(f"{len(payload)=} {payload=}")
         try:
             response = await self.client.request(
                 method="POST", url=self.url, content=payload
