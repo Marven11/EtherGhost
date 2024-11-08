@@ -164,6 +164,7 @@ class PHPWebshellEtherGhostOpen(PHPWebshellCommunication, PHPWebshellActions):
         call = action.encode("utf-8") + data
 
         k = random.randbytes(8)
+        # TODO: improve performance
         masked = bytes([n ^ k[i % 8] for i, n in enumerate(call)])
         raw_data = self.start_mask + k + masked + self.stop_mask
 
