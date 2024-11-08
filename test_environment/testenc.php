@@ -36,17 +36,16 @@ function aes_enc($data) {
         0,
         $iv
     );
-    return base64_encode($iv . base64_decode($encryptedData));
+    return ($iv . base64_decode($encryptedData));
 }
 
 function aes_dec($encryptedData) {
-    $data = base64_decode($encryptedData);
     return openssl_decrypt(
-        base64_encode(substr($data, 16)),
+        base64_encode(substr($encryptedData, 16)),
         'AES-256-CBC',
         $_SESSION["ether_ghost_enc_key"],
         0,
-        substr($data, 0, 16)
+        substr($encryptedData, 0, 16)
     );
 }
 
@@ -60,7 +59,7 @@ if($action == "set") {
         openssl_public_encrypt(
             $_SESSION["ether_ghost_enc_key"],
             $encrypted,
-            base64_decode($data),
+            $data,
             OPENSSL_PKCS1_OAEP_PADDING
         );
         obfs_echo(base64_encode($encrypted));
