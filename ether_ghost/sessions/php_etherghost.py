@@ -33,6 +33,7 @@ from ..utils.cipher import (
 
 logger = logging.getLogger("core.sessions.php_etherghost")
 
+
 @register_session
 class PHPWebshellEtherGhostOpen(PHPWebshellCommunication, PHPWebshellActions):
     session_type = "ETHERGHOST_PHP_OPEN"
@@ -130,6 +131,10 @@ class PHPWebshellEtherGhostOpen(PHPWebshellCommunication, PHPWebshellActions):
         raw_data = self.start_mask + k + masked + self.stop_mask
 
         status_code, response = await self.submit_raw(raw_data)
+        if self.start_mask not in response or self.stop_mask not in response:
+            raise exceptions.TargetError(
+                "找不到标记，无法从流量中取出运行结果。也许运行失败了？"
+            )
         return (
             status_code,
             response.partition(self.start_mask)[2].partition(self.stop_mask)[0],
