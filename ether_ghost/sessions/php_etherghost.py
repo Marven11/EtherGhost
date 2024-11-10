@@ -97,7 +97,7 @@ class PHPWebshellEtherGhostOpen(PHPWebshellCommunication, PHPWebshellActions):
         self.key_communicate_lock = asyncio.Lock()
 
         password_md5 = hashlib.md5(self.password.encode("utf-8")).digest()
-        self.start_mask, self.stop_mask = password_md5[:8], password_md5[8:16]
+        self.start_mark, self.stop_mark = password_md5[:8], password_md5[8:16]
 
     async def handshake_aes_key(self):
         pubkey, _ = get_rsa_key()
@@ -128,16 +128,16 @@ class PHPWebshellEtherGhostOpen(PHPWebshellCommunication, PHPWebshellActions):
         k = random.randbytes(8)
         k_repeated = k * (len(call) // 8 + 1)
         masked = strxor(call, k_repeated[: len(call)])
-        raw_data = self.start_mask + k + masked + self.stop_mask
+        raw_data = self.start_mark + k + masked + self.stop_mark
 
         status_code, response = await self.submit_raw(raw_data)
-        if self.start_mask not in response or self.stop_mask not in response:
+        if self.start_mark not in response or self.stop_mark not in response:
             raise exceptions.TargetError(
                 "找不到标记，无法从流量中取出运行结果。也许运行失败了？"
             )
         return (
             status_code,
-            response.partition(self.start_mask)[2].partition(self.stop_mask)[0],
+            response.partition(self.start_mark)[2].partition(self.stop_mark)[0],
         )
 
     async def submit_raw(self, payload: bytes) -> t.Union[int, bytes]:
