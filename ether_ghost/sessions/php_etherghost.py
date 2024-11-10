@@ -98,7 +98,7 @@ class PHPWebshellEtherGhostOpen(PHPWebshellCommunication, PHPWebshellActions):
         password_md5 = hashlib.md5(self.password.encode("utf-8")).digest()
         self.start_mask, self.stop_mask = password_md5[:8], password_md5[8:16]
 
-    async def communicate_aes_key(self):
+    async def handshake_aes_key(self):
         pubkey, _ = get_rsa_key()
         _, result = await self.submit_obfs("s", (pubkey))
         if result == "WRONG_NO_OPENSSL":
@@ -112,7 +112,7 @@ class PHPWebshellEtherGhostOpen(PHPWebshellCommunication, PHPWebshellActions):
     async def submit_http(self, payload: t.Union[str, bytes]) -> t.Union[int, str]:
         async with self.key_communicate_lock:
             if not self.key:
-                await self.communicate_aes_key()
+                await self.handshake_aes_key()
         # TODO: check encoding here, windows use gbk
         if isinstance(payload, str):
             payload = payload.encode("utf-8")
