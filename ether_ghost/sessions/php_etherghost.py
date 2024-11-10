@@ -100,7 +100,7 @@ class PHPWebshellEtherGhostOpen(PHPWebshellCommunication, PHPWebshellActions):
 
     async def communicate_aes_key(self):
         pubkey, _ = get_rsa_key()
-        _, result = await self.submit_obfs("set", (pubkey))
+        _, result = await self.submit_obfs("s", (pubkey))
         if result == "WRONG_NO_OPENSSL":
             raise exceptions.TargetRuntimeError("目标不支持OpenSSL")
         if result == "WRONG_NO_OPENSSL_FUNCTION":
@@ -117,7 +117,7 @@ class PHPWebshellEtherGhostOpen(PHPWebshellCommunication, PHPWebshellActions):
         if isinstance(payload, str):
             payload = payload.encode("utf-8")
         payload_enc = encrypt_aes256_cbc(self.key, payload)
-        status_code, result_enc = await self.submit_obfs("run", payload_enc)
+        status_code, result_enc = await self.submit_obfs("r", payload_enc)
         result = decrypt_aes256_cbc(self.key, result_enc)
         return status_code, result.decode("utf-8")
 
