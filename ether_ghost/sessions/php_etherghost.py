@@ -36,7 +36,7 @@ logger = logging.getLogger("core.sessions.php_etherghost")
 @register_session
 class PHPWebshellEtherGhostOpen(PHPWebshellCommunication, PHPWebshellActions):
     session_type = "ETHERGHOST_PHP_OPEN"
-    readable_name = "游魂Open"
+    readable_name = "[开发中] 游魂Open"
     conn_options: t.List[ConnOptionGroup] = [
         {
             "name": "基本连接配置",
