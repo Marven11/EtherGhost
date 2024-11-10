@@ -139,17 +139,22 @@ python -m ether_ghost
   - 从蚁剑的本地目录导入蚁剑webshell
   - 从冰蝎的本地目录导入冰蝎webshell
   - [done] 以webshell形式对接蚁剑
+- 游魂专用的webshell类型
+  - 一键生成webshell
+  - padding功能
+  - 流量混淆
+    - 4B head 8B xor密钥 nB实际的payload 4B tail
+  - 可选生成带公钥的webshell, 即使有源码也骑不上
 - i18n
 - 改进文件管理的文件夹管理功能
 - 支持冰蝎4.1的自定义类型webshell
 - 批量测试webshell是否存活
 - 数据库连接功能
 - 写安装使用的文档，然后把文档分割为多个文件，存到`docs/`里
-- 让用户决定是否将AES密钥在session中持久化
+- 让用户决定是否将AES密钥在session中持久化，当前审计可以通过提取目标机上的session解密流量
 - 加密（或者至少混淆的）反弹Shell
   - 可以用类似TCP正向代理的思路搞
   - 或者绑定本地端口等着目标连过来
-- 一键生成webshell
 - [done] 下载phpinfo
 - [done] 显示机器信息
 - [done] 真正的正向代理和~~反向代理~~
