@@ -442,7 +442,6 @@ class LinuxCmdOneLiner:
         for line in (await self.submit(info)).splitlines():
             line = line.strip().removeprefix("start").removesuffix("stop")
             if "|" not in line:
-                print(f"{line=}")
                 continue
             cmd, output_b64 = line.split("|", maxsplit=1)
             try:
@@ -499,11 +498,8 @@ class LinuxCmdOneLiner:
                 url=self.url,
                 **kwargs,
             )
-            print(f"{response.text=}")
             return response.status_code, response.text
         except httpx.TimeoutException as exc:
             raise exceptions.NetworkError("HTTP请求受控端超时") from exc
         except httpx.HTTPError as exc:
-            import traceback
-            traceback.print_exc()
             raise exceptions.NetworkError("发送HTTP请求到受控端失败") from exc
