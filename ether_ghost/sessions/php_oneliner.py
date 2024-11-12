@@ -11,6 +11,7 @@ import httpx
 from ..core import exceptions
 
 from ..utils.random_data import random_english_words, random_data
+from ..utils.tools import user_json_loads
 from ..utils import const
 from ..utils.nodejs_bridge import nodejs_eval
 from ..core.base import (
@@ -58,19 +59,6 @@ def add_obfs_data(data: t.Dict[str, t.Any], min_count, max_count):
         result[key] = data_all[key]
     return result
 
-
-def user_json_loads(data: str, types: t.Union[type, t.Iterable[type]]):
-    if not isinstance(types, type):
-        types = tuple(types)
-    try:
-        parsed = json.loads(data)
-        if not isinstance(parsed, types):
-            raise exceptions.UserError(
-                f"无效的JSON数据：需要的数据类型为{types}，输入的是{type(parsed)}，数据为{parsed!r}"
-            )
-        return parsed
-    except json.JSONDecodeError as exc:
-        raise exceptions.UserError(f"解码JSON失败: {data!r}") from exc
 
 
 def eval_antsword_encoder(filename: str, pwd: str, php_payload) -> dict:
