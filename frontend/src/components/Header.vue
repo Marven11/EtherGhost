@@ -107,7 +107,7 @@ const iconsCount = computed(() => icons.value.length)
 
 // 左键点击clickMenuOthers时会直接执行对应的动作并关闭click menu
 // 右键点击clickMenuOthers时会打开clickMenuOthersRightClick
-// 然后在clickMenuOthersRightClick关闭时一并关闭clickMenuOthersRightClick
+// 然后在clickMenuOthersRightClick关闭时一并关闭clickMenuOthers
 
 // 其中rightClickedOtherEntry作为判断何时关闭clickMenuOthersRightClick的标志
 // 需要在clickMenuOthersRightClick关闭时一并清零
@@ -310,7 +310,7 @@ function historyForward() {
       <ClickMenu :mouse_y="clickMenuOthersRightClick.y" :mouse_x="clickMenuOthersRightClick.x"
         :menuItems="clickMenuOthersRightClick.items.value"
         @remove="x => { clickMenuOthersRightClick.onremove(x); clickMenuOthers.show.value = false; rightClickedOtherEntry = undefined; }"
-        @clickItem="clickMenuOthersRightClick.onclick" />
+        @clickItem="x => { clickMenuOthersRightClick.onclick(x); clickMenuOthers.show.value = false; rightClickedOtherEntry = undefined; }" />
     </div>
   </transition>
 </template>
