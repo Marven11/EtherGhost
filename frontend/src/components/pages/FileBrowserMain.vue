@@ -809,7 +809,7 @@ input[type="text"] {
 
 .folder-entry {
   display: flex;
-  height: 3.2rem;
+  min-height: 3.2rem;
   padding-right: 50px;
   align-items: center;
   flex-direction: row;
