@@ -98,4 +98,4 @@ class PHPWebshellRaw(PHPWebshellCommunication, PHPWebshellActions):
                 self.client = get_http_client(verify=self.https_verify)
             raise exceptions.NetworkError("HTTP请求受控端超时") from exc
         except httpx.HTTPError as exc:
-            raise exceptions.NetworkError("发送HTTP请求到受控端失败") from exc
+            raise exceptions.NetworkError("发送HTTP请求到受控端失败：" + str(exc)) from exc
