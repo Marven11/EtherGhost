@@ -252,7 +252,7 @@ class LinuxCmdOneLiner:
 
             filetype = perm[0]
             perm = parse_file_permission(perm[1:10])
-            filetype = {"f": "file", "d": "dir", "l": "link"}.get(filetype, "unknown")
+            filetype = {"-": "file", "f": "file", "d": "dir", "l": "link"}.get(filetype, "unknown")
             if filetype == "link":
                 filetype = "link-dir" if name.endswith("/") else "link-file"
                 name = name.split(" ->")[0]
@@ -261,6 +261,7 @@ class LinuxCmdOneLiner:
                     name=name,
                     permission=perm,
                     filesize=int(filesize),
+                    entry_type=filetype
                 )
             )
         return result
