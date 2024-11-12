@@ -34,6 +34,7 @@ import { javascript } from '@codemirror/lang-javascript'
 import { markdown } from '@codemirror/lang-markdown'
 import { php } from '@codemirror/lang-php'
 import { python } from '@codemirror/lang-python'
+import { xml } from '@codemirror/lang-xml'
 import { yaml } from '@codemirror/lang-yaml'
 
 
@@ -555,6 +556,7 @@ watch(fileExtension, (newFileExtension, _) => {
     { suffix: ["sh"], extension: () => StreamLanguage.define(shell) },
     { suffix: ["php", "php7", "php5", "phar"], extension: () => php() },
     { suffix: ["py"], extension: () => python() },
+    { suffix: ["xml"], extension: () => xml() },
     { suffix: ["yaml"], extension: () => yaml() },
   ]
   let selectedHighlights = highlightings.filter(item => item.suffix.includes(newFileExtension))
