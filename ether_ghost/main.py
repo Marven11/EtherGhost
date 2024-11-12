@@ -38,7 +38,13 @@ from pydantic import BaseModel
 
 from .utils import db
 
-from . import session_manager, session_types, core, upload_file_status
+from . import (
+    session_manager,
+    session_types,
+    core,
+    upload_file_status,
+    download_file_status,
+)
 from .tcp_proxies import (
     start_psudo_tcp_proxy,
     start_vessel_forward_tcp,
@@ -394,7 +400,10 @@ async def session_download_file(
     # 如果用户想要用webshell下载几百兆的文件。。。那应该是用户自己的问题
     filepath = remote_path(folder) / filename
     session: SessionInterface = session_manager.get_session_by_id(session_id)
-    content = await session.download_file(str(filepath))
+    with upload_file_status.record_download_file(
+        session_id, folder, filename
+    ) as status_changer:
+        content = await session.download_file(str(filepath), callback=status_changer)
     file_id = write_temp_blob(filename, content)
     return {
         "code": 0,
@@ -455,6 +464,14 @@ async def session_send_bytes_tcp(
 async def session_get_file_upload_status(session_id: UUID):
     """读取session正在上传的文件"""
     result = upload_file_status.get_session_uploading_file(session_id)
+    return {"code": 0, "data": result}
+
+
+@app.get("/session/{session_id}/file_download_status")
+@catch_user_error
+async def session_get_file_download_status(session_id: UUID):
+    """读取session正在下载的文件"""
+    result = download_file_status.get_session_downloading_file(session_id)
     return {"code": 0, "data": result}
 
 
