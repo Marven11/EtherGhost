@@ -344,4 +344,4 @@ class PHPWebshellOneliner(PHPWebshellCommunication, PHPWebshellActions):
         except httpx.ProxyError as exc:
             raise exceptions.NetworkError("连接代理失败") from exc
         except httpx.HTTPError as exc:
-            raise exceptions.NetworkError("发送HTTP请求到受控端失败") from exc
+            raise exceptions.NetworkError("发送HTTP请求到受控端失败：" + str(exc)) from exc
