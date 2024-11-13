@@ -135,14 +135,25 @@ async function viewNewFile(newFilename) {
 }
 
 async function downloadFile(folder, filename) {
-  let content = await getDataOrPopupError(`/session/${props.session}/download_file`, {
+
+  let stopSignal = { signal: false }
+  let downloadCoro = getDataOrPopupError(`/session/${props.session}/download_file`, {
     params: {
       folder: folder,
       filename: filename
     }
   })
+  let checkDownloadsCoro = checkDownloadStatus(stopSignal)
+  let content, _;
+  try {
+    [content, _] = await Promise.all([downloadCoro, checkDownloadsCoro])
+  } catch (e) {
+    stopSignal.signal = true;
+    throw e
+  }
   let url = `/utils/fetch_downloaded_file/${content.file_id}`;
   window.open(url, "_blank")
+
 }
 
 async function onDoubleClickEntry(event) {
@@ -175,16 +186,20 @@ const entries = shallowRef([
 ])
 
 // ##############################
-// --- Upload File Hover Form ---
+// --- File Transfer Hover Form ---
 // ##############################
 
-// uploadProgress
-
 const uploadingFiles = ref([])
+const downloadingFiles = ref([])
 
 setTimeout(async () => {
   let result = await getDataOrPopupError(`/session/${props.session}/file_upload_status`)
   uploadingFiles.value = result
+}, 0)
+
+setTimeout(async () => {
+  let result = await getDataOrPopupError(`/session/${props.session}/file_download_status`)
+  downloadingFiles.value = result
 }, 0)
 
 function sleep(time) {
@@ -206,6 +221,21 @@ async function checkUploadStatus(stopSignal) {
   // 最后再刷新一次，保证去除上传失败的文件
   let result = await getDataOrPopupError(`/session/${props.session}/file_upload_status`)
   uploadingFiles.value = result
+}
+
+async function checkDownloadStatus(stopSignal) {
+  while (!stopSignal.signal) {
+    await sleep(300)
+    let result = await getDataOrPopupError(`/session/${props.session}/file_download_status`)
+    console.log(result)
+    downloadingFiles.value = result
+    if (result.length == 0) {
+      return;
+    }
+  }
+  // 最后再刷新一次，保证去除上传失败的文件
+  let result = await getDataOrPopupError(`/session/${props.session}/file_download_status`)
+  downloadingFiles.value = result
 }
 
 async function submitUploadFile(form) {
@@ -708,20 +738,39 @@ function readableFilePerm(filePerm) {
   </transition>
 
   <transition>
-    <HoverStatus v-if="uploadingFiles.length != 0">
-      <div class="upload-progress">
-        <h1>上传进度</h1>
-        <div class="upload-progress-file" v-for="file in uploadingFiles">
-          <div class="upload-progress-percentage">
+    <HoverStatus v-if="uploadingFiles.length + downloadingFiles.length != 0">
+      <div class="file-transfer">
+        <h1 v-if="uploadingFiles.length != 0">上传进度</h1>
+        <div class="file-transfer-file" v-for="file in uploadingFiles">
+          <div class="file-transfer-percentage">
             <p>
               {{ Math.floor(file.percentage * 100) }}%
             </p>
           </div>
-          <div class="upload-progress-fileinfo">
-            <p class="upload-progress-filename">
+          <div class="file-transfer-fileinfo">
+            <p class="file-transfer-filename">
               {{ file.file }}
             </p>
-            <p class="upload-progress-meta">
+            <p class="file-transfer-meta">
+              {{ readableFileSize(file.done_bytes) }}
+              / {{ readableFileSize(file.max_bytes) }}
+              at {{ file.folder }}
+            </p>
+          </div>
+
+        </div>
+        <h1 v-if="downloadingFiles.length != 0">下载进度</h1>
+        <div class="file-transfer-file" v-for="file in downloadingFiles">
+          <div class="file-transfer-percentage">
+            <p>
+              {{ Math.floor(file.percentage * 100) }}%
+            </p>
+          </div>
+          <div class="file-transfer-fileinfo">
+            <p class="file-transfer-filename">
+              {{ file.file }}
+            </p>
+            <p class="file-transfer-meta">
               {{ readableFileSize(file.done_bytes) }}
               / {{ readableFileSize(file.max_bytes) }}
               at {{ file.folder }}
@@ -915,16 +964,16 @@ input[type="text"] {
   margin-right: 10px;
 }
 
-.upload-progress {
+.file-transfer {
   padding: 20px;
   color: var(--font-color-primary);
 }
 
-.upload-progress p {
+.file-transfer p {
   margin: 0;
 }
 
-.upload-progress-file {
+.file-transfer-file {
   background-color: #00000015;
   height: 100px;
   border-radius: 1rem;
@@ -934,21 +983,21 @@ input[type="text"] {
   padding: 20px;
 }
 
-.upload-progress-fileinfo {
+.file-transfer-fileinfo {
   display: flex;
   flex-direction: column;
   align-items: left;
 }
 
-.upload-progress-filename {
+.file-transfer-filename {
   font-size: 28px;
 }
 
-.upload-progress-meta {
+.file-transfer-meta {
   color: var(--font-color-secondary);
 }
 
-.upload-progress-percentage {
+.file-transfer-percentage {
   margin-right: 20px;
   font-size: 36px;
   width: 130px;
