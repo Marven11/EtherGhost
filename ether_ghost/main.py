@@ -42,8 +42,7 @@ from . import (
     session_manager,
     session_types,
     core,
-    upload_file_status,
-    download_file_status,
+    file_transfer_status,
 )
 from .tcp_proxies import (
     start_psudo_tcp_proxy,
@@ -381,7 +380,7 @@ async def session_upload_file(
     if filename is None:
         return {"code": -400, "msg": "错误: 没有文件名"}
     path = remote_path(folder) / filename
-    with upload_file_status.record_upload_file(
+    with file_transfer_status.record_upload_file(
         session_id, folder, filename
     ) as status_changer:
         success = await session.upload_file(str(path), content, callback=status_changer)
@@ -400,7 +399,7 @@ async def session_download_file(
     # 如果用户想要用webshell下载几百兆的文件。。。那应该是用户自己的问题
     filepath = remote_path(folder) / filename
     session: SessionInterface = session_manager.get_session_by_id(session_id)
-    with upload_file_status.record_download_file(
+    with file_transfer_status.record_download_file(
         session_id, folder, filename
     ) as status_changer:
         content = await session.download_file(str(filepath), callback=status_changer)
@@ -463,7 +462,7 @@ async def session_send_bytes_tcp(
 @catch_user_error
 async def session_get_file_upload_status(session_id: UUID):
     """读取session正在上传的文件"""
-    result = upload_file_status.get_session_uploading_file(session_id)
+    result = file_transfer_status.get_session_uploading_file(session_id)
     return {"code": 0, "data": result}
 
 
@@ -471,7 +470,7 @@ async def session_get_file_upload_status(session_id: UUID):
 @catch_user_error
 async def session_get_file_download_status(session_id: UUID):
     """读取session正在下载的文件"""
-    result = download_file_status.get_session_downloading_file(session_id)
+    result = file_transfer_status.get_session_downloading_file(session_id)
     return {"code": 0, "data": result}
 
 
