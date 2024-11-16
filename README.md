@@ -65,7 +65,15 @@
 
 到[Release](https://github.com/Marven11/EtherGhost/releases)页面下载绿色exe即可
 
-> 绿色exe会被Windows Defender报毒，虽然我也不知道为什么，但是建议有条件的人自己用pyinstaller打包
+> 绿色exe会被Windows Defender报毒，虽然我也不知道为什么，但是建议有条件的人使用下面两种方法，直接运行源码或者手动打包exe
+
+### Windows - 直接运行源码
+
+如果用pip那同样是创建venv并激活，安装好所有依赖，然后运行`python -m ether_ghost`就行
+
+如果用poetry则直接用poetry安装所有的依赖运行`python -m ether_ghost`就行
+
+注意：下载源码的时候还是会被微软报毒，这是因为源码中的测试webshell文件被微软检测，可以直接删了整个`test_environment`文件夹，不影响程序运行
 
 ### Windows - 手动打包
 
