@@ -4,7 +4,7 @@
 
 <!-- social preview from https://pixabay.com/photos/fog-forest-conifers-trees-1535201/ -->
 
-[文档](./docs.md) | [下载绿色exe](./assets/ether_ghost_v0.1.2.exe)
+[文档](./docs.md) | [下载绿色exe](https://github.com/Marven11/EtherGhost/releases)
 
 游魂是一个开源的Webshell管理器，提供更为方便的界面和更为简单易用的功能，可配合或代替其他webshell管理器，帮助用户在各类渗透场景中控制目标机器。
 
@@ -63,7 +63,7 @@
 
 ### Windows - 绿色exe
 
-[下载绿色exe](./assets/ether_ghost_v0.1.2.exe)即可
+到[Release](https://github.com/Marven11/EtherGhost/releases)页面下载绿色exe即可
 
 > 绿色exe会被Windows Defender报毒，虽然我也不知道为什么，但是建议有条件的人自己用pyinstaller打包
 
