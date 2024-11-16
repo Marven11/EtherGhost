@@ -71,6 +71,8 @@
 
 创建venv，安装所有依赖，然后查阅[pyinstaller_package.bat](./pyinstaller_package.bat)文件，将里面的虚拟环境路径换成你的`site-packages`文件夹，最后运行即可。
 
+注意：如果之前打包过旧版本的话可能需要重新创建venv
+
 ### Linux - 使用pip
 
 ```shell
