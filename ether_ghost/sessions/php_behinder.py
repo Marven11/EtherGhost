@@ -47,6 +47,9 @@ def behinder_aes(payload: t.Union[str, bytes], key: bytes):
     """将给定的payload按照冰蝎的格式进行AES加密"""
     pre = f"{random.randbytes(random.randint(1, 32)).hex()}|".encode()
     payload_bytes = pre + (payload.encode() if isinstance(payload, str) else payload)
+
+    # 对，冰蝎的CBC使用的不正确，iv直接使用的是全0，根本没有随机性
+
     iv = b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
     cipher = AES.new(key, AES.MODE_CBC, iv=iv)
     payload_padded = pad(payload, AES.block_size)
