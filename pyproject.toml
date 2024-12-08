@@ -23,7 +23,7 @@ uvicorn = "*"
 sqlalchemy-utils = "*"
 httpx = {extras = ["socks"], version = "^0.27.0"}
 chardet = "^5.2.0"
-python-multipart = "^0.0.9"
+python-multipart = "*"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.0"
