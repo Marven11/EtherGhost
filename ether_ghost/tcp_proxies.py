@@ -222,6 +222,7 @@ class VesselTcpForwardServeConnection:
         try:
             await self.serve_connection_raw(reader, writer)
         except Exception:
+            writer.close()
             traceback.print_exc()
 
     async def start_server(self):
