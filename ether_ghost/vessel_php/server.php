@@ -93,7 +93,7 @@ class VesselServer
         if (!$socket) {
             throw new Exception("Socket create failed: error initializing");
         }
-        stream_set_blocking($socket, false);
+        stream_set_blocking($socket, true);
         $key = rand(0, 100000);
         while (isset($this->tcp_sockets[$key])) {
             $key = rand(0, 100000);
