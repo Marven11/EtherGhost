@@ -52,7 +52,7 @@ def behinder_aes(payload: t.Union[str, bytes], key: bytes):
 
     iv = b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
     cipher = AES.new(key, AES.MODE_CBC, iv=iv)
-    payload_padded = pad(payload, AES.block_size)
+    payload_padded = pad(payload_bytes, AES.block_size)
     return base64_encode(cipher.encrypt(payload_padded))
 
 
