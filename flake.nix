@@ -27,7 +27,9 @@
         # Use this shell for developing your app.
         devShells.default = pkgs.mkShell {
           buildInputs = [
-            pkgs.poetry
+            (pkgs.poetry.withPlugins (ps: with ps; [ 
+              poetry-plugin-shell
+            ]))
             pythonPackages.notebook
             pythonPackages.ipython
             pythonPackages.pydantic
@@ -42,7 +44,7 @@
           ];
           shellHook = ''
             poetry install
-            exec poetry shell
+            poetry shell
           '';
         };
 
