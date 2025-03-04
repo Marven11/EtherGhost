@@ -4,7 +4,7 @@
 
 <!-- social preview from https://pixabay.com/photos/fog-forest-conifers-trees-1535201/ -->
 
-[文档](./docs.md) | [下载绿色exe](https://github.com/Marven11/EtherGhost/releases)
+[文档](./docs.md) | [下载绿色exe](https://github.com/Marven11/EtherGhost/releases) | [V我50](https://github.com/Marven11/Marven11/blob/main/buy_me_a_coffee.md)
 
 游魂是一个开源的Webshell管理器，它提供更为方便的界面和更为简单易用的功能，可配合或代替其他webshell管理器，帮助用户在各类渗透场景中控制目标机器。
 
@@ -188,6 +188,10 @@ python -m ether_ghost
 当然这个功能是可以改进的。只要把握手过程藏到webshell源码里，像冰蝎一样先解密再运行就好了。但是这样的话就需要改进传统一句话木马，也许需要推出游魂特定的webshell.
 
 目前除了常规功能更新还有增加流量混淆webshell的计划，计划是将webshell流量伪装成图片上传等流量，可以随着上述功能添加。
+
+## 赞助
+
+这里空空如也
 
 ## 免责声明
 
