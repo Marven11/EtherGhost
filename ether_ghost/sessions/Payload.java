@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -58,6 +59,8 @@ public class Payload {
             jsonEncodeInteger(sb, (Integer) o);
         } else if (o instanceof Long) {
             jsonEncodeInteger(sb, ((Long) o).intValue());
+        } else if (o instanceof Boolean) {
+            jsonEncodeBoolean(sb, (Boolean) o);
         } else if (o instanceof ArrayList) {
             jsonEncodeList(sb, (ArrayList) o);
         } else if (o instanceof HashMap) {
@@ -122,6 +125,10 @@ public class Payload {
         sb.append(String.format("%d", x));
     }
 
+    private void jsonEncodeBoolean(StringBuilder sb, Boolean x) {
+        sb.append(String.valueOf(x));
+    }
+
     private LinkedList<String> readStream(InputStream stream, Charset osCharset) throws IOException {
         LinkedList<String> result = new LinkedList<String>();
         BufferedReader br = new BufferedReader(new InputStreamReader(stream, osCharset));
@@ -167,6 +174,9 @@ public class Payload {
     public byte[] base64Decode(String b) throws IndexOutOfBoundsException {
         List<Byte> resultList = new ArrayList<>();
         int blength = b.length();
+        if (blength == 0) {
+            return new byte[0];
+        }
         for (int i = 0; i < blength; i += 4) {
             int x = (base64GetShift(b.charAt(i)) << 18) + (base64GetShift(b.charAt(i + 1)) << 12)
                     + (base64GetShift(b.charAt(i + 2)) << 6)
@@ -197,6 +207,20 @@ public class Payload {
             result += "=".repeat(4 - count);
         }
         return result;
+    }
+
+    public byte[] getFileContentsBytes(String filePath, int max_length) throws IOException {
+        FileInputStream fis = new FileInputStream(filePath);
+        byte[] buffer = new byte[max_length];
+        int len = fis.read(buffer);
+        fis.close();
+        if (len < max_length) {
+            byte[] result = new byte[len];
+            System.arraycopy(buffer, 0, result, 0, len);
+            return result;
+        } else {
+            return buffer;
+        }
     }
 
     // actions:
@@ -243,18 +267,15 @@ public class Payload {
         return result;
     }
 
-    public String readFile(String filePath, int max_length) throws IOException {
-        FileInputStream fis = new FileInputStream(filePath);
-        byte[] buffer = new byte[max_length];
-        int len = fis.read(buffer);
-        fis.close();
-        if (len < max_length) {
-            byte[] result = new byte[len];
-            System.arraycopy(buffer, 0, result, 0, len);
-            return base64Encode(result);
-        } else {
-            return base64Encode(buffer);
-        }
+    public String getFileContentsBase64(String filePath, int max_length) throws IOException {
+        return base64Encode(getFileContentsBytes(filePath, max_length));
+    }
+
+    public boolean putFileContents(String filepath, byte[] content) throws Exception {
+        FileOutputStream fos = new FileOutputStream(filepath);
+        fos.write(content);
+        fos.close();
+        return getFileContentsBytes(filepath, content.length) == content;
     }
 
     public String getPwd() {

