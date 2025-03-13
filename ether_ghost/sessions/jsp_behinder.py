@@ -19,6 +19,7 @@ from ..core.base import (
     register_session,
     ConnOption,
     ConnOptionGroup,
+    DirectoryEntry,
     get_http_client,
 )
 from ..core.php_session_common import (
@@ -32,6 +33,22 @@ PAYLOAD_PATH = Path(__file__).parent / "Payload.java"
 assert PAYLOAD_PATH.exists(), f"Cannot find Payload.java at {Path(__file__).parent}"
 
 # TODO: 把这些函数移动到utils里
+
+
+def parse_permission(perm: str):
+    """将rwxrwxrwx格式的文件权限解析为755格式的
+
+    Args:
+        perm (str): rwxrwxrwx格式的文件权限
+    """
+    # 难看代码大赏
+    result = ""
+    if not re.match("^[rwx-]{9}$", perm):
+        raise ValueError("Wrong permission format: " + perm)
+    nums = list(map({"r": 4, "w": 2, "x": 1, "-": 0}.__getitem__, perm))
+    for i in range(0, 9, 3):
+        result += str(sum(nums[i : i + 3]))
+    return result
 
 
 def java_repr(s):
@@ -180,3 +197,28 @@ class JSPWebshellBehinderAES:
 
     async def test_usablility(self) -> bool:
         return (await self.submit_code("ping()"))["name"] == "EtherGhost JSP"
+
+    async def list_dir(self, dir_path: str) -> t.List[DirectoryEntry]:
+        entries = await self.submit_code(f"listFiles({json.dumps(dir_path)})")
+        try:
+            result = [
+                DirectoryEntry(
+                    name=str(entry["name"]),
+                    permission=parse_permission(entry["permission"]),
+                    filesize=int(entry["filesize"]),
+                    entry_type=entry["entry_type"],
+                )
+                for entry in entries
+                if entry["entry_type"]
+                in ["dir", "file", "link-dir", "link-file", "unknown"]
+            ]
+            print(result)
+            return result
+        except Exception as exc:
+            raise exceptions.TargetRuntimeError(f"解码结果失败: {exc}") from exc
+
+    async def mkdir(self, dir_path: str) -> None:
+        await self.submit_code(f"mkdir({json.dumps(dir_path)})")
+
+    async def get_pwd(self) -> str:
+        return await self.submit_code("getPwd()")
