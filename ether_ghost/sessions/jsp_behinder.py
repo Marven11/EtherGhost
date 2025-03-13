@@ -1,5 +1,6 @@
 from pathlib import Path
 import base64
+import re
 import hashlib
 import json
 import logging
@@ -21,8 +22,6 @@ from ..core.base import (
     get_http_client,
 )
 from ..core.php_session_common import (
-    PHPWebshellActions,
-    PHPWebshellCommunication,
     php_webshell_action_options,
     php_webshell_communication_options,
 )
@@ -36,14 +35,18 @@ assert PAYLOAD_PATH.exists(), f"Cannot find Payload.java at {Path(__file__).pare
 
 
 def java_repr(s):
-    return '"' + "".join(
-        (
-            c
-            if c in string.ascii_letters or c in string.digits
-            else hex(ord(c)).replace("0x", "\\x")
+    return (
+        '"'
+        + "".join(
+            (
+                c
+                if c in string.ascii_letters or c in string.digits
+                else hex(ord(c)).replace("0x", "\\x")
+            )
+            for c in s
         )
-        for c in s
-    ) + '"'
+        + '"'
+    )
 
 
 def md5_encode(s):
@@ -126,7 +129,10 @@ class JSPWebshellBehinderAES:
         self.timeout_refresh_client = session_conn.get("timeout_refresh_client", True)
 
     async def submit_code(self, action_code: str):
-        code = PAYLOAD_PATH.read_text().replace("ETHER_GHOST_REPLACE_HERE", action_code)
+        code = PAYLOAD_PATH.read_text()
+        code = re.sub(
+            ".+ETHER_GHOST_REPLACE_HERE", f"Object data = {action_code};", code
+        )
         data = None
         with tempfile.TemporaryDirectory(delete=False) as d:
             print(f"{d=}")
@@ -170,7 +176,7 @@ class JSPWebshellBehinderAES:
             ) from exc
 
     async def execute_cmd(self, cmd: str) -> str:
-        return "\n".join(await self.submit_code(f"runCommand({json.dumps(cmd)});"))
+        return "\n".join(await self.submit_code(f"runCommand({json.dumps(cmd)})"))
 
     async def test_usablility(self) -> bool:
-        return (await self.submit_code("ping();"))["name"] == "EtherGhost JSP"
+        return (await self.submit_code("ping()"))["name"] == "EtherGhost JSP"

