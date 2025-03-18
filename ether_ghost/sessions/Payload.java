@@ -278,6 +278,17 @@ public class Payload {
         return getFileContentsBytes(filepath, content.length) == content;
     }
 
+    public boolean deleteFile(String filepath) throws IOException{
+        File file = new File(filepath);
+        if (!file.exists()) {
+            throw new IOException("File not exists");
+        }
+        if (!file.canWrite()) {
+            throw new IOException("No permission");
+        }
+        return file.delete();
+    }
+
     public String getPwd() {
         return System.getProperty("user.dir");
     }
