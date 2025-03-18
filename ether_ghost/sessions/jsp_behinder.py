@@ -249,5 +249,10 @@ class JSPWebshellBehinderAES:
             f"moveFile({json.dumps(filepath)}, {json.dumps(new_filepath)})"
         )
 
+    async def copy_file(self, filepath: str, new_filepath: str) -> None:
+        await self.submit_code(
+            f"copyFile({json.dumps(filepath)}, {json.dumps(new_filepath)})"
+        )
+
     async def get_pwd(self) -> str:
         return await self.submit_code("getPwd()")
