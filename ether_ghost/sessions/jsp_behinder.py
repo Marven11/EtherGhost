@@ -214,7 +214,6 @@ class JSPWebshellBehinderAES:
                 if entry["entry_type"]
                 in ["dir", "file", "link-dir", "link-file", "unknown"]
             ]
-            print(result)
             return result
         except Exception as exc:
             raise exceptions.TargetRuntimeError(f"解码结果失败: {exc}") from exc
@@ -244,6 +243,11 @@ class JSPWebshellBehinderAES:
 
     async def delete_file(self, filepath: str) -> bool:
         return await self.submit_code(f"deleteFile({json.dumps(filepath)})")
+
+    async def move_file(self, filepath: str, new_filepath: str) -> None:
+        await self.submit_code(
+            f"moveFile({json.dumps(filepath)}, {json.dumps(new_filepath)})"
+        )
 
     async def get_pwd(self) -> str:
         return await self.submit_code("getPwd()")
