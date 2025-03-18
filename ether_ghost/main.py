@@ -415,7 +415,8 @@ async def session_download_file(
 @app.get("/session/{session_id}/delete_file")
 @catch_user_error
 async def session_delete_file(session_id: UUID, current_dir: str, filename: str):
-    """使用session获取文件内容"""
+    """使用session删除文件内容"""
+    # TODO: 让所有webshell支持删除文件夹
     session: SessionInterface = session_manager.get_session_by_id(session_id)
     path = remote_path(current_dir) / filename
     result = await session.delete_file(str(path))
