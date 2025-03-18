@@ -278,7 +278,7 @@ public class Payload {
         return getFileContentsBytes(filepath, content.length) == content;
     }
 
-    public boolean deleteFile(String filepath) throws IOException{
+    public boolean deleteFile(String filepath) throws IOException {
         File file = new File(filepath);
         if (!file.exists()) {
             throw new IOException("File not exists");
@@ -287,6 +287,22 @@ public class Payload {
             throw new IOException("No permission");
         }
         return file.delete();
+    }
+
+    public boolean moveFile(String filepath, String newFilepath) throws IOException {
+        File file = new File(filepath);
+        if (!file.exists()) {
+            throw new IOException("File not exists");
+        }
+        if (!file.canWrite()) {
+            throw new IOException("No permission to move original file");
+        }
+
+        boolean result = file.renameTo(new File(newFilepath));
+        if (!result) {
+            throw new IOException("Move file failed");
+        }
+        return true;
     }
 
     public String getPwd() {
