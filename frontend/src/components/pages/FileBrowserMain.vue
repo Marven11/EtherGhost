@@ -337,6 +337,13 @@ const menuItemsAll = [
     "color": "white",
     "entry_type": ["empty", "file", "link-file", "dir", "link-dir"]
   },
+  {
+    "name": "delete_dir",
+    "text": "删除文件夹",
+    "icon": IconDelete,
+    "color": "red",
+    "entry_type": ["dir", "link-dir"]
+  },
 ]
 const ClickMenuFolderEntry = ClickMenuManager([
 
@@ -359,6 +366,8 @@ const ClickMenuFolderEntry = ClickMenuManager([
     confirmDuplicateFile(clickMenuEntry.name)
   } else if (item.name == "delete_file") {
     confirmDeleteFile(clickMenuEntry.name)
+  } else if (item.name == "delete_dir") {
+    confirmDeleteDir(clickMenuEntry.name)
   } else if (item.name == "new_dir") {
     confirmNewDir()
 
@@ -493,6 +502,34 @@ function confirmDeleteFile(filename) {
 
     }
 
+  }
+}
+
+
+function confirmDeleteDir(filename) {
+  showInputBox.value = true
+  inputBoxTitle.value = "删除文件夹"
+  inputBoxNote.value = `真的要删除文件夹${filename}吗`
+  inputBoxRequireInput.value = false
+  inputBoxCallback = async result => {
+    try {
+      if (result) {
+        let result = await getDataOrPopupError(`/session/${props.session}/delete_file`, {
+          params: {
+            current_dir: pwd.value,
+            filename: filename
+          }
+        })
+        if (result) {
+          addPopup("green", "删除成功", `文件夹${filename}已经删除`)
+        } else {
+          addPopup("red", "删除失败", `文件夹${filename}删除失败`)
+        }
+        listDir(pwd.value)
+      }
+    } finally {
+      showInputBox.value = false
+    }
   }
 }
 
