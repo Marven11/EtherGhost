@@ -214,7 +214,9 @@ public class Payload {
         byte[] buffer = new byte[max_length];
         int len = fis.read(buffer);
         fis.close();
-        if (len < max_length) {
+        if(len==-1) {
+            return new byte[0];
+        }if (len < max_length) {
             byte[] result = new byte[len];
             System.arraycopy(buffer, 0, result, 0, len);
             return result;

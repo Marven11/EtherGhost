@@ -205,6 +205,13 @@ class JSPWebshellBehinderAES:
         try:
             result = [
                 DirectoryEntry(
+                    name="..",
+                    permission="777",
+                    filesize=0,
+                    entry_type="dir",
+                )
+            ] + [
+                DirectoryEntry(
                     name=str(entry["name"]),
                     permission=parse_permission(entry["permission"]),
                     filesize=int(entry["filesize"]),
