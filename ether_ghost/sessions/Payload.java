@@ -305,6 +305,16 @@ public class Payload {
         return true;
     }
 
+    public boolean copyFile(String filepath, String newFilepath) throws IOException {
+        Path file = Paths.get(filepath);
+        if(!Files.exists(file)) {
+            throw new IOException("File not exists");
+        }
+        Path newfile = Paths.get(newFilepath);
+        Files.copy(file, newfile);
+        return true;
+    }
+
     public String getPwd() {
         return System.getProperty("user.dir");
     }
