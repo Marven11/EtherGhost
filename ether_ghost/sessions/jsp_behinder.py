@@ -132,9 +132,23 @@ class JSPWebshellBehinderAES:
                     default_value=True,
                     alternatives=None,
                 ),
-            ]
-            + php_webshell_communication_options
-            + php_webshell_action_options,
+                ConnOption(
+                    id="updownload_chunk_size",
+                    name="文件上传下载分块大小",
+                    type="text",
+                    placeholder="文件上传下载的分块大小，单位为字节，注意每上传一块就要编译一次payload",
+                    default_value=str(1024 * 128),
+                    alternatives=None,
+                ),
+                ConnOption(
+                    id="updownload_max_coroutine",
+                    name="文件上传下载并发量",
+                    type="text",
+                    placeholder="控制文件上传和下载时的最大协程数量",
+                    default_value="4",
+                    alternatives=None,
+                ),
+            ],
         },
     ]
 
@@ -152,12 +166,11 @@ class JSPWebshellBehinderAES:
         )
         data = None
         with tempfile.TemporaryDirectory(delete=False) as d:
-            print(f"{d=}")
             payload_code_filepath = Path(d) / "Payload.java"
             payload_bin_filepath = Path(d) / "Payload.class"
             payload_code_filepath.write_text(code)
             p = subprocess.Popen(["javac", payload_code_filepath.as_posix()])
-            return_code = p.wait()
+            return_code = p.wait() # TODO: make it await
             assert return_code == 0, f"javac exit with {return_code=}"
             assert payload_bin_filepath.exists(), "javac failed to build payload"
             data = behinder_aes(payload_bin_filepath.read_bytes(), self.key)
