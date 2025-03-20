@@ -1,4 +1,5 @@
 from pathlib import Path
+import asyncio
 import base64
 import re
 import hashlib
@@ -170,7 +171,9 @@ class JSPWebshellBehinderAES:
             payload_bin_filepath = Path(d) / "Payload.class"
             payload_code_filepath.write_text(code)
             p = subprocess.Popen(["javac", payload_code_filepath.as_posix()])
-            return_code = p.wait() # TODO: make it await
+            while p.poll() is None:
+                await asyncio.sleep(0)
+            return_code = p.wait()
             assert return_code == 0, f"javac exit with {return_code=}"
             assert payload_bin_filepath.exists(), "javac failed to build payload"
             data = behinder_aes(payload_bin_filepath.read_bytes(), self.key)
