@@ -151,6 +151,19 @@ class JSPWebshellBehinderAES:
                 ),
             ],
         },
+        {
+            "name": "其他配置",
+            "options": [
+                ConnOption(
+                    id="compile_max_coroutine",
+                    name="编译Payload并发量",
+                    type="text",
+                    placeholder="使用javac编译payload的最大进程数",
+                    default_value="4",
+                    alternatives=None,
+                ),
+            ],
+        },
     ]
 
     def __init__(self, session_conn: dict):
@@ -159,6 +172,9 @@ class JSPWebshellBehinderAES:
         self.https_verify = session_conn.get("https_verify", False)
         self.client = get_http_client(verify=self.https_verify)
         self.timeout_refresh_client = session_conn.get("timeout_refresh_client", True)
+        self.compile_semaphore = asyncio.Semaphore(
+            int(session_conn.get("compile_max_coroutine", 4))
+        )
 
     async def submit_code(self, action_code: str):
         code = PAYLOAD_PATH.read_text()
@@ -170,10 +186,12 @@ class JSPWebshellBehinderAES:
             payload_code_filepath = Path(d) / "Payload.java"
             payload_bin_filepath = Path(d) / "Payload.class"
             payload_code_filepath.write_text(code)
-            p = subprocess.Popen(["javac", payload_code_filepath.as_posix()])
-            while p.poll() is None:
-                await asyncio.sleep(0)
-            return_code = p.wait()
+            return_code = None
+            async with self.compile_semaphore:
+                p = subprocess.Popen(["javac", payload_code_filepath.as_posix()])
+                while p.poll() is None:
+                    await asyncio.sleep(0)
+                return_code = p.wait()
             assert return_code == 0, f"javac exit with {return_code=}"
             assert payload_bin_filepath.exists(), "javac failed to build payload"
             data = behinder_aes(payload_bin_filepath.read_bytes(), self.key)
