@@ -1,7 +1,10 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -214,9 +217,10 @@ public class Payload {
         byte[] buffer = new byte[max_length];
         int len = fis.read(buffer);
         fis.close();
-        if(len==-1) {
+        if (len == -1) {
             return new byte[0];
-        }if (len < max_length) {
+        }
+        if (len < max_length) {
             byte[] result = new byte[len];
             System.arraycopy(buffer, 0, result, 0, len);
             return result;
@@ -309,11 +313,42 @@ public class Payload {
 
     public boolean copyFile(String filepath, String newFilepath) throws IOException {
         Path file = Paths.get(filepath);
-        if(!Files.exists(file)) {
+        if (!Files.exists(file)) {
             throw new IOException("File not exists");
         }
         Path newfile = Paths.get(newFilepath);
         Files.copy(file, newfile);
+        return true;
+    }
+
+    public String checkUploadFilepath(String filepath) {
+        File file = new File(filepath);
+        if(!file.getParentFile().canWrite()) {
+            return "WRONG_NO_PERMISSION";
+        }else if(file.exists()) {
+            return "WRONG_EXISTED";
+        }else{
+            return "OK";
+        }
+    }
+
+    public String putTempFile(byte[] contnet) throws IOException {
+        File tempFile = File.createTempFile("tmp", "");
+        try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+            fos.write(contnet);
+        }
+        return tempFile.getAbsolutePath();
+    }
+
+    public boolean mergeFiles(String[] filepaths, String newFilepath) throws IOException {
+        try (FileOutputStream fos = new FileOutputStream(newFilepath)) {
+            for (String filepath : filepaths) {
+                File file = new File(filepath);
+                try (FileInputStream fis = new FileInputStream(file)) {
+                    fos.write(fis.readAllBytes());
+                }
+            }
+        }
         return true;
     }
 
