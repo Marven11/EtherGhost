@@ -1,11 +1,16 @@
 @font-face {
-    font-family: "FiraCode";
-    src: url("./FiraCodeNerdFontMono-Regular.ttf");
+    font-family: "MapleMono";
+    src: url("./MapleMono-NF-Regular.ttf");
+}
+
+@font-face {
+    font-family: "MapleMono SemiBold";
+    src: url("./MapleMono-NF-SemiBold.ttf");
 }
 
 * {
     box-sizing: border-box;
-    font-family: "FiraCode", "Microsoft Yahei", "San Francisco", "Helvetica", 'Courier New', Courier, monospace;
+    font-family: "MapleMono", "Microsoft Yahei", "San Francisco", "Helvetica", 'Courier New', Courier, monospace;
 }
 
 :root {

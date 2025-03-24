@@ -346,8 +346,7 @@ body[data-theme="glass"] header {
 }
 
 .header-title h1 {
-  font-size: 2rem;
-  font-weight: bolder;
+  font-size: 2.2rem;
   margin: 0;
 }
 
