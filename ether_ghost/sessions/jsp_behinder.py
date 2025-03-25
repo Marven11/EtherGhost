@@ -425,10 +425,12 @@ class JSPWebshellBehinderAES:
 
     async def get_basicinfo(self) -> t.List[BasicInfoEntry]:
         """获取当前的基本信息"""
+        # [TODO] 写一下这个方法
         raise exceptions.ServerError("JSP Webshell暂时不支持此方法")
 
     async def open_reverse_shell(self, host: str, port: int) -> None:
         """打开一个反弹shell"""
+        # [TODO] 写一下这个方法
         raise exceptions.ServerError("JSP Webshell暂时不支持此方法")
 
     async def get_pwd(self) -> str:
