@@ -18,6 +18,7 @@ from ..core import exceptions
 
 from ..core.base import (
     register_session,
+    BasicInfoEntry,
     ConnOption,
     ConnOptionGroup,
     DirectoryEntry,
@@ -409,6 +410,26 @@ class JSPWebshellBehinderAES:
                 ) from exc
             result += chunk_result
         return result
+
+    async def send_bytes_over_tcp(
+        self,
+        host: str,
+        port: int,
+        content: bytes,
+        send_method: t.Union[str, None] = None,
+    ) -> t.Union[bytes, None]:
+        raise exceptions.ServerError("JSP Webshell暂时不支持此方法")
+
+    async def get_send_tcp_support_methods(self) -> t.List[str]:
+        return []  # JSP Webshell暂时不支持此方法
+
+    async def get_basicinfo(self) -> t.List[BasicInfoEntry]:
+        """获取当前的基本信息"""
+        raise exceptions.ServerError("JSP Webshell暂时不支持此方法")
+
+    async def open_reverse_shell(self, host: str, port: int) -> None:
+        """打开一个反弹shell"""
+        raise exceptions.ServerError("JSP Webshell暂时不支持此方法")
 
     async def get_pwd(self) -> str:
         return await self.submit_code("getPwd()")
