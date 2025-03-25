@@ -203,10 +203,10 @@ class JSPWebshellBehinderAES:
             if response.status_code != 200:
                 raise exceptions.TargetError(f"{response.status_code=}")
             try:
-                data = response.json()
+                data = json.loads(base64.b64decode(response.text))
             except Exception as e:
                 raise exceptions.TargetError(
-                    "Response is not json: " + repr(response.text)[:30]
+                    "Cannot decode response: " + repr(response.text)[:30]
                 ) from e
             if data["code"] != 0:
                 if data["error_type"] == "java.io.IOException":
