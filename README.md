@@ -43,6 +43,8 @@
 - 支持的 webshell
   - PHP 一句话
   - 冰蝎 PHP
+  - 冰蝎 JSP (测试中)
+  - Linux 命令
 - webshell 操作
   - 命令执行
     - 支持伪终端和普通的命令执行
