@@ -85,7 +85,7 @@ def behinder_aes(payload: bytes, key: bytes) -> bytes:
 @register_session
 class JSPWebshellBehinderAES:
     session_type = "BEHINDER_JSP_AES"
-    readable_name = "冰蝎JSP"
+    readable_name = "[测试] 冰蝎JSP"
     conn_options: t.List[ConnOptionGroup] = [
         {
             "name": "基本连接配置",
