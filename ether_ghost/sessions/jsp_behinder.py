@@ -156,6 +156,22 @@ class JSPWebshellBehinderAES:
                     default_value="4",
                     alternatives=None,
                 ),
+                ConnOption(
+                    id="javac_target_version",
+                    name="javac编译源版本",
+                    type="text",
+                    placeholder="使用javac编译payload的源版本号，即javac -source",
+                    default_value="1.8",
+                    alternatives=None,
+                ),
+                ConnOption(
+                    id="javac_target_version",
+                    name="javac编译目标版本",
+                    type="text",
+                    placeholder="使用javac编译payload的目标版本号javac -target",
+                    default_value="1.8",
+                    alternatives=None,
+                ),
             ],
         },
     ]
@@ -177,6 +193,10 @@ class JSPWebshellBehinderAES:
             int(session_conn.get("compile_max_coroutine", 4))
         )
 
+        self.javac_source_version = session_conn.get("javac_source_version", "1.8")
+
+        self.javac_target_version = session_conn.get("javac_target_version", "1.8")
+
     async def submit_code(self, action_code: str):
         code = PAYLOAD_PATH.read_text()
         code = re.sub(
@@ -189,7 +209,16 @@ class JSPWebshellBehinderAES:
             payload_code_filepath.write_text(code)
             return_code = None
             async with self.compile_semaphore:
-                p = subprocess.Popen(["javac", payload_code_filepath.as_posix()])
+                p = subprocess.Popen(
+                    [
+                        "javac",
+                        "-source",
+                        self.javac_source_version,
+                        "-target",
+                        self.javac_target_version,
+                        payload_code_filepath.as_posix(),
+                    ]
+                )
                 while p.poll() is None:
                     await asyncio.sleep(0)
                 return_code = p.wait()
