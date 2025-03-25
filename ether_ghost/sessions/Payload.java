@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -402,7 +403,7 @@ public class Payload {
         return map;
     }
 
-    public String action() {
+    public String action() throws UnsupportedEncodingException {
         HashMap<String, Object> map = new HashMap<>();
         map.put("code", 0);
         try {
@@ -415,6 +416,6 @@ public class Payload {
         }
         StringBuilder sb = new StringBuilder();
         jsonEncodeObject(sb, map);
-        return sb.toString();
+        return base64Encode(sb.toString().getBytes("UTF-8"));
     }
 }
