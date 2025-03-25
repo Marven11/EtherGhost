@@ -323,12 +323,42 @@ public class Payload {
 
     public String checkUploadFilepath(String filepath) {
         File file = new File(filepath);
-        if(!file.getParentFile().canWrite()) {
+        if (!file.getParentFile().canWrite()) {
             return "WRONG_NO_PERMISSION";
-        }else if(file.exists()) {
+        } else if (file.exists()) {
             return "WRONG_EXISTED";
-        }else{
+        } else {
             return "OK";
+        }
+    }
+
+    public String getFileSize(String filepath) {
+        File file = new File(filepath);
+        if (!file.exists()) {
+            return "WRONG_NOT_EXISTS";
+        }
+        if (!file.canRead()) {
+            return "WRONG_NO_PERMISSION";
+        }
+        return String.valueOf(file.length());
+    }
+
+    public String downloadPartialFileBase64(String filepath, int offset, int size) throws IOException {
+        // 不支持超过2G的文件
+        // 如果用户想用游魂下载超过2G的文件那是他自己的问题
+        File file = new File(filepath);
+        if (!file.exists()) {
+            return "WRONG_NOT_EXISTS";
+        }
+        if (!file.canRead()) {
+            return "WRONG_NO_PERMISSION";
+        }
+        try (FileInputStream fis = new FileInputStream(filepath)) {
+            fis.skip(offset);
+            int buffer_size = size < fis.available() ? size : fis.available();
+            byte[] bytes = new byte[buffer_size];
+            fis.read(bytes);
+            return base64Encode(bytes);
         }
     }
 
