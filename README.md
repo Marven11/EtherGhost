@@ -16,7 +16,8 @@
 
 ## 特点
 
-- 同时支持PHP一句话webshell和冰蝎PHP webshell
+- 同时支持PHP一句话webshell和冰蝎PHP/JSP webshell
+  - 冰蝎JSP webshell仍在测试中
 - 流量防重放和流量强加密
 - TCP正向代理
 - 异步上传下载文件
