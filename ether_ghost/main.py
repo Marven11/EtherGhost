@@ -57,6 +57,8 @@ logger = logging.getLogger("main")
 
 # uuid: (filename, blob_path)
 
+VERSION = "0.2.0"
+
 
 class FileContentRequest(BaseModel):
     current_dir: str
@@ -173,11 +175,11 @@ async def update_info_last():
             raise core.ServerError("无法读取上次检查结果且无法删除对应文件") from exc
     if update_check_info is None:
         return None
-    current_version = None
+    current_version = VERSION
     try:
         current_version = importlib.metadata.version("ether_ghost")
     except Exception:
-        return None
+        pass
     if current_version != update_check_info["current_version"]:
         return None
     if current_version != update_check_info["new_version"]:
@@ -196,11 +198,11 @@ async def update_info_fetch():
     except Exception as exc:
         raise core.ServerError("无法从pypi获取当前的最新版本") from exc
 
-    current_version = None
+    current_version = VERSION
     try:
         current_version = importlib.metadata.version("ether_ghost")
     except Exception as exc:
-        raise core.ServerError("无法获取当前版本") from exc
+        pass
     update_check_info = {
         "has_new_version": Version(new_version) > Version(current_version),
         "last_check_time": int(time.time()),
