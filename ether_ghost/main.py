@@ -173,7 +173,11 @@ async def update_info_last():
             raise core.ServerError("无法读取上次检查结果且无法删除对应文件") from exc
     if update_check_info is None:
         return None
-    current_version = importlib.metadata.version("ether_ghost")
+    current_version = None
+    try:
+        current_version = importlib.metadata.version("ether_ghost")
+    except Exception:
+        return None
     if current_version != update_check_info["current_version"]:
         return None
     if current_version != update_check_info["new_version"]:
@@ -192,8 +196,11 @@ async def update_info_fetch():
     except Exception as exc:
         raise core.ServerError("无法从pypi获取当前的最新版本") from exc
 
-    current_version = importlib.metadata.version("ether_ghost")
-
+    current_version = None
+    try:
+        current_version = importlib.metadata.version("ether_ghost")
+    except Exception as exc:
+        raise core.ServerError("无法获取当前版本") from exc
     update_check_info = {
         "has_new_version": Version(new_version) > Version(current_version),
         "last_check_time": int(time.time()),
@@ -646,6 +653,7 @@ async def version():
 
 
 @app.get("/utils/lazy_check_update")
+@catch_user_error
 async def lazy_check_update():
     async with update_check_lock:
         update_check_info = await update_info_last()
