@@ -73,6 +73,17 @@
 
 如果用 pip 那同样是创建 venv 并激活，安装好所有依赖，然后运行`python -m ether_ghost`就行
 
+比如说：
+
+```powershell
+python -m venv .venv
+. .\.venv\Scripts\Activate.ps1 # 这一步可能会报错
+pip install -r requirements.txt
+python -m ether_ghost
+```
+
+上面第二行命令如果报错“无法加载文件 ... 因为在此系统上禁止运行脚本。”，那需要运行`set-executionpolicy RemoteSigned`解除限制。
+
 如果用 poetry 则直接用 poetry 安装所有的依赖运行`python -m ether_ghost`就行
 
 注意：下载源码的时候还是会被微软报毒，这是因为源码中的测试 webshell 文件被微软检测，可以直接删了整个`test_environment`文件夹，不影响程序运行
