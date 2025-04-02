@@ -132,7 +132,7 @@ class JSPWebshellBehinderAES:
                     name="文件上传下载分块大小",
                     type="text",
                     placeholder="文件上传下载的分块大小，单位为字节，注意每上传一块就要编译一次payload",
-                    default_value=str(1024 * 128),
+                    default_value=str(1024 * 32),
                     alternatives=None,
                 ),
                 ConnOption(
@@ -293,7 +293,7 @@ class JSPWebshellBehinderAES:
         await self.submit_code(f"mkdir({json.dumps(dir_path)})")
 
     async def get_file_contents(
-        self, filepath: str, max_size: int = 1024 * 200
+        self, filepath: str, max_size: int = 1024 * 32
     ) -> bytes:
         """获取文件的内容，内容是一个字节序列，不是已经解码的字符串"""
         content_b64 = await self.submit_code(
