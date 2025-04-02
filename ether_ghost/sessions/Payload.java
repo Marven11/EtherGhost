@@ -8,6 +8,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
@@ -203,10 +205,10 @@ public class Payload {
             int count = (i + 3 < b.length) ? 4 : (b.length - i + 1);
             int x = 0;
             for (int j = 0; i + j < b.length && j < 3; j++) {
-                x += (((int) b[i + j]) << (16 - 8 * j));
+                x += (((int) b[i + j] & 0xff) << (16 - 8 * j));
             }
             for (int j = 0; j < count; j++) {
-                result += base64Chars.charAt((x >> (18 - 6 * j)) % 64);
+                result += base64Chars.charAt((x >>> (18 - 6 * j)) % 64);
             }
             result += "=".repeat(4 - count);
         }
