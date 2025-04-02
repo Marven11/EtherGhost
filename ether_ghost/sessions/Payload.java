@@ -200,6 +200,8 @@ public class Payload {
     }
 
     public String base64Encode(byte[] b) throws IndexOutOfBoundsException {
+        // TODO: This is too slow
+        // use base64 provided by java whenever possible
         String result = "";
         for (int i = 0; i < b.length; i += 3) {
             int count = (i + 3 < b.length) ? 4 : (b.length - i + 1);
@@ -216,23 +218,18 @@ public class Payload {
     }
 
     public byte[] getFileContentsBytes(String filePath, int max_length) throws IOException {
-        if((new File(filePath)).length() > max_length) {
-            throw new IOException("File is too large: " + (new File(filePath)).length());
+        long fileLength = (new File(filePath)).length();
+        if(fileLength > max_length) {
+            throw new IOException("File is too large: " + fileLength);
         }
         FileInputStream fis = new FileInputStream(filePath);
-        byte[] buffer = new byte[max_length];
+        byte[] buffer = new byte[(int)fileLength];
         int len = fis.read(buffer);
         fis.close();
         if (len == -1) {
             return new byte[0];
         }
-        if (len < max_length) {
-            byte[] result = new byte[len];
-            System.arraycopy(buffer, 0, result, 0, len);
-            return result;
-        } else {
-            return buffer;
-        }
+        return buffer;
     }
 
     // actions:
