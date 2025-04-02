@@ -48,10 +48,10 @@
           '';
         };
 
-        packages.default = with pkgs.python311Packages;
+        packages.default = with pkgs.python313Packages;
           buildPythonPackage rec {
             pname = "ether-ghost";
-            version = "0.0.1";
+            version = "0.2.0";
             pyproject = true;
 
             propagatedBuildInputs = [
