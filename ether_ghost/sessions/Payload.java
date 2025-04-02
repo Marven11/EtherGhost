@@ -216,6 +216,9 @@ public class Payload {
     }
 
     public byte[] getFileContentsBytes(String filePath, int max_length) throws IOException {
+        if((new File(filePath)).length() > max_length) {
+            throw new IOException("File is too large: " + (new File(filePath)).length());
+        }
         FileInputStream fis = new FileInputStream(filePath);
         byte[] buffer = new byte[max_length];
         int len = fis.read(buffer);
