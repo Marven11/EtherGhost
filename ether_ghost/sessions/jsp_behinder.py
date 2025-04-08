@@ -263,13 +263,13 @@ class JSPWebshellBehinderAES:
             ) from exc
 
     async def execute_cmd(self, cmd: str) -> str:
-        return "\n".join(await self.submit_code(f"runCommand({json.dumps(cmd)})"))
+        return "\n".join(await self.submit_code(f"runCommand({java_repr(cmd)})"))
 
     async def test_usablility(self) -> bool:
         return (await self.submit_code("ping()"))["name"] == "EtherGhost JSP"
 
     async def list_dir(self, dir_path: str) -> t.List[DirectoryEntry]:
-        entries = await self.submit_code(f"listFiles({json.dumps(dir_path)})")
+        entries = await self.submit_code(f"listFiles({java_repr(dir_path)})")
         try:
             result = [
                 DirectoryEntry(
@@ -294,7 +294,7 @@ class JSPWebshellBehinderAES:
             raise exceptions.TargetRuntimeError(f"解码结果失败: {exc}") from exc
 
     async def mkdir(self, dir_path: str) -> None:
-        await self.submit_code(f"mkdir({json.dumps(dir_path)})")
+        await self.submit_code(f"mkdir({java_repr(dir_path)})")
 
     async def get_file_contents(
         self, filepath: str, max_size: int | None = None
@@ -303,7 +303,7 @@ class JSPWebshellBehinderAES:
         if max_size is None:
             max_size = self.updownload_chunk_size
         content_b64 = await self.submit_code(
-            f"getFileContentsBase64({json.dumps(filepath)}, {max_size})"
+            f"getFileContentsBase64({java_repr(filepath)}, {max_size})"
         )
         try:
             return base64.b64decode(content_b64)
@@ -313,22 +313,22 @@ class JSPWebshellBehinderAES:
     async def put_file_contents(self, filepath: str, content: bytes) -> bool:
         """保存文件的内容，内容是一个字节序列，不是已经解码的字符串"""
         await self.submit_code(
-            f"putFileContents({json.dumps(filepath)}, "
-            f"base64Decode({json.dumps(base64_encode(content))}))"
+            f"putFileContents({java_repr(filepath)}, "
+            f"base64Decode({java_repr(base64_encode(content))}))"
         )
         return True
 
     async def delete_file(self, filepath: str) -> bool:
-        return await self.submit_code(f"deleteFile({json.dumps(filepath)})")
+        return await self.submit_code(f"deleteFile({java_repr(filepath)})")
 
     async def move_file(self, filepath: str, new_filepath: str) -> None:
         await self.submit_code(
-            f"moveFile({json.dumps(filepath)}, {json.dumps(new_filepath)})"
+            f"moveFile({java_repr(filepath)}, {java_repr(new_filepath)})"
         )
 
     async def copy_file(self, filepath: str, new_filepath: str) -> None:
         await self.submit_code(
-            f"copyFile({json.dumps(filepath)}, {json.dumps(new_filepath)})"
+            f"copyFile({java_repr(filepath)}, {java_repr(new_filepath)})"
         )
 
     async def upload_file(
