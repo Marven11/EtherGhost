@@ -55,6 +55,10 @@ def parse_permission(perm: str):
 
 def java_repr(obj):
     if isinstance(obj, (str, int)):
+        if isinstance(obj, str) and len(obj) > 1000:
+            return "+".join(
+                json.dumps(obj[i : i + 1000]) for i in range(0, len(obj), 1000)
+            )
         return json.dumps(obj)
     if isinstance(obj, list) and all(isinstance(x, str) for x in obj):
         return "(new String[]{" + ",".join(java_repr(x) for x in obj) + "})"
@@ -292,7 +296,9 @@ class JSPWebshellBehinderAES:
     async def mkdir(self, dir_path: str) -> None:
         await self.submit_code(f"mkdir({json.dumps(dir_path)})")
 
-    async def get_file_contents(self, filepath: str, max_size: int | None = None) -> bytes:
+    async def get_file_contents(
+        self, filepath: str, max_size: int | None = None
+    ) -> bytes:
         """获取文件的内容，内容是一个字节序列，不是已经解码的字符串"""
         if max_size is None:
             max_size = self.updownload_chunk_size
