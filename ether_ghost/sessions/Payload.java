@@ -199,9 +199,7 @@ public class Payload {
         return result;
     }
 
-    public String base64Encode(byte[] b) throws IndexOutOfBoundsException {
-        // TODO: This is too slow
-        // use base64 provided by java whenever possible
+    public String base64EncodeCompatiple(byte[] b) throws IndexOutOfBoundsException {
         String result = "";
         for (int i = 0; i < b.length; i += 3) {
             int count = (i + 3 < b.length) ? 4 : (b.length - i + 1);
@@ -217,13 +215,29 @@ public class Payload {
         return result;
     }
 
+    public String base64Encode(byte[] b) throws IndexOutOfBoundsException {
+        if (System.getProperty("java.version").compareTo("1.9") >= 0) {
+            try {
+                Class Base64 = Class.forName("java.util.Base64");
+                Object Encoder = Base64.getMethod("getEncoder", null).invoke(Base64, null);
+                return (String) Encoder
+                        .getClass()
+                        .getMethod("encodeToString", byte[].class)
+                        .invoke(Encoder, b);
+            } catch (Exception e) {
+
+            }
+        }
+        return base64EncodeCompatiple(b);
+    }
+
     public byte[] getFileContentsBytes(String filePath, int max_length) throws IOException {
         long fileLength = (new File(filePath)).length();
-        if(fileLength > max_length) {
+        if (fileLength > max_length) {
             throw new IOException("File is too large: " + fileLength);
         }
         FileInputStream fis = new FileInputStream(filePath);
-        byte[] buffer = new byte[(int)fileLength];
+        byte[] buffer = new byte[(int) fileLength];
         int len = fis.read(buffer);
         fis.close();
         if (len == -1) {
