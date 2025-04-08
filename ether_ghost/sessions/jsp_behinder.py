@@ -56,9 +56,10 @@ def parse_permission(perm: str):
 def java_repr(obj):
     if isinstance(obj, (str, int)):
         if isinstance(obj, str) and len(obj) > 1000:
-            return "+".join(
+            parts = ",".join(
                 json.dumps(obj[i : i + 1000]) for i in range(0, len(obj), 1000)
             )
+            return 'String.join("", ' + parts + ")"
         return json.dumps(obj)
     if isinstance(obj, list) and all(isinstance(x, str) for x in obj):
         return "(new String[]{" + ",".join(java_repr(x) for x in obj) + "})"
