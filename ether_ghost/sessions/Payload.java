@@ -183,6 +183,9 @@ public class Payload {
         if (blength == 0) {
             return new byte[0];
         }
+        if (blength % 4 != 0) {
+            throw new IndexOutOfBoundsException("blength % 4 != 0");
+        }
         for (int i = 0; i < blength; i += 4) {
             int x = (base64GetShift(b.charAt(i)) << 18) + (base64GetShift(b.charAt(i + 1)) << 12)
                     + (base64GetShift(b.charAt(i + 2)) << 6)
