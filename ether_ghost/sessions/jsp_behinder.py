@@ -292,10 +292,10 @@ class JSPWebshellBehinderAES:
     async def mkdir(self, dir_path: str) -> None:
         await self.submit_code(f"mkdir({json.dumps(dir_path)})")
 
-    async def get_file_contents(
-        self, filepath: str, max_size: int = 1024 * 32
-    ) -> bytes:
+    async def get_file_contents(self, filepath: str, max_size: int | None = None) -> bytes:
         """获取文件的内容，内容是一个字节序列，不是已经解码的字符串"""
+        if max_size is None:
+            max_size = self.updownload_chunk_size
         content_b64 = await self.submit_code(
             f"getFileContentsBase64({json.dumps(filepath)}, {max_size})"
         )
