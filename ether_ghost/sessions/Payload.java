@@ -190,7 +190,7 @@ public class Payload {
             int x = (base64GetShift(b.charAt(i)) << 18) + (base64GetShift(b.charAt(i + 1)) << 12)
                     + (base64GetShift(b.charAt(i + 2)) << 6)
                     + base64GetShift(b.charAt(i + 3));
-            int count = (i + 4 < blength ? 3 : b.indexOf('=') - i - 1);
+            int count = (i + 4 < blength || b.indexOf('=') == -1) ? 3 : b.indexOf('=') - i - 1;
             for (int k = 0; k < count; k++) {
                 resultList.add((byte) (x >>> (16 - k * 8)));
             }
@@ -297,11 +297,11 @@ public class Payload {
         return base64Encode(getFileContentsBytes(filePath, max_length));
     }
 
-    public boolean putFileContents(String filepath, byte[] content) throws Exception {
+    public String putFileContents(String filepath, byte[] content) throws Exception {
         FileOutputStream fos = new FileOutputStream(filepath);
         fos.write(content);
         fos.close();
-        return getFileContentsBytes(filepath, content.length) == content;
+        return base64Encode(content);
     }
 
     public boolean deleteFile(String filepath) throws IOException {
