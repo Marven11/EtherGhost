@@ -219,52 +219,69 @@ async def update_info_fetch():
     return update_check_info
 
 
+async def get_session_type():
+    """查找所有支持的session type"""
+    SessionType = t.TypedDict("SessionType", {"id": str, "name": str})
+    return [
+        SessionType({"id": type_id, "name": type_info["readable_name"]})
+        for type_id, type_info in session_type_info.items()
+    ]
+
+
+async def get_sessiontype_conn_options(sessiontype: str) -> core.ConnOptionGroup:
+
+    if sessiontype not in session_type_info:
+        raise core.UserError("没有这个session type")
+    return session_type_info[sessiontype]["options"]
+
+
+async def list_sessions():
+    return session_manager.list_sessions_readable()
+
+
+async def get_session(session_id: UUID):
+    session: t.Union[session_types.SessionInfo, None] = (
+        session_manager.get_session_info_by_id(session_id)
+    )
+    if not session:
+        raise core.UserError("没有这个session")
+    return session
+
+
 @app.get("/sessiontype")
-async def get_sessiontype():
+async def api_get_sessiontype():
     """查找所有支持的session type"""
     return {
         "code": 0,
-        "data": [
-            {"id": type_id, "name": type_info["readable_name"]}
-            for type_id, type_info in session_type_info.items()
-        ],
+        "data": await get_session_type(),
     }
 
 
 @app.get("/sessiontype/{sessiontype}/conn_options")
 @catch_user_error
-async def get_sessiontype_conn_options(sessiontype: str):
+async def api_get_sessiontype_conn_options(sessiontype: str):
     """查找session type对应的选项"""
-    if sessiontype not in session_type_info:
-        return {"code": -400, "msg": "没有这个session type"}
-    conn_options = session_type_info[sessiontype]["options"]
-    return {"code": 0, "data": conn_options}
+    return {
+        "code": 0,
+        "data": await get_sessiontype_conn_options(sessiontype),
+    }
 
 
 @app.get("/session")
 @catch_user_error
-async def get_sessions(session_id: t.Union[UUID, None] = None):
+async def api_list_sessions(session_id: t.Union[UUID, None] = None):
     """列出所有的session或者查找session"""
     if session_id is None:
-        return {"code": 0, "data": session_manager.list_sessions_readable()}
-    session: t.Union[session_types.SessionInfo, None] = (
-        session_manager.get_session_info_by_id(session_id)
-    )
-    if not session:
-        return {"code": -400, "msg": "没有这个session"}
-    return {"code": 0, "data": session}
+        return {"code": 0, "data": await list_sessions()}
+    return {"code": 0, "data": await get_session(session_id)}
 
 
 @app.get("/session/{session_id}")
 @catch_user_error
-async def get_session(session_id: UUID):
+async def api_get_session(session_id: UUID):
     """查找session"""
-    session: t.Union[session_types.SessionInfo, None] = (
-        session_manager.get_session_info_by_id(session_id)
-    )
-    if not session:
-        return {"code": -400, "msg": "没有这个session"}
-    return {"code": 0, "data": session}
+    return {"code": 0, "data": await get_session(session_id)}
+
 
 
 @app.post("/test_webshell")
