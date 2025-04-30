@@ -456,7 +456,7 @@ function confirmDuplicateFile(filename) {
   inputBoxCallback = async new_filename => {
     try {
       if (new_filename) {
-        let result = await getDataOrPopupError(`/session/${props.session}/move_file`, {
+        let result = await getDataOrPopupError(`/session/${props.session}/copy_file`, {
           params: {
             filepath: (await joinPath(pwd.value, filename)),
             new_filepath: (await joinPath(pwd.value, new_filename))
