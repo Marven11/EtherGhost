@@ -83,6 +83,7 @@ def info_to_model(info: SessionInfo) -> SessionInfoModel:
 
 # 操作数据库
 
+
 # TODO: list session by created time
 def list_sessions() -> t.List[SessionInfo]:
     """列出数据库中所有的session"""
@@ -95,8 +96,15 @@ def add_session_info(info: SessionInfo):
     orm_session.commit()
 
 
+def add_session_infos(infos: t.List[SessionInfo]):
+    """批量添加多个session"""
+    models = [info_to_model(info) for info in infos]
+    orm_session.add_all(models)
+    orm_session.commit()
+
+
 def get_session_info_by_id(
-    session_id: t.Union[str, UUID]
+    session_id: t.Union[str, UUID],
 ) -> t.Union[None, SessionInfo]:
     """根据ID查询session，以sessioninfo的形式输出"""
     if isinstance(session_id, str):
@@ -127,6 +135,31 @@ def delete_session_info_by_id(
     orm_session.delete(model)
     orm_session.commit()
     return True
+
+
+def get_session_by_session_type(session_type: str) -> t.List[SessionInfo]:
+    """根据session_type查询所有session"""
+    models = (
+        orm_session.query(SessionInfoModel)
+        .filter(SessionInfoModel.session_type == session_type)
+        .all()
+    )
+    return [model_to_info(model) for model in models]
+
+
+def delete_session_by_session_type(session_type: str) -> int:
+    """根据session_type删除所有session，返回删除的数量"""
+    models = (
+        orm_session.query(SessionInfoModel)
+        .filter(SessionInfoModel.session_type == session_type)
+        .all()
+    )
+    count = len(models)
+    for model in models:
+        orm_session.delete(model)
+    if count > 0:
+        orm_session.commit()
+    return count
 
 
 def get_settings() -> dict:
