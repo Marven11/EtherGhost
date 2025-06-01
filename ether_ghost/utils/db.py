@@ -1,15 +1,11 @@
 """数据库管理，管理session info等信息"""
 
-import os
 import typing as t
 from dataclasses import dataclass
-from pathlib import Path
 from uuid import uuid4, UUID
 import sqlalchemy as sa
 from sqlalchemy_utils import UUIDType  # type: ignore
-from ..session_types import (
-    SessionInfo,
-)
+from ..session_types import SessionInfo, SessionConnector
 
 from .const import SETTINGS_VERSION, STORE_URL
 
@@ -29,6 +25,17 @@ class SessionInfoModel(Base):  # type: ignore
     name = sa.Column(sa.String)
     note = sa.Column(sa.String)
     location = sa.Column(sa.String)
+    connection = sa.Column(sa.JSON)
+
+
+class SessionConnectorModel(Base):  # type: ignore
+    """sqlalchemy的Model，用于在数据库中保存session connector"""
+
+    __tablename__ = "session_connector"
+    record_id = sa.Column(sa.Integer, primary_key=True)
+    session_type = sa.Column(sa.String)  # type: ignore
+    name = sa.Column(sa.String)
+    note = sa.Column(sa.String)
     connection = sa.Column(sa.JSON)
 
 
@@ -52,6 +59,18 @@ class SessionInfoModelTypeHint:
     name: str
     note: str
     location: str
+    connection: t.Dict[t.Any, t.Any]
+
+
+@dataclass
+class SessionConnectorModelTypeHint:
+    """SessionConnectorModel的type hint
+    解决pylint不能正确识别SQLAlchemy属性类型的问题"""
+
+    record_id: int
+    session_type: str
+    name: str
+    note: str
     connection: t.Dict[t.Any, t.Any]
 
 
@@ -79,6 +98,23 @@ def info_to_model(info: SessionInfo) -> SessionInfoModel:
     """将SessionInfo(Pydantic的对象)转换成SessionInfoModel(SQLAlchemy的对象)"""
     info_dict = info.model_dump()
     return SessionInfoModel(**info_dict)
+
+
+def model_to_connector(model: SessionConnectorModelTypeHint) -> SessionConnector:
+    """将SessionConnectorModel(SQLAlchemy的对象)转换成dict"""
+    connection = {**model.connection}
+    result = SessionConnector(
+        session_type=model.session_type,
+        name=model.name,
+        note=model.note,
+        connection=connection,
+    )
+    return result
+
+
+def connector_to_model(connector: dict) -> SessionConnectorModel:
+    """将dict转换成SessionConnectorModel(SQLAlchemy的对象)"""
+    return SessionConnectorModel(**connector)
 
 
 # 操作数据库
@@ -160,6 +196,57 @@ def delete_session_by_session_type(session_type: str) -> int:
     if count > 0:
         orm_session.commit()
     return count
+
+
+def list_session_connectors() -> t.List[SessionConnector]:
+    """列出数据库中所有的session connector"""
+    return [
+        model_to_connector(model)
+        for model in orm_session.query(SessionConnectorModel).all()
+    ]
+
+
+def add_session_connector(connector: SessionConnector):
+    """添加一个session connector"""
+    orm_session.add(connector_to_model(connector.model_dump()))
+    orm_session.commit()
+
+
+def add_session_connectors(connectors: t.List[SessionConnector]):
+    """批量添加多个session connector"""
+    models = [connector_to_model(connector.model_dump()) for connector in connectors]
+    orm_session.add_all(models)
+    orm_session.commit()
+
+
+def get_session_connector_by_session_type(
+    session_type: str,
+) -> t.Union[None, SessionConnector]:
+    """根据session_type查询session connector"""
+    model = (
+        orm_session.query(SessionConnectorModel)
+        .filter(SessionConnectorModel.session_type == session_type)
+        .first()
+    )
+    if model is None:
+        return None
+    return model_to_connector(model)
+
+
+def delete_session_connector_by_session_type(
+    session_type: str, ignore_unexist=False
+) -> bool:
+    """根据session_type删除session connector"""
+    model = (
+        orm_session.query(SessionConnectorModel)
+        .filter(SessionConnectorModel.session_type == session_type)
+        .first()
+    )
+    if model is None:
+        return ignore_unexist
+    orm_session.delete(model)
+    orm_session.commit()
+    return True
 
 
 def get_settings() -> dict:

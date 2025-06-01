@@ -14,3 +14,15 @@ class SessionInfo(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class SessionConnector(BaseModel):
+    """Session connector 的 Pydantic model"""
+
+    session_type: str
+    name: str
+    note: str
+    connection: t.Dict[t.Any, t.Any]
+
+    class Config:
+        from_attributes = True
