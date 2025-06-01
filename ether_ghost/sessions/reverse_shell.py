@@ -20,6 +20,8 @@ from ..utils.random_data import random_string
 
 logger = logging.getLogger("core.sessions.linux_cmd_oneliner")
 
+REVERSE_SHELL_SESSION_TYPE = "REVERSE_SHELL"
+
 WRAPPER_CODE = """
 echo -n "{start1}""{start2}";
 ({code}) {decoder}
@@ -104,7 +106,7 @@ def parse_file_permission(perm: str):
 
 @register_session
 class ReverseShellSession:
-    session_type = "REVERSE_SHELL"
+    session_type = REVERSE_SHELL_SESSION_TYPE
     readable_name = "反弹Shell"
     conn_options: t.List[ConnOptionGroup] = [
         {

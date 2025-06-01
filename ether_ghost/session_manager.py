@@ -32,7 +32,7 @@ def session_info_to_session(session_info: SessionInfo) -> core.SessionInterface:
 
 
 def get_session_info_by_id(
-    session_id: t.Union[str, UUID]
+    session_id: t.Union[str, UUID],
 ) -> t.Union[None, SessionInfo]:
     """根据id返回session info
 
@@ -76,6 +76,7 @@ def get_session_by_id(session_id: t.Union[str, UUID]) -> core.SessionInterface:
     session = session_info_to_session(session_info)
     session_store[session_id] = (int(time.time()), session)
     return session
+
 
 def clear_session_cache():
     session_store.clear()

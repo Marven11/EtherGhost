@@ -1,25 +1,21 @@
 import asyncio
 import uuid
-from ..sessions.reverse_shell import ReverseShellSession
+from ..sessions.reverse_shell import ReverseShellSession, REVERSE_SHELL_SESSION_TYPE
 from ..session_types import SessionInfo
 from ..session_connector import SessionConnector, register_connector
 
 
-@register_connector
+@register_connector(REVERSE_SHELL_SESSION_TYPE)
 class ReverseShellConnector(SessionConnector):
-    NAME = "REVERSE_SHELL"
 
-    def __init__(self, port):
-        self.port = port
+    def __init__(self, config: dict):
+        self.port = config["port"]
         self.socket = None
         self.session_infos: dict[str, SessionInfo] = {}
         self.connections: dict[
             str, tuple[asyncio.StreamReader, asyncio.StreamWriter]
         ] = {}
         self.session_count = 0
-
-    def get_session_type(self) -> str:
-        return self.NAME
 
     def build_session(self, config: dict) -> ReverseShellSession:
         if (
@@ -40,7 +36,7 @@ class ReverseShellConnector(SessionConnector):
             self.session_count += 1
             self.connections[str(client_id)] = (reader, writer)
             self.session_infos[str(client_id)] = SessionInfo(
-                session_type=self.NAME,
+                session_type=REVERSE_SHELL_SESSION_TYPE,
                 name=f"反弹Shell #{self.session_count}",
                 connection={"connection_id": str(client_id)},
                 session_id=client_id,
