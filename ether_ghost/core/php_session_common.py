@@ -28,15 +28,15 @@ from .base import (
     PHPSessionInterface,
     DirectoryEntry,
     BasicInfoEntry,
-    ConnOption,
-    ConnOptionAlternative,
+    Option,
+    OptionAlternative,
 )
 
 logger = logging.getLogger("core.php")
 
 user_agent = random_user_agent()
 
-custom_encoders_alternatives: t.List[ConnOptionAlternative] = [
+custom_encoders_alternatives: t.List[OptionAlternative] = [
     {"name": custom_encoder, "value": custom_encoder}
     for custom_encoder in custom_encoders.list_custom_encoders()
 ]
@@ -718,7 +718,7 @@ async def get_aes_key(pubkey, submitter):
 
 # 给前端显示的PHPWebshellOptions选项
 php_webshell_action_options = [
-    ConnOption(
+    Option(
         id="updownload_chunk_size",
         name="文件上传下载分块大小",
         type="text",
@@ -726,7 +726,7 @@ php_webshell_action_options = [
         default_value=str(1024 * 16),
         alternatives=None,
     ),
-    ConnOption(
+    Option(
         id="updownload_max_coroutine",
         name="文件上传下载并发量",
         type="text",
@@ -737,7 +737,7 @@ php_webshell_action_options = [
 ]
 
 php_webshell_communication_options = [
-    ConnOption(
+    Option(
         id="encoder",
         name="PHP代码编码器",
         type="select",
@@ -749,7 +749,7 @@ php_webshell_communication_options = [
             *custom_encoders_alternatives,
         ],
     ),
-    ConnOption(
+    Option(
         id="decoder",
         name="解码器",
         type="select",
@@ -759,7 +759,7 @@ php_webshell_communication_options = [
             {"name": decoder_name, "value": decoder_name} for decoder_name in decoders
         ],
     ),
-    ConnOption(
+    Option(
         id="sessionize_payload",
         name="Session暂存payload",
         type="checkbox",
@@ -767,7 +767,7 @@ php_webshell_communication_options = [
         default_value=False,
         alternatives=None,
     ),
-    ConnOption(
+    Option(
         id="antireplay",
         name="HTTP反重放",
         type="checkbox",
@@ -775,7 +775,7 @@ php_webshell_communication_options = [
         default_value=False,
         alternatives=None,
     ),
-    ConnOption(
+    Option(
         id="encryption",
         name="加密流量",
         type="checkbox",
@@ -783,7 +783,7 @@ php_webshell_communication_options = [
         default_value=False,
         alternatives=None,
     ),
-    ConnOption(
+    Option(
         id="bypass_open_basedir",
         name="绕过open_basedir",
         type="checkbox",

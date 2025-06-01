@@ -11,23 +11,23 @@ USER_AGENT = random_user_agent()
 session_type_info = {}
 
 
-class ConnOptionAlternative(t.TypedDict):
+class OptionAlternative(t.TypedDict):
     name: str
     value: str
 
 
-class ConnOption(t.TypedDict):
+class Option(t.TypedDict):
     id: str
     name: str
     type: t.Literal["text", "select", "checkbox"]
     placeholder: t.Union[str, None]
     default_value: t.Any
-    alternatives: t.Union[t.List[ConnOptionAlternative], None]
+    alternatives: t.Union[t.List[OptionAlternative], None]
 
 
-class ConnOptionGroup(t.TypedDict):
+class OptionGroup(t.TypedDict):
     name: str
-    options: t.List[ConnOption]
+    options: t.List[Option]
 
 
 @dataclass

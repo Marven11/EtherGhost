@@ -11,8 +11,8 @@ from ..core import exceptions
 
 from ..core.base import (
     register_session,
-    ConnOption,
-    ConnOptionGroup,
+    Option,
+    OptionGroup,
     DirectoryEntry,
     BasicInfoEntry,
     get_http_client,
@@ -109,11 +109,11 @@ def parse_file_permission(perm: str):
 class LinuxCmdOneLiner:
     session_type = "LINUX_CMD_ONELINER"
     readable_name = "Linux命令执行"
-    conn_options: t.List[ConnOptionGroup] = [
+    conn_options: t.List[OptionGroup] = [
         {
             "name": "基本连接配置",
             "options": [
-                ConnOption(
+                Option(
                     id="url",
                     name="地址",
                     type="text",
@@ -121,7 +121,7 @@ class LinuxCmdOneLiner:
                     default_value=None,
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="password",
                     name="密码",
                     type="text",
@@ -129,7 +129,7 @@ class LinuxCmdOneLiner:
                     default_value=None,
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="password_method",
                     name="密码传参方式",
                     type="select",
@@ -146,7 +146,7 @@ class LinuxCmdOneLiner:
         {
             "name": "高级连接配置",
             "options": [
-                ConnOption(
+                Option(
                     id="encoder",
                     name="命令编码器",
                     type="select",
@@ -158,7 +158,7 @@ class LinuxCmdOneLiner:
                         {"name": "base64_ifs", "value": "base64_ifs"},
                     ],
                 ),
-                ConnOption(
+                Option(
                     id="decoder",
                     name="解码器",
                     type="select",
@@ -169,7 +169,7 @@ class LinuxCmdOneLiner:
                         {"name": "base64", "value": "base64"},
                     ],
                 ),
-                ConnOption(
+                Option(
                     id="https_verify",
                     name="验证HTTPS证书",
                     type="checkbox",
@@ -177,7 +177,7 @@ class LinuxCmdOneLiner:
                     default_value=True,
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="updownload_chunk_size",
                     name="文件上传下载分块大小",
                     type="text",
@@ -185,7 +185,7 @@ class LinuxCmdOneLiner:
                     default_value="1024",
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="updownload_max_coroutine",
                     name="文件上传下载并发量",
                     type="text",
@@ -193,7 +193,7 @@ class LinuxCmdOneLiner:
                     default_value="4",
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="extra_post_params",
                     name="额外的POST参数",
                     type="text",
@@ -201,7 +201,7 @@ class LinuxCmdOneLiner:
                     default_value="{}",
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="extra_headers",
                     name="额外的headers",
                     type="text",
@@ -209,7 +209,7 @@ class LinuxCmdOneLiner:
                     default_value="{}",
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="extra_headers",
                     name="额外的headers",
                     type="text",

@@ -228,7 +228,7 @@ async def get_session_type():
     ]
 
 
-async def get_sessiontype_conn_options(sessiontype: str) -> core.ConnOptionGroup:
+async def get_sessiontype_conn_options(sessiontype: str) -> core.OptionGroup:
 
     if sessiontype not in session_type_info:
         raise core.UserError("没有这个session type")

@@ -19,8 +19,8 @@ from ..core import exceptions
 from ..core.base import (
     register_session,
     BasicInfoEntry,
-    ConnOption,
-    ConnOptionGroup,
+    Option,
+    OptionGroup,
     DirectoryEntry,
     get_http_client,
 )
@@ -91,11 +91,11 @@ def behinder_aes(payload: bytes, key: bytes) -> bytes:
 class JSPWebshellBehinderAES:
     session_type = "BEHINDER_JSP_AES"
     readable_name = "[测试] 冰蝎JSP"
-    conn_options: t.List[ConnOptionGroup] = [
+    conn_options: t.List[OptionGroup] = [
         {
             "name": "基本连接配置",
             "options": [
-                ConnOption(
+                Option(
                     id="url",
                     name="地址",
                     type="text",
@@ -103,7 +103,7 @@ class JSPWebshellBehinderAES:
                     default_value=None,
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="password",
                     name="密码",
                     type="text",
@@ -116,7 +116,7 @@ class JSPWebshellBehinderAES:
         {
             "name": "高级连接配置",
             "options": [
-                ConnOption(
+                Option(
                     id="timeout_refresh_client",
                     name="超时更换HTTP Session",
                     type="checkbox",
@@ -124,7 +124,7 @@ class JSPWebshellBehinderAES:
                     default_value=True,
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="https_verify",
                     name="验证HTTPS证书",
                     type="checkbox",
@@ -132,7 +132,7 @@ class JSPWebshellBehinderAES:
                     default_value=True,
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="updownload_chunk_size",
                     name="文件上传下载分块大小",
                     type="text",
@@ -140,7 +140,7 @@ class JSPWebshellBehinderAES:
                     default_value=str(1024 * 32),
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="updownload_max_coroutine",
                     name="文件上传下载并发量",
                     type="text",
@@ -153,7 +153,7 @@ class JSPWebshellBehinderAES:
         {
             "name": "其他配置",
             "options": [
-                ConnOption(
+                Option(
                     id="compile_max_coroutine",
                     name="编译Payload并发量",
                     type="text",
@@ -161,7 +161,7 @@ class JSPWebshellBehinderAES:
                     default_value="4",
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="javac_target_version",
                     name="javac编译源版本",
                     type="text",
@@ -169,7 +169,7 @@ class JSPWebshellBehinderAES:
                     default_value="1.8",
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="javac_target_version",
                     name="javac编译目标版本",
                     type="text",

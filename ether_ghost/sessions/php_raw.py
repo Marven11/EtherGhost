@@ -8,8 +8,8 @@ from ..core import exceptions
 
 from ..core.base import (
     register_session,
-    ConnOption,
-    ConnOptionGroup,
+    Option,
+    OptionGroup,
     get_http_client,
 )
 from ..core.php_session_common import (
@@ -33,11 +33,11 @@ def base64_encode(s):
 class PHPWebshellRaw(PHPWebshellCommunication, PHPWebshellActions):
     session_type = "PHP_RAW"
     readable_name = "PHP Raw"
-    conn_options: t.List[ConnOptionGroup] = [
+    conn_options: t.List[OptionGroup] = [
         {
             "name": "基本连接配置",
             "options": [
-                ConnOption(
+                Option(
                     id="url",
                     name="地址",
                     type="text",
@@ -50,7 +50,7 @@ class PHPWebshellRaw(PHPWebshellCommunication, PHPWebshellActions):
         {
             "name": "高级连接配置",
             "options": [
-                ConnOption(
+                Option(
                     id="timeout_refresh_client",
                     name="超时更换HTTP Session",
                     type="checkbox",
@@ -58,7 +58,7 @@ class PHPWebshellRaw(PHPWebshellCommunication, PHPWebshellActions):
                     default_value=True,
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="https_verify",
                     name="验证HTTPS证书",
                     type="checkbox",

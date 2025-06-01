@@ -12,8 +12,8 @@ from ..core import exceptions
 
 from ..core.base import (
     register_session,
-    ConnOption,
-    ConnOptionGroup,
+    Option,
+    OptionGroup,
     get_http_client,
 )
 from ..core.php_session_common import (
@@ -68,11 +68,11 @@ def behinder_xor(payload: t.Union[str, bytes], key: bytes):
 class PHPWebshellBehinderAES(PHPWebshellCommunication, PHPWebshellActions):
     session_type = "BEHINDER_PHP_AES"
     readable_name = "冰蝎AES"
-    conn_options: t.List[ConnOptionGroup] = [
+    conn_options: t.List[OptionGroup] = [
         {
             "name": "基本连接配置",
             "options": [
-                ConnOption(
+                Option(
                     id="url",
                     name="地址",
                     type="text",
@@ -80,7 +80,7 @@ class PHPWebshellBehinderAES(PHPWebshellCommunication, PHPWebshellActions):
                     default_value=None,
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="password",
                     name="密码",
                     type="text",
@@ -93,7 +93,7 @@ class PHPWebshellBehinderAES(PHPWebshellCommunication, PHPWebshellActions):
         {
             "name": "高级连接配置",
             "options": [
-                ConnOption(
+                Option(
                     id="timeout_refresh_client",
                     name="超时更换HTTP Session",
                     type="checkbox",
@@ -101,7 +101,7 @@ class PHPWebshellBehinderAES(PHPWebshellCommunication, PHPWebshellActions):
                     default_value=True,
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="https_verify",
                     name="验证HTTPS证书",
                     type="checkbox",
@@ -153,11 +153,11 @@ class PHPWebshellBehinderAES(PHPWebshellCommunication, PHPWebshellActions):
 class PHPWebshellBehinderXor(PHPWebshellCommunication, PHPWebshellActions):
     session_type = "BEHINDER_PHP_XOR"
     readable_name = "冰蝎XOR"
-    conn_options: t.List[ConnOptionGroup] = [
+    conn_options: t.List[OptionGroup] = [
         {
             "name": "基本连接配置",
             "options": [
-                ConnOption(
+                Option(
                     id="url",
                     name="地址",
                     type="text",
@@ -165,7 +165,7 @@ class PHPWebshellBehinderXor(PHPWebshellCommunication, PHPWebshellActions):
                     default_value=None,
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="password",
                     name="密码",
                     type="text",
@@ -178,7 +178,7 @@ class PHPWebshellBehinderXor(PHPWebshellCommunication, PHPWebshellActions):
         {
             "name": "高级连接配置",
             "options": [
-                ConnOption(
+                Option(
                     id="timeout_refresh_client",
                     name="超时更换HTTP Session",
                     type="checkbox",
@@ -186,7 +186,7 @@ class PHPWebshellBehinderXor(PHPWebshellCommunication, PHPWebshellActions):
                     default_value=True,
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="https_verify",
                     name="验证HTTPS证书",
                     type="checkbox",

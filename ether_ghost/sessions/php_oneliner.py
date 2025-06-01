@@ -16,9 +16,9 @@ from ..utils import const
 from ..utils.nodejs_bridge import nodejs_eval
 from ..core.base import (
     register_session,
-    ConnOption,
-    ConnOptionGroup,
-    ConnOptionAlternative,
+    Option,
+    OptionGroup,
+    OptionAlternative,
     get_http_client,
 )
 from ..core.php_session_common import (
@@ -37,7 +37,7 @@ logger = logging.getLogger("core.sessions.php_oneline")
 # 这样至少可以避免游魂启动后被反制
 
 antsword_encoders = [file.name for file in const.ANTSWORD_ENCODER_FOLDER.glob("*.js")]
-antsword_encoders_alternatives: t.List[ConnOptionAlternative] = [
+antsword_encoders_alternatives: t.List[OptionAlternative] = [
     {"name": filename, "value": filename} for filename in antsword_encoders
 ]
 
@@ -84,11 +84,11 @@ class PHPWebshellOneliner(PHPWebshellCommunication, PHPWebshellActions):
 
     session_type = "ONELINE_PHP"
     readable_name = "PHP一句话"
-    conn_options: t.List[ConnOptionGroup] = [
+    conn_options: t.List[OptionGroup] = [
         {
             "name": "基本连接配置",
             "options": [
-                ConnOption(
+                Option(
                     id="url",
                     name="地址",
                     type="text",
@@ -96,7 +96,7 @@ class PHPWebshellOneliner(PHPWebshellCommunication, PHPWebshellActions):
                     default_value=None,
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="password_method",
                     name="密码传参方式",
                     type="select",
@@ -107,7 +107,7 @@ class PHPWebshellOneliner(PHPWebshellCommunication, PHPWebshellActions):
                         {"name": "GET", "value": "GET"},
                     ],
                 ),
-                ConnOption(
+                Option(
                     id="password",
                     name="密码",
                     type="text",
@@ -120,7 +120,7 @@ class PHPWebshellOneliner(PHPWebshellCommunication, PHPWebshellActions):
         {
             "name": "高级连接配置",
             "options": [
-                ConnOption(
+                Option(
                     id="http_params_obfs",
                     name="HTTP POST参数混淆",
                     type="checkbox",
@@ -128,7 +128,7 @@ class PHPWebshellOneliner(PHPWebshellCommunication, PHPWebshellActions):
                     default_value=True,
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="timeout_refresh_client",
                     name="超时更换HTTP Session",
                     type="checkbox",
@@ -136,7 +136,7 @@ class PHPWebshellOneliner(PHPWebshellCommunication, PHPWebshellActions):
                     default_value=False,
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="chunked_request",
                     name="分块传输编码",
                     type="text",
@@ -144,7 +144,7 @@ class PHPWebshellOneliner(PHPWebshellCommunication, PHPWebshellActions):
                     default_value="0",
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="antsword_encoder",
                     name="蚁剑编码器",
                     type="select",
@@ -162,7 +162,7 @@ class PHPWebshellOneliner(PHPWebshellCommunication, PHPWebshellActions):
         {
             "name": "自定义HTTP参数",
             "options": [
-                ConnOption(
+                Option(
                     id="http_request_method",
                     name="自定义HTTP请求方法",
                     type="text",
@@ -170,7 +170,7 @@ class PHPWebshellOneliner(PHPWebshellCommunication, PHPWebshellActions):
                     default_value="",
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="extra_get_params",
                     name="额外的GET参数",
                     type="text",
@@ -178,7 +178,7 @@ class PHPWebshellOneliner(PHPWebshellCommunication, PHPWebshellActions):
                     default_value="{}",
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="extra_post_params",
                     name="额外的POST参数",
                     type="text",
@@ -186,7 +186,7 @@ class PHPWebshellOneliner(PHPWebshellCommunication, PHPWebshellActions):
                     default_value="{}",
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="extra_headers",
                     name="额外的headers",
                     type="text",
@@ -194,7 +194,7 @@ class PHPWebshellOneliner(PHPWebshellCommunication, PHPWebshellActions):
                     default_value="{}",
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="extra_cookies",
                     name="额外的cookies",
                     type="text",
@@ -202,7 +202,7 @@ class PHPWebshellOneliner(PHPWebshellCommunication, PHPWebshellActions):
                     default_value="{}",
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="https_verify",
                     name="验证HTTPS证书",
                     type="checkbox",
@@ -210,7 +210,7 @@ class PHPWebshellOneliner(PHPWebshellCommunication, PHPWebshellActions):
                     default_value=False,
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="timeout",
                     name="HTTP连接超时",
                     type="text",

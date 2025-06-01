@@ -14,8 +14,8 @@ from ..core import exceptions
 
 from ..core.base import (
     register_session,
-    ConnOption,
-    ConnOptionGroup,
+    Option,
+    OptionGroup,
     get_http_client,
 )
 from ..core.php_session_common import (
@@ -38,11 +38,11 @@ logger = logging.getLogger("core.sessions.php_etherghost")
 class PHPWebshellEtherGhostOpen(PHPWebshellCommunication, PHPWebshellActions):
     session_type = "ETHERGHOST_PHP_OPEN"
     readable_name = "[开发中] 游魂Open"
-    conn_options: t.List[ConnOptionGroup] = [
+    conn_options: t.List[OptionGroup] = [
         {
             "name": "基本连接配置",
             "options": [
-                ConnOption(
+                Option(
                     id="url",
                     name="地址",
                     type="text",
@@ -50,7 +50,7 @@ class PHPWebshellEtherGhostOpen(PHPWebshellCommunication, PHPWebshellActions):
                     default_value=None,
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="password",
                     name="密码",
                     type="text",
@@ -63,7 +63,7 @@ class PHPWebshellEtherGhostOpen(PHPWebshellCommunication, PHPWebshellActions):
         {
             "name": "高级连接配置",
             "options": [
-                ConnOption(
+                Option(
                     id="timeout_refresh_client",
                     name="超时更换HTTP Session",
                     type="checkbox",
@@ -71,7 +71,7 @@ class PHPWebshellEtherGhostOpen(PHPWebshellCommunication, PHPWebshellActions):
                     default_value=True,
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="https_verify",
                     name="验证HTTPS证书",
                     type="checkbox",

@@ -10,8 +10,8 @@ from ..core import exceptions
 
 from ..core.base import (
     register_session,
-    ConnOption,
-    ConnOptionGroup,
+    Option,
+    OptionGroup,
     DirectoryEntry,
     BasicInfoEntry,
 )
@@ -108,11 +108,11 @@ def parse_file_permission(perm: str):
 class ReverseShellSession:
     session_type = REVERSE_SHELL_SESSION_TYPE
     readable_name = "反弹Shell"
-    conn_options: t.List[ConnOptionGroup] = [
+    conn_options: t.List[OptionGroup] = [
         {
             "name": "高级连接配置",
             "options": [
-                ConnOption(
+                Option(
                     id="chunk_size",
                     name="文件上传下载分块大小",
                     type="text",
@@ -120,7 +120,7 @@ class ReverseShellSession:
                     default_value="1024",
                     alternatives=None,
                 ),
-                ConnOption(
+                Option(
                     id="encoder",
                     name="命令编码器",
                     type="select",
@@ -132,7 +132,7 @@ class ReverseShellSession:
                         {"name": "base64_ifs", "value": "base64_ifs"},
                     ],
                 ),
-                ConnOption(
+                Option(
                     id="decoder",
                     name="解码器",
                     type="select",
