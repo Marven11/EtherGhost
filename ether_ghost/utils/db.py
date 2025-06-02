@@ -33,7 +33,8 @@ class SessionConnectorModel(Base):  # type: ignore
 
     __tablename__ = "session_connector"
     record_id = sa.Column(sa.Integer, primary_key=True)
-    session_type = sa.Column(sa.String)  # type: ignore
+    connector_type = sa.Column(sa.String)  # type: ignore
+    connector_id = sa.Column(UUIDType(binary=False), default=uuid4)  # type: ignore
     name = sa.Column(sa.String)
     note = sa.Column(sa.String)
     connection = sa.Column(sa.JSON)
@@ -69,7 +70,8 @@ class SessionConnectorModelTypeHint:
     解决pylint不能正确识别SQLAlchemy属性类型的问题"""
 
     record_id: int
-    session_type: str
+    connector_type: str
+    connector_id: UUID
     name: str
     note: str
     connection: t.Dict[t.Any, t.Any]

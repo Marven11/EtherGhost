@@ -20,7 +20,8 @@ class SessionInfo(BaseModel):
 class SessionConnector(BaseModel):
     """Session connector 的 Pydantic model"""
 
-    session_type: str
+    connector_type: str
+    connector_id: UUID
     name: str
     note: str
     connection: t.Dict[t.Any, t.Any]

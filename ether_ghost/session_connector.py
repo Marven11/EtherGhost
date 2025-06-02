@@ -6,6 +6,7 @@ from .session_types import SessionInfo
 
 
 class SessionConnector:
+    connector_name: ClassVar[str]
     session_type: ClassVar[str]
     options: ClassVar[list[OptionGroup]]
 
@@ -29,11 +30,6 @@ started_connectors: dict[str, SessionConnector] = {}
 def register_connector(clazz: type[SessionConnector]):
     session_connectors[clazz.session_type] = clazz
     return clazz
-
-
-def list_connectors():
-    return list(session_connectors.keys())
-
 
 async def start_connector(session_type: str, config: dict):
     if session_type in started_connectors:
