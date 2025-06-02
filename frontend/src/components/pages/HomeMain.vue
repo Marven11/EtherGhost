@@ -54,7 +54,7 @@ const ClickMenuSession = ClickMenuManager(
     },
     {
       "name": "open_php_eval",
-      "text": "PHP Eval",
+      "text": "PHP代码执行",
       "icon": IconCode,
       "color": "white",
       "link": "/php-eval/SESSION"

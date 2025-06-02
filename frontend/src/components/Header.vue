@@ -20,6 +20,7 @@ import IconRight from "@/components/icons/iconRight.vue"
 import IconKnife from "@/components/icons/iconKnife.vue"
 import IconWarning from "./icons/iconWarning.vue"
 import IconPlug from "./icons/iconPlug.vue"
+import IconUsb from "./icons/iconUsb.vue"
 
 const router = useRouter()
 
@@ -35,12 +36,6 @@ const iconSpecs = [
     component: IconTerminal,
     uri: "/terminal/SESSION",
     tooltip: "模拟终端"
-  },
-  {
-    type: "open-php-eval",
-    component: IconCode,
-    uri: "/php-eval/SESSION",
-    tooltip: "PHP Eval"
   },
   {
     type: "file-browser",
@@ -61,10 +56,10 @@ const iconSpecs = [
     tooltip: "打开代理"
   },
   {
-    type: "others",
-    component: IconOthers,
-    uri: "",
-    tooltip: "其他"
+    type: "connector",
+    component: IconUsb,
+    uri: "/connector/",
+    tooltip: "连接器"
   },
   {
     type: "settings",
@@ -72,6 +67,13 @@ const iconSpecs = [
     uri: "/settings/",
     tooltip: "设置"
   },
+  {
+    type: "others",
+    component: IconOthers,
+    uri: "",
+    tooltip: "其他"
+  },
+
 ]
 
 const icons = shallowRef([])
@@ -150,6 +152,13 @@ const clickMenuOthers = ClickMenuManager(
       icon: IconHash,
       color: "white",
       link: "/shell-command/SESSION"
+    },
+    {
+      name: "php_eval",
+      text: "PHP代码执行",
+      icon: IconCode,
+      color: "white",
+      link: "/php-eval/SESSION",
     },
     {
       name: "reverse_shell",
