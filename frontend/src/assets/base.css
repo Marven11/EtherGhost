@@ -20,6 +20,13 @@
     --blue: #28ebff;
     --white: #b1cbd5;
     --border-color-grey: #38404c;
+
+    --color-java: #b07219;
+    --color-javascript: #f7e018;
+    --color-php: #8993be;
+    --color-python: #3572A5;
+    --color-shell: #89e051;
+
 }
 
 [data-theme="white"],
