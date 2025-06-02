@@ -1,12 +1,30 @@
 import asyncio
 import uuid
+from ..core.base import Option, OptionGroup
 from ..sessions.reverse_shell import ReverseShellSession, REVERSE_SHELL_SESSION_TYPE
 from ..session_types import SessionInfo
 from ..session_connector import SessionConnector, register_connector
 
 
-@register_connector(REVERSE_SHELL_SESSION_TYPE)
+@register_connector
 class ReverseShellConnector(SessionConnector):
+
+    session_type = REVERSE_SHELL_SESSION_TYPE
+    options: list[OptionGroup] = [
+        {
+            "name": "监听配置",
+            "options": [
+                Option(
+                    id="port",
+                    name="监听端口",
+                    type="text",
+                    placeholder="反弹shell的监听端口",
+                    default_value="3001",
+                    alternatives=None,
+                ),
+            ],
+        }
+    ]
 
     def __init__(self, config: dict):
         self.port = config["port"]

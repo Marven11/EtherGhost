@@ -2,6 +2,7 @@ from uuid import UUID, uuid4
 import typing as t
 from pydantic import BaseModel, Field
 
+
 class SessionInfo(BaseModel):
     """session的基本信息"""
 
@@ -23,6 +24,7 @@ class SessionConnector(BaseModel):
     name: str
     note: str
     connection: t.Dict[t.Any, t.Any]
+    autostart: bool
 
     class Config:
         from_attributes = True

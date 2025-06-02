@@ -37,6 +37,7 @@ class SessionConnectorModel(Base):  # type: ignore
     name = sa.Column(sa.String)
     note = sa.Column(sa.String)
     connection = sa.Column(sa.JSON)
+    autostart = sa.Column(sa.Boolean)  # run on program startup
 
 
 class SettingsModel(Base):  # type: ignore
@@ -72,7 +73,7 @@ class SessionConnectorModelTypeHint:
     name: str
     note: str
     connection: t.Dict[t.Any, t.Any]
-
+    autostart: bool
 
 Base.metadata.create_all(engine)
 

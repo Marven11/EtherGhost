@@ -1,10 +1,13 @@
+from typing import ClassVar
 import asyncio
 
-from .core.base import SessionInterface
+from .core.base import SessionInterface, OptionGroup
 from .session_types import SessionInfo
 
 
 class SessionConnector:
+    session_type: ClassVar[str]
+    options: ClassVar[list[OptionGroup]]
 
     def __init__(self, config: dict):
         raise NotImplementedError()
@@ -23,12 +26,13 @@ session_connectors: dict[str, type[SessionConnector]] = {}
 started_connectors: dict[str, SessionConnector] = {}
 
 
-def register_connector(session_type: str):
-    def wrapper(clazz: type[SessionConnector]):
-        session_connectors[session_type] = clazz
-        return clazz
+def register_connector(clazz: type[SessionConnector]):
+    session_connectors[clazz.session_type] = clazz
+    return clazz
 
-    return wrapper
+
+def list_connectors():
+    return list(session_connectors.keys())
 
 
 async def start_connector(session_type: str, config: dict):
