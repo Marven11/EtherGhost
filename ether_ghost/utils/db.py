@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from uuid import uuid4, UUID
 import sqlalchemy as sa
 from sqlalchemy_utils import UUIDType  # type: ignore
-from ..session_types import SessionInfo, SessionConnector
+from ..session_types import SessionInfo, SessionConnectorInfo
 
 from .const import SETTINGS_VERSION, STORE_URL
 
@@ -104,10 +104,10 @@ def info_to_model(info: SessionInfo) -> SessionInfoModel:
     return SessionInfoModel(**info_dict)
 
 
-def model_to_connector(model: SessionConnectorModelTypeHint) -> SessionConnector:
+def model_to_connector(model: SessionConnectorModelTypeHint) -> SessionConnectorInfo:
     """将SessionConnectorModel(SQLAlchemy的对象)转换成SessionConnector(Pydantic的对象)"""
     connection = {**model.connection}
-    result = SessionConnector(
+    result = SessionConnectorInfo(
         connector_type=model.connector_type,
         name=model.name,
         connection=connection,
@@ -204,7 +204,7 @@ def delete_session_by_session_type(session_type: str) -> int:
     return count
 
 
-def list_session_connectors() -> t.List[SessionConnector]:
+def list_session_connectors() -> t.List[SessionConnectorInfo]:
     """列出数据库中所有的session connector"""
     return [
         model_to_connector(model)
@@ -212,13 +212,13 @@ def list_session_connectors() -> t.List[SessionConnector]:
     ]
 
 
-def add_session_connector(connector: SessionConnector):
+def add_session_connector(connector: SessionConnectorInfo):
     """添加一个session connector"""
     orm_session.add(connector_to_model(connector.model_dump()))
     orm_session.commit()
 
 
-def add_session_connectors(connectors: t.List[SessionConnector]):
+def add_session_connectors(connectors: t.List[SessionConnectorInfo]):
     """批量添加多个session connector"""
     models = [connector_to_model(connector.model_dump()) for connector in connectors]
     orm_session.add_all(models)
@@ -227,7 +227,7 @@ def add_session_connectors(connectors: t.List[SessionConnector]):
 
 def get_session_connector_by_session_type(
     session_type: str,
-) -> t.Union[None, SessionConnector]:
+) -> t.Union[None, SessionConnectorInfo]:
     """根据session_type查询session connector"""
     model = (
         orm_session.query(SessionConnectorModel)

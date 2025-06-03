@@ -17,7 +17,7 @@ class SessionInfo(BaseModel):
         from_attributes = True
 
 
-class SessionConnector(BaseModel):
+class SessionConnectorInfo(BaseModel):
     """Session connector 的 Pydantic model"""
 
     connector_type: str
