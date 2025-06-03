@@ -1,24 +1,60 @@
 <script setup>
-import { ref } from 'vue';
+import { reactive, ref, shallowRef } from 'vue';
 import IconRun from '../icons/iconRun.vue';
 import IconSetting from '../icons/iconSetting.vue';
 import LoadingButton from '../LoadingButton.vue';
+import { getDataOrPopupError } from '@/assets/utils';
 
 
-const connectors = [
-    {
-        "connector_type": "",
-        "session_type": "",
-        "connector_id": "",
-        "name": "反弹Shell",
-        "note": "《原神》是由米哈游自主研发的一款全新开放世界冒险游戏。游戏发生在一个被称作「提瓦特」的幻想世界，在这里，被神选中的人将被授予「神之眼」，导引元素之力。你将扮演一位名为「旅行者」的神秘角色，在自由的旅行中邂逅性格各异、能力独特的同伴们，和他们一起击败强敌，找回失散的亲人——同时，逐步发掘「原神」的真相。",
-        "connection": {},
-        "autostart": false,
-    },
+const connectors = ref([
+    // {
+    //     "connector_type": "",
+    //     "connector_id": "",
+    //     "name": "反弹Shell",
+    //     "note": "《原神》是由米哈游自主研发的一款全新开放世界冒险游戏。",
+    //     "connection": {},
+    //     "autostart": false,
+    // },
+]);
 
-];
-const allStatus = ['off', 'loading', 'on'];
-const status = ref("off"); // "on" "loading"
+const connectorStatus = reactive({
+
+})
+
+async function fetchConnectors() {
+    let allConnectors = await getDataOrPopupError("/connector/all")
+    console.log(allConnectors)
+    connectors.value = allConnectors
+    let startedConnectors = await getDataOrPopupError("/connector/started")
+    for (let connector of allConnectors) {
+        connectorStatus[connector.connector_id] = "off"
+    }
+    console.log(startedConnectors)
+    for (let connectorId of startedConnectors) {
+        connectorStatus[connectorId] = "on"
+    }
+}
+
+setTimeout(fetchConnectors, 0)
+
+async function connectorSwitch(connectorId) {
+    console.log(connectorId)
+    let lastStatus = connectorStatus[connectorId];
+    connectorStatus[connectorId] = "loading"
+    try {
+        if (lastStatus == "off") {
+            await getDataOrPopupError(`/connector/${connectorId}/start`)
+            connectorStatus[connectorId] = "on"
+        } else {
+            await getDataOrPopupError(`/connector/${connectorId}/stop`)
+            connectorStatus[connectorId] = "off"
+        }
+    } finally {
+        await fetchConnectors()
+
+    }
+
+}
 
 </script>
 
@@ -28,11 +64,8 @@ const status = ref("off"); // "on" "loading"
             <h1 class="connector-name">{{ connector.name }}</h1>
             <p class="connector-note">{{ connector.note }}</p>
             <div class="delimiter"></div>
-            <div class="connector-button" @click="() => {
-                console.log(status)
-                status = allStatus[(allStatus.indexOf(status) + 1) % 3];
-            }">
-                <LoadingButton :status="status">
+            <div class="connector-button" @click="connectorSwitch(connector.connector_id)">
+                <LoadingButton :status="connectorStatus[connector.connector_id]">
                 </LoadingButton>
             </div>
             <div class="connector-button setting-button">

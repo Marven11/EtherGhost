@@ -21,7 +21,6 @@ class SessionConnectorInfo(BaseModel):
     """Session connector 的 Pydantic model"""
 
     connector_type: str
-    session_type: str
     connector_id: UUID
     name: str
     note: str

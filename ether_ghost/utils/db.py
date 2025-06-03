@@ -34,7 +34,6 @@ class SessionConnectorModel(Base):  # type: ignore
     __tablename__ = "session_connector"
     record_id = sa.Column(sa.Integer, primary_key=True)
     connector_type = sa.Column(sa.String)  # type: ignore
-    session_type = sa.Column(sa.String)  # type: ignore
     connector_id = sa.Column(UUIDType(binary=False), default=uuid4)  # type: ignore
     name = sa.Column(sa.String)
     note = sa.Column(sa.String)
@@ -72,7 +71,6 @@ class SessionConnectorModelTypeHint:
 
     record_id: int
     connector_type: str
-    session_type: str
     connector_id: UUID
     name: str
     note: str
@@ -111,7 +109,6 @@ def model_to_connector(model: SessionConnectorModelTypeHint) -> SessionConnector
     connection = {**model.connection}
     result = SessionConnectorInfo(
         connector_type=model.connector_type,
-        session_type=model.session_type,
         name=model.name,
         connection=connection,
         connector_id=model.connector_id,

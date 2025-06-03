@@ -1,12 +1,15 @@
 from typing import ClassVar
 import asyncio
 
+from .utils import db
+from .core import exceptions
 from .core.base import SessionInterface, OptionGroup, session_type_info
 from .session_types import SessionInfo
+import uuid
 
 
 class SessionConnector:
-    connector_name: ClassVar[str]
+    connector_name: ClassVar[str]  # 内部使用的Connector Name, 全局唯一
     session_class: ClassVar[type[SessionInterface]]
     options: ClassVar[list[OptionGroup]]
 
@@ -30,36 +33,56 @@ class SessionConnector:
 
 
 session_connectors: dict[str, type[SessionConnector]] = {}
-started_connectors: dict[str, tuple[SessionConnector, asyncio.Task]] = {}
-
-
-def build_session(session_type: str, config: dict):
-    if session_type not in session_connectors:
-        raise RuntimeError(f"找不到session: {session_type!r}")
-    if session_type not in started_connectors:
-        raise RuntimeError(f"{session_type!r}对应的connector未启动")
-    connector, _ = started_connectors[session_type]
-    return connector.build_session(config)
+started_connectors: dict[uuid.UUID, tuple[SessionConnector, asyncio.Task]] = {}
 
 
 def register_connector(clazz: type[SessionConnector]):
-    session_type = clazz.session_class.session_type
-    session_connectors[session_type] = clazz
-    session_type_info[session_type] = {
-        "constructor": lambda config: build_session(session_type, config),
-        "options": clazz.session_class.conn_options,
-        "readable_name": clazz.session_class.readable_name,
-    }
+    session_connectors[clazz.connector_name] = clazz
+    # register session_type_info when started
     return clazz
 
 
-async def start_connector(session_type: str, config: dict):
-    if session_type in started_connectors:
-        return
-    connector = session_connectors[session_type](config)
+async def start_connector(connector_id: uuid.UUID):
+    if connector_id in started_connectors:
+        raise exceptions.UserError(f"Connector {connector_id} 已经启动")
+
+    connector_info = db.get_session_connector_by_connector_id(connector_id)
+    if connector_info is None:
+        raise RuntimeError(f"找不到connector {connector_id}")
+
+    clazz = session_connectors[connector_info.connector_type]
+    print(f"{connector_info.connection=}")
+    connector = clazz(connector_info.connection)
     task = asyncio.create_task(connector.run())
-    started_connectors[session_type] = (connector, task)
+
+    started_connectors[connector_id] = (connector, task)
+    session_type_info[f"{clazz.session_class.session_type}_{connector_id}"] = {
+        "constructor": connector.build_session,
+        "options": clazz.session_class.conn_options,
+        "readable_name": f"{connector_info.name} {clazz.session_class.readable_name}",
+    }
+
     return task
+
+
+async def stop_connector(connector_id: uuid.UUID):
+    if connector_id not in started_connectors:
+        raise exceptions.UserError(f"Connector {connector_id} 未启动")
+
+    connector_info = db.get_session_connector_by_connector_id(connector_id)
+    if connector_info is None:
+        raise exceptions.ServerError(
+            f"在数据库中找不到正在运行的connector {connector_id}"
+        )
+    clazz = session_connectors[connector_info.connector_type]
+
+    del session_type_info[f"{clazz.session_class.session_type}_{connector_id}"]
+    _, task = started_connectors.pop(connector_id)
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
 
 
 async def example():

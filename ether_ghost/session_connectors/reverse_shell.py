@@ -8,7 +8,7 @@ from ..session_connector import SessionConnector, register_connector
 
 @register_connector
 class ReverseShellConnector(SessionConnector):
-
+    connector_name = f"{__name__.replace('.', '_')}_ReverseShellConnector"
     session_class = ReverseShellSession
     options: list[OptionGroup] = [
         {
