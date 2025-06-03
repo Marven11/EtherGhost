@@ -34,6 +34,7 @@ class SessionConnectorModel(Base):  # type: ignore
     __tablename__ = "session_connector"
     record_id = sa.Column(sa.Integer, primary_key=True)
     connector_type = sa.Column(sa.String)  # type: ignore
+    session_type = sa.Column(sa.String)  # type: ignore
     connector_id = sa.Column(UUIDType(binary=False), default=uuid4)  # type: ignore
     name = sa.Column(sa.String)
     note = sa.Column(sa.String)
@@ -71,6 +72,7 @@ class SessionConnectorModelTypeHint:
 
     record_id: int
     connector_type: str
+    session_type: str
     connector_id: UUID
     name: str
     note: str
@@ -109,6 +111,7 @@ def model_to_connector(model: SessionConnectorModelTypeHint) -> SessionConnector
     connection = {**model.connection}
     result = SessionConnectorInfo(
         connector_type=model.connector_type,
+        session_type=model.session_type,
         name=model.name,
         connection=connection,
         connector_id=model.connector_id,
@@ -225,13 +228,15 @@ def add_session_connectors(connectors: t.List[SessionConnectorInfo]):
     orm_session.commit()
 
 
-def get_session_connector_by_session_type(
-    session_type: str,
+def get_session_connector_by_connector_id(
+    connector_id: t.Union[str, UUID],
 ) -> t.Union[None, SessionConnectorInfo]:
-    """根据session_type查询session connector"""
+    """根据connector_id查询session connector"""
+    if isinstance(connector_id, str):
+        connector_id = UUID(connector_id)
     model = (
         orm_session.query(SessionConnectorModel)
-        .filter(SessionConnectorModel.session_type == session_type)
+        .filter(SessionConnectorModel.connector_id == connector_id)
         .first()
     )
     if model is None:
@@ -239,13 +244,35 @@ def get_session_connector_by_session_type(
     return model_to_connector(model)
 
 
-def delete_session_connector_by_session_type(
-    session_type: str, ignore_unexist=False
-) -> bool:
-    """根据session_type删除session connector"""
+def update_session_connector(connector: SessionConnectorInfo) -> bool:
+    """根据connector_id更新session connector"""
+    connector_id = connector.connector_id
+    if isinstance(connector_id, str):
+        connector_id = UUID(connector_id)
     model = (
         orm_session.query(SessionConnectorModel)
-        .filter(SessionConnectorModel.session_type == session_type)
+        .filter(SessionConnectorModel.connector_id == connector_id)
+        .first()
+    )
+    if model is None:
+        return False
+    data = connector.model_dump()
+    for key, value in data.items():
+        if hasattr(model, key):
+            setattr(model, key, value)
+    orm_session.commit()
+    return True
+
+
+def delete_session_connector_by_connector_id(
+    connector_id: t.Union[str, UUID], ignore_unexist=False
+) -> bool:
+    """根据connector_id删除session connector"""
+    if isinstance(connector_id, str):
+        connector_id = UUID(connector_id)
+    model = (
+        orm_session.query(SessionConnectorModel)
+        .filter(SessionConnectorModel.connector_id == connector_id)
         .first()
     )
     if model is None:
