@@ -67,3 +67,16 @@ class ReverseShellConnector(SessionConnector):
 
     async def list_sessions(self) -> list[SessionInfo]:
         return list(self.session_infos.values())
+
+    async def close_session(self, config: dict):
+        if (
+            "connection_id" not in config
+            or not isinstance(config["connection_id"], str)
+            or config["connection_id"] not in self.connections
+        ):
+            raise RuntimeError("socket not found")
+        _, writer = self.connections[config["connection_id"]]
+        writer.close()
+        await writer.wait_closed()
+        del self.connections[config["connection_id"]]
+        del self.session_infos[config["connection_id"]]

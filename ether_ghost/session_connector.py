@@ -19,7 +19,13 @@ class SessionConnector:
     async def list_sessions(self) -> list[SessionInfo]:
         raise NotImplementedError()
 
+    # 构造session对象与关闭session时传入的是session连接方式相关的config字典
+    # 因为构造session对象应该与session的名字和备注等信息无关
+
     def build_session(self, config: dict) -> SessionInterface:
+        raise NotImplementedError()
+
+    async def close_session(self, config: dict):
         raise NotImplementedError()
 
 
