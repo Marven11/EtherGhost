@@ -24,17 +24,18 @@ class SessionConnector:
 
 
 session_connectors: dict[str, type[SessionConnector]] = {}
-started_connectors: dict[str, SessionConnector] = {}
+started_connectors: dict[str, tuple[SessionConnector, asyncio.Task]] = {}
 
 
 def register_connector(clazz: type[SessionConnector]):
     session_connectors[clazz.session_type] = clazz
     return clazz
 
+
 async def start_connector(session_type: str, config: dict):
     if session_type in started_connectors:
         return
     connector = session_connectors[session_type](config)
     task = asyncio.create_task(connector.run())
-    started_connectors[session_type] = connector
+    started_connectors[session_type] = (connector, task)
     return task
