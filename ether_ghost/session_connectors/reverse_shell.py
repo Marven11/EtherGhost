@@ -80,3 +80,20 @@ class ReverseShellConnector(SessionConnector):
         await writer.wait_closed()
         del self.connections[config["connection_id"]]
         del self.session_infos[config["connection_id"]]
+
+
+async def example():
+    connector = ReverseShellConnector({"port": 3001})
+    task = asyncio.create_task(connector.run())
+    try:
+        while True:
+            for session_info in await connector.list_sessions():
+                # TODO: 让ReverseShellSession还原ANSI
+                session = connector.build_session(session_info.connection)
+                result = await session.execute_cmd("ls")
+                print(f"{result}")
+                print(f"{result=}")
+                await connector.close_session(session_info.connection)
+            await asyncio.sleep(1)
+    finally:
+        task.cancel()
