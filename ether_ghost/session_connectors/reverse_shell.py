@@ -27,7 +27,7 @@ class ReverseShellConnector(SessionConnector):
     ]
 
     def __init__(self, config: dict):
-        self.port = config["port"]
+        self.port = int(config["port"])
         self.socket = None
         self.session_infos: dict[str, SessionInfo] = {}
         self.connections: dict[
