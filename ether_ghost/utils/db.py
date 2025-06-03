@@ -77,6 +77,7 @@ class SessionConnectorModelTypeHint:
     connection: t.Dict[t.Any, t.Any]
     autostart: bool
 
+
 Base.metadata.create_all(engine)
 
 
@@ -104,13 +105,15 @@ def info_to_model(info: SessionInfo) -> SessionInfoModel:
 
 
 def model_to_connector(model: SessionConnectorModelTypeHint) -> SessionConnector:
-    """将SessionConnectorModel(SQLAlchemy的对象)转换成dict"""
+    """将SessionConnectorModel(SQLAlchemy的对象)转换成SessionConnector(Pydantic的对象)"""
     connection = {**model.connection}
     result = SessionConnector(
-        session_type=model.session_type,
+        connector_type=model.connector_type,
         name=model.name,
-        note=model.note,
         connection=connection,
+        connector_id=model.connector_id,
+        note=model.note,
+        autostart=model.autostart,
     )
     return result
 
