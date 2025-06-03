@@ -1,7 +1,7 @@
 import asyncio
 import uuid
 from ..core.base import Option, OptionGroup
-from ..sessions.reverse_shell import ReverseShellSession, REVERSE_SHELL_SESSION_TYPE
+from ..sessions.reverse_shell import ReverseShellSession
 from ..session_types import SessionInfo
 from ..session_connector import SessionConnector, register_connector
 
@@ -9,7 +9,7 @@ from ..session_connector import SessionConnector, register_connector
 @register_connector
 class ReverseShellConnector(SessionConnector):
 
-    session_type = REVERSE_SHELL_SESSION_TYPE
+    session_class = ReverseShellSession
     options: list[OptionGroup] = [
         {
             "name": "监听配置",
@@ -54,7 +54,7 @@ class ReverseShellConnector(SessionConnector):
             self.session_count += 1
             self.connections[str(client_id)] = (reader, writer)
             self.session_infos[str(client_id)] = SessionInfo(
-                session_type=REVERSE_SHELL_SESSION_TYPE,
+                session_type=ReverseShellSession.session_type,
                 name=f"反弹Shell #{self.session_count}",
                 connection={"connection_id": str(client_id)},
                 session_id=client_id,

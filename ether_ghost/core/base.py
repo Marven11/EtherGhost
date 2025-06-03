@@ -8,7 +8,6 @@ from ..utils.db import get_settings
 import httpx
 
 USER_AGENT = random_user_agent()
-session_type_info = {}
 
 
 class OptionAlternative(t.TypedDict):
@@ -39,6 +38,7 @@ class DirectoryEntry:
     filesize: int
     entry_type: t.Literal["dir", "file", "link-dir", "link-file", "unknown"] = "file"
 
+
 @dataclass
 class BasicInfoEntry:
     """有关session的一项基本信息"""
@@ -53,6 +53,10 @@ class BasicInfoEntry:
 
 class SessionInterface:
     """Session接口"""
+
+    session_type: t.ClassVar[str]
+    readable_name: t.ClassVar[str]
+    conn_options: t.ClassVar[t.List[OptionGroup]]
 
     async def execute_cmd(self, cmd: str) -> str:
         """在目标上执行命令"""
@@ -154,15 +158,19 @@ class PHPSessionInterface(SessionInterface):
         raise NotImplementedError()
 
 
+class SessionTypeInfo(t.TypedDict):
+    constructor: t.Callable[[dict], SessionInterface]
+    options: t.List[OptionGroup]
+    readable_name: str
+
+
+session_type_info: t.Dict[str, SessionTypeInfo] = {}
+
+
 def register_session(cls):
     """装饰session class, 注册一个session
-    class必需的属性
-      - .conn_options (t.List[ConnOptionGroup]):
-        注明所需的每个选项
-      - .readable_name (str):
-        session的名字
-      - .session_type (str):
-        session的ID，可以包含大小写字符和下划线
+    不要使用这个函数注册connector的session
+    `register_connector`会自动使用其他方式注册对应的connector
     """
     session_type_info[cls.session_type] = {
         "constructor": cls,

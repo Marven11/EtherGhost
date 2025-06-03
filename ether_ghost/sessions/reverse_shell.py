@@ -6,7 +6,7 @@ import shlex
 import hashlib
 import uuid
 
-from ..core import exceptions
+from ..core import exceptions, SessionInterface
 
 from ..core.base import (
     register_session,
@@ -105,7 +105,7 @@ def parse_file_permission(perm: str):
 
 
 @register_session
-class ReverseShellSession:
+class ReverseShellSession(SessionInterface):
     session_type = REVERSE_SHELL_SESSION_TYPE
     readable_name = "反弹Shell"
     conn_options: t.List[OptionGroup] = [

@@ -1,13 +1,13 @@
 from typing import ClassVar
 import asyncio
 
-from .core.base import SessionInterface, OptionGroup
+from .core.base import SessionInterface, OptionGroup, session_type_info
 from .session_types import SessionInfo
 
 
 class SessionConnector:
     connector_name: ClassVar[str]
-    session_type: ClassVar[str]
+    session_class: ClassVar[type[SessionInterface]]
     options: ClassVar[list[OptionGroup]]
 
     def __init__(self, config: dict):
@@ -33,8 +33,23 @@ session_connectors: dict[str, type[SessionConnector]] = {}
 started_connectors: dict[str, tuple[SessionConnector, asyncio.Task]] = {}
 
 
+def build_session(session_type: str, config: dict):
+    if session_type not in session_connectors:
+        raise RuntimeError(f"找不到session: {session_type!r}")
+    if session_type not in started_connectors:
+        raise RuntimeError(f"{session_type!r}对应的connector未启动")
+    connector, _ = started_connectors[session_type]
+    return connector.build_session(config)
+
+
 def register_connector(clazz: type[SessionConnector]):
-    session_connectors[clazz.session_type] = clazz
+    session_type = clazz.session_class.session_type
+    session_connectors[session_type] = clazz
+    session_type_info[session_type] = {
+        "constructor": lambda config: build_session(session_type, config),
+        "options": clazz.session_class.conn_options,
+        "readable_name": clazz.session_class.readable_name,
+    }
     return clazz
 
 
