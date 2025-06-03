@@ -60,3 +60,18 @@ async def start_connector(session_type: str, config: dict):
     task = asyncio.create_task(connector.run())
     started_connectors[session_type] = (connector, task)
     return task
+
+
+async def example():
+    print(f"{session_connectors=}")
+    connector = session_connectors["REVERSE_SHELL"]({"port": 3001})
+    asyncio.create_task(connector.run())
+    while True:
+        for session_info in await connector.list_sessions():
+            print(f"{session_info=}")
+            session = connector.build_session(session_info.connection)
+            result = await session.execute_cmd("ls")
+            print(result)
+            await connector.close_session(session_info.connection)
+            await asyncio.sleep(1)
+        await asyncio.sleep(0)
