@@ -242,8 +242,7 @@ async def get_sessiontype_conn_options(sessiontype: str) -> list[core.OptionGrou
 async def list_sessions_readable():
     result = session_manager.list_sessions_db_readable() + [
         session_manager.session_to_readable(session)
-        for (connector, _) in session_connector.started_connectors.values()
-        for session in (await connector.list_sessions())
+        for session in session_connector.list_sessions()
     ]
     return result
 

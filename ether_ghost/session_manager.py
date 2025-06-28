@@ -5,7 +5,7 @@ import typing as t
 from uuid import UUID
 
 from .utils import db
-from . import core
+from . import core, session_connector
 from .core.base import session_type_info
 from .session_types import (
     SessionInfo,
@@ -44,7 +44,10 @@ def get_session_info_by_id(
     """
     if isinstance(session_id, str):
         session_id = UUID(session_id)
-    return db.get_session_info_by_id(session_id)
+    result = db.get_session_info_by_id(session_id)
+    if result is not None:
+        return result
+    return session_connector.get_session(session_id)
 
 
 def get_session_by_id(session_id: t.Union[str, UUID]) -> core.SessionInterface:

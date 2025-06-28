@@ -3,7 +3,13 @@ import uuid
 from ..core.base import Option, OptionGroup
 from ..sessions.reverse_shell import ReverseShellSession
 from ..session_types import SessionInfo
-from ..session_connector import SessionConnector, register_connector
+from ..session_connector import (
+    SessionConnector,
+    register_connector,
+    register_session,
+    delete_session,
+    list_sessions,
+)
 
 
 @register_connector
@@ -53,20 +59,18 @@ class ReverseShellConnector(SessionConnector):
             client_id = uuid.uuid4()
             self.session_count += 1
             self.connections[str(client_id)] = (reader, writer)
-            self.session_infos[str(client_id)] = SessionInfo(
+            new_session_info = SessionInfo(
                 session_type=ReverseShellSession.session_type,
                 name=f"反弹Shell #{self.session_count}",
                 connection={"connection_id": str(client_id)},
                 session_id=client_id,
                 note=f"Reverse shell {client_id}",
             )
+            register_session(client_id, new_session_info)
 
         self.socket = await asyncio.start_server(handle_client, "0.0.0.0", self.port)
         async with self.socket:
             await self.socket.serve_forever()
-
-    async def list_sessions(self) -> list[SessionInfo]:
-        return list(self.session_infos.values())
 
     async def close_session(self, config: dict):
         if (
@@ -79,7 +83,7 @@ class ReverseShellConnector(SessionConnector):
         writer.close()
         await writer.wait_closed()
         del self.connections[config["connection_id"]]
-        del self.session_infos[config["connection_id"]]
+        delete_session(uuid.UUID(config["connection_id"]))
 
 
 async def example():
@@ -87,7 +91,7 @@ async def example():
     task = asyncio.create_task(connector.run())
     try:
         while True:
-            for session_info in await connector.list_sessions():
+            for session_info in list_sessions():
                 # TODO: 让ReverseShellSession还原ANSI
                 session = connector.build_session(session_info.connection)
                 result = await session.execute_cmd("ls")

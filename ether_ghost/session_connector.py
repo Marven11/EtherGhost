@@ -1,11 +1,30 @@
 from typing import ClassVar, Protocol
 import asyncio
+import uuid
+
 
 from .utils import db
 from .core import exceptions
 from .core.base import SessionInterface, OptionGroup, session_type_info
 from .session_types import SessionInfo
-import uuid
+
+connector_sessions: dict[uuid.UUID, SessionInfo] = {}
+
+
+def get_session(client_id: uuid.UUID):
+    return connector_sessions.get(client_id, None)
+
+
+def list_sessions():
+    return list(connector_sessions.values())
+
+
+def register_session(client_id: uuid.UUID, session_info: SessionInfo):
+    connector_sessions[client_id] = session_info
+
+
+def delete_session(client_id: uuid.UUID):
+    del connector_sessions[client_id]
 
 
 class SessionConnector(Protocol):
@@ -17,9 +36,6 @@ class SessionConnector(Protocol):
         raise NotImplementedError()
 
     async def run(self):
-        raise NotImplementedError()
-
-    async def list_sessions(self) -> list[SessionInfo]:
         raise NotImplementedError()
 
     # 构造session对象与关闭session时传入的是session连接方式相关的config字典
@@ -90,7 +106,7 @@ async def example():
     connector = session_connectors["REVERSE_SHELL"]({"port": 3001})
     asyncio.create_task(connector.run())
     while True:
-        for session_info in await connector.list_sessions():
+        for session_info in list_sessions():
             print(f"{session_info=}")
             session = connector.build_session(session_info.connection)
             result = await session.execute_cmd("ls")
