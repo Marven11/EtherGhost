@@ -32,10 +32,16 @@ class SessionConnector(Protocol):
     session_class: ClassVar[type[SessionInterface]]
     options: ClassVar[list[OptionGroup]]
 
-    def __init__(self, config: dict):
+    def __init__(self, connector_id: uuid.UUID, config: dict):
+        """提供connector实例对应的connector_id和对应的config"""
         raise NotImplementedError()
 
     async def run(self):
+        raise NotImplementedError()
+
+    def get_session_type(self) -> str:
+        """返回正在运行的connector对应的session_type
+        connector生成的session_info都由此session_type标记"""
         raise NotImplementedError()
 
     # 构造session对象与关闭session时传入的是session连接方式相关的config字典
@@ -68,11 +74,11 @@ async def start_connector(connector_id: uuid.UUID):
 
     clazz = session_connectors[connector_info.connector_type]
     print(f"{connector_info.connection=}")
-    connector = clazz(connector_info.connection)
+    connector = clazz(connector_id, connector_info.connection)
     task = asyncio.create_task(connector.run())
 
     started_connectors[connector_id] = (connector, task)
-    session_type_info[f"{clazz.session_class.session_type}_{connector_id}"] = {
+    session_type_info[connector.get_session_type()] = {
         "constructor": connector.build_session,
         "options": clazz.session_class.conn_options,
         "readable_name": f"{connector_info.name} {clazz.session_class.readable_name}",
@@ -91,9 +97,9 @@ async def stop_connector(connector_id: uuid.UUID):
             f"在数据库中找不到正在运行的connector {connector_id}"
         )
     clazz = session_connectors[connector_info.connector_type]
+    connector, task = started_connectors.pop(connector_id)
 
-    del session_type_info[f"{clazz.session_class.session_type}_{connector_id}"]
-    _, task = started_connectors.pop(connector_id)
+    del session_type_info[connector.get_session_type()]
     task.cancel()
     try:
         await task
@@ -103,7 +109,7 @@ async def stop_connector(connector_id: uuid.UUID):
 
 async def example():
     print(f"{session_connectors=}")
-    connector = session_connectors["REVERSE_SHELL"]({"port": 3001})
+    connector = session_connectors["REVERSE_SHELL"](uuid.uuid4(), {"port": 3001})
     asyncio.create_task(connector.run())
     while True:
         for session_info in list_sessions():

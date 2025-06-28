@@ -32,7 +32,8 @@ class ReverseShellConnector(SessionConnector):
         }
     ]
 
-    def __init__(self, config: dict):
+    def __init__(self, connector_id: uuid.UUID, config: dict):
+        self.connector_id = connector_id
         self.port = int(config["port"])
         self.socket = None
         self.session_infos: dict[str, SessionInfo] = {}
@@ -40,6 +41,9 @@ class ReverseShellConnector(SessionConnector):
             str, tuple[asyncio.StreamReader, asyncio.StreamWriter]
         ] = {}
         self.session_count = 0
+
+    def get_session_type(self) -> str:
+        return f"{self.connector_name}_{self.connector_id}"
 
     def build_session(self, config: dict) -> ReverseShellSession:
         if (
@@ -60,7 +64,7 @@ class ReverseShellConnector(SessionConnector):
             self.session_count += 1
             self.connections[str(client_id)] = (reader, writer)
             new_session_info = SessionInfo(
-                session_type=ReverseShellSession.session_type,
+                session_type=self.get_session_type(),
                 name=f"反弹Shell #{self.session_count}",
                 connection={"connection_id": str(client_id)},
                 session_id=client_id,
