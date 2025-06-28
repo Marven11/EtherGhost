@@ -82,25 +82,21 @@ def clear_session_cache():
     session_store.clear()
 
 
-def list_sessions_readable() -> t.List[t.Dict[str, t.Any]]:
-    """列出所有的session info
+def session_to_readable(sess: SessionInfo) -> t.Dict[str, t.Any]:
+    """将SessionInfo对象转换为可读的字典"""
+    return {
+        "type": sess.session_type,
+        "readable_type": session_type_info[sess.session_type]["readable_name"],
+        "id": sess.session_id,
+        "name": sess.name,
+        "note": sess.note,
+        "location": location_readable.get(sess.location, "未知位置"),
+    }
 
-    Returns:
-        t.List[SessionInfo]: 所有的session info
-    """
-    results = []
-    for sess in db.list_sessions():
-        results.append(
-            {
-                "type": sess.session_type,
-                "readable_type": session_type_info[sess.session_type]["readable_name"],
-                "id": sess.session_id,
-                "name": sess.name,
-                "note": sess.note,
-                "location": location_readable.get(sess.location, "未知位置"),
-            }
-        )
-    return results
+
+def list_sessions_db_readable() -> t.List[t.Dict[str, t.Any]]:
+    """列出所有的session info（可读格式）"""
+    return [session_to_readable(sess) for sess in db.list_sessions()]
 
 
 def add_session_info(info: SessionInfo):

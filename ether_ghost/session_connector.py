@@ -1,4 +1,4 @@
-from typing import ClassVar
+from typing import ClassVar, Protocol
 import asyncio
 
 from .utils import db
@@ -8,7 +8,7 @@ from .session_types import SessionInfo
 import uuid
 
 
-class SessionConnector:
+class SessionConnector(Protocol):
     connector_name: ClassVar[str]  # 内部使用的Connector Name, 全局唯一
     session_class: ClassVar[type[SessionInterface]]
     options: ClassVar[list[OptionGroup]]

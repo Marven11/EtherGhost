@@ -239,8 +239,13 @@ async def get_sessiontype_conn_options(sessiontype: str) -> list[core.OptionGrou
     return session_type_info[sessiontype]["options"]
 
 
-async def list_sessions():
-    return session_manager.list_sessions_readable()
+async def list_sessions_readable():
+    result = session_manager.list_sessions_db_readable() + [
+        session_manager.session_to_readable(session)
+        for (connector, _) in session_connector.started_connectors.values()
+        for session in (await connector.list_sessions())
+    ]
+    return result
 
 
 async def get_session(session_id: UUID):
@@ -342,7 +347,7 @@ async def stop_connector(connector_id: UUID):
 async def api_list_sessions(session_id: t.Union[UUID, None] = None):
     """列出所有的session或者查找session"""
     if session_id is None:
-        return {"code": 0, "data": await list_sessions()}
+        return {"code": 0, "data": await list_sessions_readable()}
     return {"code": 0, "data": await get_session(session_id)}
 
 
