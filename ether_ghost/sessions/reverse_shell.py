@@ -23,9 +23,7 @@ logger = logging.getLogger("core.sessions.linux_cmd_oneliner")
 REVERSE_SHELL_SESSION_TYPE = "REVERSE_SHELL"
 
 WRAPPER_CODE = """
-echo -n "{start1}""{start2}";
-({code}) {decoder}
-echo {stop}
+echo -n "{start1}""{start2}";({code}) {decoder};echo {stop}
 """
 
 UPLOAD_FILE_CHUNK_CODE = """
