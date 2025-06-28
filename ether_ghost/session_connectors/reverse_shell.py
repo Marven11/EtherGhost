@@ -91,7 +91,7 @@ class ReverseShellConnector(SessionConnector):
 
 
 async def example():
-    connector = ReverseShellConnector({"port": 3001})
+    connector = ReverseShellConnector(uuid.uuid4(), {"port": 3001})
     task = asyncio.create_task(connector.run())
     try:
         while True:

@@ -444,12 +444,14 @@ class ReverseShellSession(SessionInterface):
             raise exceptions.UserError("未知Decoder: " + self.decoder)
 
     async def submit_socket(self, payload: t.Union[str, bytes]):
-        command_end_marker = str(uuid.uuid4()).encode()
+        command_end_marker = str(uuid.uuid4())
         async with self.lock:
             if isinstance(payload, str):
                 payload = payload.encode()
             self.writer.write(bytes(payload) + b"\n")
-            self.writer.write(b"echo " + command_end_marker + b"\n")
+            self.writer.write(
+                f"echo '{command_end_marker[:6]}''{command_end_marker[6:]}'\n".encode()
+            )
             await self.writer.drain()
-            data = await self.reader.readuntil(separator=command_end_marker)
+            data = await self.reader.readuntil(separator=command_end_marker.encode())
             return data.decode()
