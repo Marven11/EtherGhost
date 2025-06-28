@@ -53,7 +53,9 @@ class ReverseShellConnector(SessionConnector):
         ):
             raise RuntimeError("socket not found")
         reader, writer = self.connections[config["connection_id"]]
-        return ReverseShellSession(config, reader, writer)
+        return ReverseShellSession(
+            config, lambda: self.drop_session(config), reader, writer
+        )
 
     async def run(self):
 
@@ -75,6 +77,17 @@ class ReverseShellConnector(SessionConnector):
         self.socket = await asyncio.start_server(handle_client, "0.0.0.0", self.port)
         async with self.socket:
             await self.socket.serve_forever()
+
+    def drop_session(self, config: dict):
+        """在socket失效后直接丢掉socket和对应的session_info"""
+        if (
+            "connection_id" not in config
+            or not isinstance(config["connection_id"], str)
+            or config["connection_id"] not in self.connections
+        ):
+            raise RuntimeError("socket not found")
+        del self.connections[config["connection_id"]]
+        delete_session(uuid.UUID(config["connection_id"]))
 
     async def close_session(self, config: dict):
         if (

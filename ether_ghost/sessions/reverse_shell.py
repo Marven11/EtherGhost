@@ -146,8 +146,13 @@ class ReverseShellSession(SessionInterface):
     ]
 
     def __init__(
-        self, config: dict, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
+        self,
+        config: dict,
+        drop_self: t.Callable[[], None],
+        reader: asyncio.StreamReader,
+        writer: asyncio.StreamWriter,
     ):
+        self.drop_self = drop_self  # 从connector中删除自己
         self.chunk_size = int(config.get("chunk_size", 1024))
         self.encoder = str(config.get("encoder", "raw"))
         self.decoder = str(config.get("decoder", "raw"))
@@ -446,10 +451,19 @@ class ReverseShellSession(SessionInterface):
         async with self.lock:
             if isinstance(payload, str):
                 payload = payload.encode()
-            self.writer.write(bytes(payload) + b"\n")
-            self.writer.write(
-                f"echo '{command_end_marker[:6]}''{command_end_marker[6:]}'\n".encode()
-            )
-            await self.writer.drain()
-            data = await self.reader.readuntil(separator=command_end_marker.encode())
-            return data.decode()
+            try:
+                self.writer.write(bytes(payload) + b"\n")
+                self.writer.write(
+                    f"echo '{command_end_marker[:6]}''{command_end_marker[6:]}'\n".encode()
+                )
+                await self.writer.drain()
+                data = await self.reader.readuntil(
+                    separator=command_end_marker.encode()
+                )
+                return data.decode()
+            except ConnectionResetError as e:
+                self.drop_self()  # 出现连接错误时通知connector删除自己
+                raise exceptions.NetworkError("连接重置") from e
+            except Exception as e:
+                self.drop_self()  # 出现其他错误时通知connector删除自己
+                raise e
