@@ -18,6 +18,7 @@
 
 - 同时支持 PHP 一句话 webshell 和冰蝎 PHP/JSP webshell
   - 冰蝎 JSP webshell 仍在测试中
+- 支持管理反弹Shell
 - 流量防重放和流量强加密
 - TCP 正向代理
 - 异步上传下载文件
@@ -45,6 +46,7 @@
   - 冰蝎 PHP
   - 冰蝎 JSP (测试中)
   - Linux 命令
+  - Linux 反弹shell
 - webshell 操作
   - 命令执行
     - 支持伪终端和普通的命令执行
