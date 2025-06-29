@@ -2,10 +2,8 @@ from pathlib import Path
 import asyncio
 import base64
 import re
-import hashlib
 import json
 import logging
-import string
 import subprocess
 import typing as t
 import tempfile
@@ -24,61 +22,14 @@ from ..core.base import (
     DirectoryEntry,
     get_http_client,
 )
-from ..core.php_session_common import (
-    php_webshell_action_options,
-    php_webshell_communication_options,
-)
+
+from ..utils.tools import parse_permission, java_repr, md5_encode, base64_encode
+
 
 logger = logging.getLogger("core.sessions.php_behinder")
 
 PAYLOAD_PATH = Path(__file__).parent / "Payload.java"
 assert PAYLOAD_PATH.exists(), f"Cannot find Payload.java at {Path(__file__).parent}"
-
-# TODO: 把这些函数移动到utils里
-
-
-def parse_permission(perm: str):
-    """将rwxrwxrwx格式的文件权限解析为755格式的
-
-    Args:
-        perm (str): rwxrwxrwx格式的文件权限
-    """
-    # 难看代码大赏
-    result = ""
-    if not re.match("^[rwx-]{9}$", perm):
-        raise ValueError("Wrong permission format: " + perm)
-    nums = list(map({"r": 4, "w": 2, "x": 1, "-": 0}.__getitem__, perm))
-    for i in range(0, 9, 3):
-        result += str(sum(nums[i : i + 3]))
-    return result
-
-
-def java_repr(obj):
-    if isinstance(obj, (str, int)):
-        if isinstance(obj, str) and len(obj) > 1000:
-            parts = ",".join(
-                json.dumps(obj[i : i + 1000]) for i in range(0, len(obj), 1000)
-            )
-            return 'String.join("", ' + parts + ")"
-        return json.dumps(obj)
-    if isinstance(obj, list) and all(isinstance(x, str) for x in obj):
-        return "(new String[]{" + ",".join(java_repr(x) for x in obj) + "})"
-    raise NotImplementedError(f"{type(obj)=}")
-
-
-def md5_encode(s):
-    """将给定的字符串或字节序列转换成MD5"""
-    if isinstance(s, str):
-        s = s.encode()
-    return hashlib.md5(s).hexdigest()
-
-
-def base64_encode(s: str | bytes):
-    """将给定的字符串或字节序列编码成base64"""
-    if isinstance(s, str):
-        s = s.encode("utf-8")
-    return base64.b64encode(s).decode()
-
 
 def behinder_aes(payload: bytes, key: bytes) -> bytes:
     """将给定的payload按照冰蝎的格式进行AES加密"""
@@ -461,8 +412,13 @@ class JSPWebshellBehinderAES:
 
     async def get_basicinfo(self) -> t.List[BasicInfoEntry]:
         """获取当前的基本信息"""
-        # [TODO] 写一下这个方法
-        raise exceptions.ServerError("JSP Webshell暂时不支持此方法")
+        info = await self.submit_code("get_basicinfo()")
+        return [
+            BasicInfoEntry(key="Current Directory", value=info["current_directory"]),
+            BasicInfoEntry(key="System Version", value=info["system_version"]),
+            BasicInfoEntry(key="Java Version", value=info["java_version"]),
+            BasicInfoEntry(key="JSP Location", value=info["jsp_location"])
+        ]
 
     async def open_reverse_shell(self, host: str, port: int) -> None:
         """打开一个反弹shell"""

