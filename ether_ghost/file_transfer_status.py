@@ -1,3 +1,9 @@
+"""
+文件传输状态管理模块
+
+负责跟踪和管理文件上传下载的进度状态，提供状态记录和查询功能。
+"""
+
 from contextlib import contextmanager
 import typing as t
 import uuid

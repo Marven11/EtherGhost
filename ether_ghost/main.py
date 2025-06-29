@@ -1,4 +1,13 @@
-"""webui的后台部分"""
+"""
+主API服务模块
+
+提供Web管理界面后台API，包括：
+- Session管理
+- 文件传输操作
+- TCP代理服务
+- PHP相关功能
+- 系统设置管理
+"""
 
 import asyncio
 import base64

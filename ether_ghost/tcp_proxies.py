@@ -1,3 +1,13 @@
+"""
+TCP代理管理模块
+
+实现两种TCP代理服务：
+1. PsudoTcpServeConnection - 伪TCP代理
+2. VesselTcpForwardServeConnection - Vessel TCP转发代理
+
+提供代理服务的启动和管理功能
+"""
+
 import asyncio
 import traceback
 import re

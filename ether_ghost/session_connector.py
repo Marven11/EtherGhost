@@ -1,3 +1,12 @@
+"""
+Session连接器管理模块
+
+负责：
+- 定义SessionConnector协议接口
+- 管理连接器的注册和启动
+- 处理session连接和生命周期
+"""
+
 from typing import ClassVar, Protocol
 import asyncio
 import uuid

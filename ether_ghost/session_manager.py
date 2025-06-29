@@ -1,4 +1,15 @@
-"""管理session相关的函数，实现了session info的CRUD与session的实例化等"""
+"""
+Session统一管理模块
+
+负责管理两种核心对象：
+1. SessionInfo - 存储session的元数据(名称、备注)和连接配置
+2. Session - 实现SessionInterface的实际操作对象，由SessionInfo构造
+
+主要功能：
+- SessionInfo的CRUD操作
+- Session对象的缓存和生命周期管理
+- 两种对象的转换
+"""
 
 import time
 import typing as t
