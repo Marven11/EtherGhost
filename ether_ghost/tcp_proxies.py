@@ -5,7 +5,10 @@ import base64
 import uuid
 import time
 import typing as t
+import logging
 
+
+logger = logging.getLogger("core.tcp_proxies")
 
 from .core import SessionInterface, exceptions, PHPSessionInterface
 from .vessel_php.main import get_vessel_client
@@ -65,7 +68,7 @@ class PsudoTcpServeConnection:
         try:
             await self.serve_connection_raw(reader, writer)
         except Exception:
-            traceback.print_exc()
+            logger.error("Exception in serve_connection", exc_info=True)
 
     async def start_server(self) -> asyncio.Task:
         try:
@@ -124,9 +127,9 @@ async def sender(
         except exceptions.TargetRuntimeError as e:
             if "VESSEL_FAILED" not in str(e):
                 raise e
+            logger.debug(f"Sent {len(tosend)} bytes")
             state["socket_open"] = False
             return
-        print(f"[>] sent {len(tosend)} B")
         state["last_communicate_time"] = time.perf_counter()
 
 
@@ -159,8 +162,8 @@ async def receiver(
                 if time.perf_counter() - state["last_communicate_time"] < 3
                 else REQUEST_INTERVAL_LONG
             )
+            logger.debug(f"Received {len(towrite_bytes)} bytes")
             continue
-        print(f"[<] recv {len(towrite_bytes)} B")
         writer.write(towrite_bytes)
         state["last_communicate_time"] = time.perf_counter()
 
@@ -190,7 +193,7 @@ class VesselTcpForwardServeConnection:
         )
         if socket_id is None:
             raise exceptions.ServerError("Cannot connect")
-        print(f"[+] Open new socket {socket_id=}")
+        logger.info(f"Opened new socket {socket_id=}")
         state = {
             "socket_open": True,
             "session_key": self.session_key,
@@ -213,8 +216,8 @@ class VesselTcpForwardServeConnection:
         except exceptions.TargetRuntimeError as e:
             if "VESSEL_FAILED" not in str(e):
                 raise e
-            print(f"[x] Socket close failed {socket_id=} {str(e)}")
-        print(f"[-] Socket closed {socket_id=}")
+            logger.warning(f"Socket close failed {socket_id=}: {str(e)}")
+        logger.info(f"Socket closed {socket_id=}")
 
     async def serve_connection(
         self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
@@ -223,7 +226,7 @@ class VesselTcpForwardServeConnection:
             await self.serve_connection_raw(reader, writer)
         except Exception:
             writer.close()
-            traceback.print_exc()
+            logger.error("Exception in serve_connection", exc_info=True)
 
     async def start_server(self):
 

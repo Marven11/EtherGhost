@@ -187,7 +187,7 @@ async def update_info_last():
     if current_version != update_check_info["current_version"]:
         return None
     if current_version != update_check_info["new_version"]:
-        print(f"发现新版本！{current_version} -> {update_check_info['new_version']}")
+        logger.warning(f"New version available: {current_version} -> {update_check_info['new_version']}")
     return update_check_info
 
 
@@ -214,7 +214,7 @@ async def update_info_fetch():
         "new_version": new_version,
     }
     if current_version != update_check_info["new_version"]:
-        print(f"发现新版本！{current_version} -> {update_check_info['new_version']}")
+        logger.warning(f"New version available: {current_version} -> {update_check_info['new_version']}")
     try:
         const.UPDATE_CHECK_FILEPATH.write_text(json.dumps(update_check_info))
     except Exception as exc:

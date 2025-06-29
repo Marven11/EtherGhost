@@ -427,7 +427,7 @@ class ReverseShellSession(SessionInterface):
         result = await self.submit_socket(code)
 
         if (start1 + start2) not in result:
-            print(f"{result=}")
+            logger.debug(f"Command result: {result}")
             raise exceptions.PayloadOutputError(
                 "找不到输出文本的开头，也许webshell没有执行代码？"
             )

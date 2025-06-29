@@ -6,9 +6,12 @@ import string
 import time
 import typing as t
 import uuid
+import logging
 from pathlib import Path
 from ..core.base import PHPSessionInterface
 from ..core import exceptions
+
+logger = logging.getLogger("vessel_php")
 
 VESSEL_SERVER_SRC = Path(__file__).parent / "server.php"
 VESSEL_CLIENT_SRC = Path(__file__).parent / "client.php"
@@ -33,7 +36,7 @@ async def start_vessel_server(session: PHPSessionInterface, timeout=10):
     )
     vessel_client_store = f"_{uuid.uuid4()}"
     vessel_session_key = f"_{uuid.uuid4()}"
-    print(f"{vessel_session_key=}")
+    logger.debug(f"Vessel session key: {vessel_session_key}")
     # 先测试一下phpsession是否可以使用
     await session.php_eval(
         f"""
@@ -57,7 +60,7 @@ echo json_encode($_SESSION['{vessel_client_store}']);
                 code
                 + f"\n(new VesselServer()) -> serve_over_session('{vessel_session_key}');"
             )
-            print(f"{vessel_server_resp=}")
+            logger.debug(f"Vessel server response: {vessel_server_resp}")
         except Exception:
             pass
 
@@ -111,7 +114,7 @@ $client = new VesselClient('{vessel_session_key}');
         if f"{first} {second}" in result:
             check_success = True
             break
-        print(result)
+        logger.debug(f"Vessel check result: {result}")
     if not check_success:
         raise exceptions.TargetError("启动失败：无法连接到启动的vessel")
 

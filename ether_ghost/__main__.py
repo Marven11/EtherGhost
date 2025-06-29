@@ -2,6 +2,9 @@ import argparse
 import webbrowser
 import threading
 import time
+import logging
+
+logger = logging.getLogger("main")
 
 from .main import app
 
@@ -12,7 +15,7 @@ def open_browser(url):
         try:
             webbrowser.open(url)
         except webbrowser.Error:
-            print("Open browser failed")
+            logger.warning("Failed to open browser")
 
     t = threading.Thread(target=open_browser_thread)
     t.daemon = True

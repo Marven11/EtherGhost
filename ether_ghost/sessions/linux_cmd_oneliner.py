@@ -503,7 +503,7 @@ class LinuxCmdOneLiner:
                 f"状态码404, 没有这个webshell: {status_code}"
             )
         if (start1 + start2) not in html:
-            print(f"{html=}")
+            logger.debug(f"HTML response: {html}")
             raise exceptions.PayloadOutputError(
                 "找不到输出文本的开头，也许webshell没有执行代码？"
             )

@@ -1,7 +1,10 @@
 from typing import ClassVar, Protocol
 import asyncio
 import uuid
+import logging
 
+
+logger = logging.getLogger("core.session_connector")
 
 from .utils import db
 from .core import exceptions
@@ -73,7 +76,7 @@ async def start_connector(connector_id: uuid.UUID):
         raise RuntimeError(f"找不到connector {connector_id}")
 
     clazz = session_connectors[connector_info.connector_type]
-    print(f"{connector_info.connection=}")
+    logger.debug(f"Connector info: {connector_info.connection=}")
     connector = clazz(connector_id, connector_info.connection)
     task = asyncio.create_task(connector.run())
 
