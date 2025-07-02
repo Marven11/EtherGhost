@@ -40,7 +40,7 @@ const basicOptionGroup = {
     },
     {
       id: "autostart",
-      name: "自动启动",
+      name: "自动随着主程序启动",
       type: "checkbox",
       default_value: false
     }
