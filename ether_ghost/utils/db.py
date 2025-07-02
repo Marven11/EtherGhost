@@ -224,6 +224,10 @@ def add_session_connectors(connectors: t.List[SessionConnectorInfo]):
     orm_session.add_all(models)
     orm_session.commit()
 
+def get_session_connector_all() -> t.List[SessionConnectorInfo]:
+    """获取所有session connector"""
+    models = orm_session.query(SessionConnectorModel).all()
+    return [model_to_connector(model) for model in models]
 
 def get_session_connector_by_connector_id(
     connector_id: t.Union[str, UUID],

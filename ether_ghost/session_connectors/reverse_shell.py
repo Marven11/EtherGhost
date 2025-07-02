@@ -30,10 +30,12 @@ class ReverseShellConnector(SessionConnector):
                     alternatives=None,
                 ),
             ],
-        }
+        },
+        *ReverseShellSession.conn_options
     ]
 
     def __init__(self, connector_id: uuid.UUID, config: dict):
+        self.config = config
         self.connector_id = connector_id
         self.port = int(config["port"])
         self.socket = None
@@ -55,7 +57,7 @@ class ReverseShellConnector(SessionConnector):
             raise RuntimeError("socket not found")
         reader, writer = self.connections[config["connection_id"]]
         return ReverseShellSession(
-            config, lambda: self.drop_session(config), reader, writer
+            {**self.config, **config}, lambda: self.drop_session(config), reader, writer
         )
 
     async def run(self):
@@ -75,7 +77,7 @@ class ReverseShellConnector(SessionConnector):
             )
             register_session(client_id, new_session_info)
 
-        self.socket = await asyncio.start_server(handle_client, "0.0.0.0", self.port)
+        self.socket = await asyncio.start_server(handle_client, "0.0.0.0", self.port, limit=1024 * 128)
         async with self.socket:
             await self.socket.serve_forever()
 

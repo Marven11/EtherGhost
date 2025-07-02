@@ -80,7 +80,11 @@ async def lifespan(api: FastAPI):
     # logger.warning("Your token is %s", token)
     db.ensure_settings()
     logger.warning("从此文件夹加载配置: %s", const.DATA_FOLDER.as_posix())
+
+    await session_connector.autostart_connectors()
+
     yield
+
     for _, filepath in temp_files.values():
         if filepath.exists():
             filepath.unlink()

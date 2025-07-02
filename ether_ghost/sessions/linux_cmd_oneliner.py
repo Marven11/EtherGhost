@@ -374,10 +374,11 @@ class LinuxCmdOneLiner:
                         done_bytes=done_bytes,
                         max_bytes=len(content),
                     )
-            if "DONE" not in result:
+            result = result.strip()
+            if not result.startswith("DONE"):
                 raise exceptions.FileError("上传分块失败")
 
-            return result.strip().removeprefix("DONE").strip()
+            return result.removeprefix("DONE").strip()
 
         coros = [
             upload_chunk(content[i : i + chunk_size])

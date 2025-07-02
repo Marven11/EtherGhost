@@ -109,7 +109,6 @@ async def stop_connector(connector_id: uuid.UUID):
         raise exceptions.ServerError(
             f"在数据库中找不到正在运行的connector {connector_id}"
         )
-    clazz = session_connectors[connector_info.connector_type]
     connector, task = started_connectors.pop(connector_id)
 
     del session_type_info[connector.get_session_type()]
@@ -118,6 +117,21 @@ async def stop_connector(connector_id: uuid.UUID):
         await task
     except asyncio.CancelledError:
         pass
+
+async def autostart_connectors():
+    connectors = [
+        connector.connector_id
+        for connector in db.get_session_connector_all()
+        if connector.autostart
+    ]
+    tasks = await asyncio.gather(*[
+        start_connector(connector_id)
+        for connector_id in connectors
+    ], return_exceptions=True)
+    exceptions = [task for task in tasks if isinstance(task, Exception)]
+    if exceptions:
+        raise ExceptionGroup("自动启动Connector失败", exceptions)
+    return tasks
 
 
 async def example():

