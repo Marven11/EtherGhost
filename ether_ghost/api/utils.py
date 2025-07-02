@@ -18,11 +18,11 @@ from fastapi.responses import FileResponse
 from ..utils import const
 from ..core import ServerError
 
+from .base import temp_files
+
 logger = logging.getLogger("main")
 router = APIRouter()
 update_check_lock = asyncio.Lock()
-
-temp_files: t.Dict[UUID, t.Tuple[str, PurePath]] = {}
 
 def remote_path(filepath: str) -> PurePath:
     """自动猜测传入文件路径的类型为unix/windows, 并实例化成Path对象"""
