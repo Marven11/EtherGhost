@@ -4,6 +4,7 @@ import { ref, shallowRef } from "vue";
 import { getDataOrPopupError, postDataOrPopupError, addPopup } from "@/assets/utils"
 import IconCross from '@/components/icons/iconCross.vue'
 import IconCheck from '@/components/icons/iconCheck.vue'
+import GroupedForm from "@/components/GroupedForm.vue"
 import { store, currentSettings } from "@/assets/store";
 import { useRouter } from "vue-router"
 
@@ -105,10 +106,6 @@ const othersOptionGroup = {
 
 const optionsGroups = shallowRef([userInterfaceOptionGroup, connectionOptionGroup, othersOptionGroup])
 
-function changeClickboxOption(optionId) {
-  currentSettings[optionId] = !currentSettings[optionId]
-}
-
 async function saveSettings() {
   let settings = { ...currentSettings }
   console.log(settings)
@@ -134,45 +131,36 @@ async function onTestProxy() {
   }
 }
 
+function onUpdateSettings(optionId, value) {
+  currentSettings[optionId] = value
+}
+
+let buttons = [
+  {
+    "label": "丢弃",
+  },
+  {
+    "label": "保存",
+  }
+]
+
+function onButtonClick(button) {
+  console.log(button)
+  if (button.label == "丢弃") {
+    router.go(-1)
+  } else if (button.label == "保存") {
+    saveSettings()
+  }
+}
+
 </script>
 
 <template>
-  <div class="option-group" v-for="group in optionsGroups">
-    <p class="group-title shadow-box">
-      {{ group.name }}
-    </p>
-    <div class="options">
-      <div class="option" v-for="option in group.options">
-        <div class="option-name">
-          {{ option.name }}
-        </div>
-        <input v-if="option.type == 'text'" :type="option.type" :name="option.id" v-model="currentSettings[option.id]"
-          :placeholder="option.placeholder" :id="'option-' + option.id">
-        <select v-else-if="option.type == 'select'" :name="option.id" :id="'option-' + option.id"
-          v-model="currentSettings[option.id]">
-          <option disabled value="">选择一个</option>
-          <option v-for="alternative in option.alternatives" :value="alternative.value">
-            {{ alternative.name }}
-          </option>
-        </select>
-        <div v-else-if="option.type == 'checkbox'" class="input-checkbox" :id="'option-' + option.id"
-          :checked="currentSettings[option.id]" @click="changeClickboxOption(option.id)">
-          <input type="hidden" :name="option.id" :id="'option-' + option.id" v-model="currentSettings[option.id]">
-          <IconCheck v-if="currentSettings[option.id]" />
-          <IconCross v-else />
-        </div>
-        <p v-else>内部错误：未知选项类型 {{ option.type }}</p>
-      </div>
-    </div>
-  </div>
-  <div class="submit-buttons shadow-box">
-    <div class="submit-button" @click="() => router.go(-1)">
-      丢弃
-    </div>
-    <div class="submit-button" @click="saveSettings">
-      保存
-    </div>
-  </div>
+  <GroupedForm :groups="optionsGroups" :modelValue="currentSettings" @update:modelValue="onUpdateSettings"
+    :buttons="buttons" @button-click="onButtonClick">
+
+  </GroupedForm>
+
   <div class="actions shadow-box">
     <button class="button" @click="onTestProxy">测试代理</button>
     <select name="testProxySites" id="testProxySites" v-model="testProxySite">
@@ -187,152 +175,6 @@ async function onTestProxy() {
 </template>
 
 <style scoped>
-.option-group {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 30px;
-  width: 60%;
-  margin-left: 20%;
-  margin-right: 20%;
-}
-
-.group-title {
-  background-color: var(--background-color-2);
-  color: var(--font-color-primary);
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  margin: 0;
-  padding-top: 0.75rem;
-  padding-bottom: 0.75rem;
-  border-radius: 0.75rem;
-  margin-bottom: 10px;
-}
-
-.options {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-}
-
-body[data-theme="glass"] .options {
-  border-radius: 20px;
-  background-color: #00000015;
-  backdrop-filter: blur(20px);
-  padding: 10px 20px;
-  margin-top: 5px;
-}
-
-
-.option {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: start;
-  color: var(--font-color-primary);
-  height: 2.2rem;
-  font-size: 1rem;
-  margin-top: 0.5rem;
-}
-
-.option-name {
-  margin-right: 20px;
-}
-
-.option input[type="text"] {
-  height: 100%;
-  min-width: 200px;
-  border-radius: 8px;
-  flex-grow: 1;
-  font-size: 1rem;
-  text-indent: 10px;
-}
-
-.option select {
-  height: 100%;
-  background-color: #00000015;
-  outline: none;
-  border: none;
-  border-radius: 8px;
-  color: var(--font-color-primary);
-  min-width: 100px;
-  font-size: 1rem;
-  padding-left: 10px;
-}
-
-
-input {
-  background-color: #00000015;
-  border: none;
-  outline: none;
-  color: var(--font-color-primary);
-}
-
-.input-checkbox {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  background-color: #00000015;
-  outline: 2px dashed var(--font-color-secondary);
-  stroke: var(--font-color-secondary);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: background 0.3s ease;
-}
-
-.input-checkbox:hover {
-  background-color: #ffffff15;
-}
-
-.input-checkbox[checked=true] {
-  background-color: var(--font-color-primary);
-  stroke: var(--font-color-secondary);
-}
-
-.input-checkbox svg {
-  width: 20px;
-  height: 20px;
-}
-
-.submit-buttons {
-  min-height: 6rem;
-  width: 60%;
-  border-radius: 20px;
-  margin-left: 20%;
-  margin-right: 20%;
-  background-color: var(--background-color-2);
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  user-select: none;
-}
-
-.submit-button {
-  height: 60%;
-  width: 20%;
-  margin-left: 20px;
-  margin-right: 20px;
-  border-radius: 12px;
-
-  background-color: var(--background-color-3);
-  color: var(--font-color-primary);
-  outline: 2px dashed var(--font-color-secondary);
-  font-size: 1.25rem;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.3s ease;
-}
-
-.submit-button:hover {
-  background-color: color-mix(in lch, rgb(255, 255, 255) 10%, var(--background-color-3));
-}
-
-
 .actions {
   width: 60%;
   margin-top: 20px;
