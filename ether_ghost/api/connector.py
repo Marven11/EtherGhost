@@ -3,6 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter
 
 from ..utils import db
+from ..core import exceptions
 
 from .. import (
     session_types,
@@ -59,6 +60,17 @@ async def list_connectors():
 async def list_started_connectors():
     return {"code": 0, "data": list(session_connector.started_connectors.keys())}
 
+
+@router.get("/connector/{connector_id}")
+@catch_user_error
+async def get_connector(connector_id: UUID):
+    result = db.get_session_connector_by_connector_id(connector_id)
+    if not result:
+        raise exceptions.UserError(f"未找到Connector: {connector_id}")
+    return {
+        "code": 0,
+        "data": db.get_session_connector_by_connector_id(connector_id)
+    }
 
 @router.post("/connector")
 async def add_or_update_connector(connector_info: session_types.SessionConnectorInfo):
