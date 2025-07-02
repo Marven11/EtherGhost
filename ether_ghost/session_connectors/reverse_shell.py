@@ -15,6 +15,7 @@ from ..session_connector import (
 @register_connector
 class ReverseShellConnector(SessionConnector):
     connector_name = f"{__name__.replace('.', '_')}_ReverseShellConnector"
+    connector_name_readable = f"Linux TCP反弹Shell"
     session_class = ReverseShellSession
     options: list[OptionGroup] = [
         {

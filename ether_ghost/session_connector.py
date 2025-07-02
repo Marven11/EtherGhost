@@ -41,6 +41,7 @@ def delete_session(client_id: uuid.UUID):
 
 class SessionConnector(Protocol):
     connector_name: ClassVar[str]  # 内部使用的Connector Name, 全局唯一
+    connector_name_readable: ClassVar[str]  # 展示给用户的Connector Name
     session_class: ClassVar[type[SessionInterface]]
     options: ClassVar[list[OptionGroup]]
 

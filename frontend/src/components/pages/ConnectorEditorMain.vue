@@ -68,12 +68,12 @@ async function updateOption(connectorType) {
 }
 
 async function fetchSupportedConnectorTypes() {
-  const connectorTypes = await getDataOrPopupError("/connectortype")
+  const data = await getDataOrPopupError("/connectortype")
   let optionIdx = basicOptionGroup.options.findIndex(option => option.id == 'connector_type')
-  basicOptionGroup.options[optionIdx].alternatives = connectorTypes.map(connectorType => {
+  basicOptionGroup.options[optionIdx].alternatives = data.map(connectorType => {
     return {
-      name: connectorType,
-      value: connectorType
+      name: connectorType.name,
+      value: connectorType.type
     }
   })
 }
@@ -184,11 +184,6 @@ setTimeout(async () => {
 </script>
 
 <template>
-  <GroupedForm
-    :groups="optionsGroups"
-    :modelValue="optionValues"
-    @update:modelValue="onUpdateOption"
-    :buttons="buttons"
-    @button-click="onButtonClick"
-  />
+  <GroupedForm :groups="optionsGroups" :modelValue="optionValues" @update:modelValue="onUpdateOption" :buttons="buttons"
+    @button-click="onButtonClick" />
 </template>

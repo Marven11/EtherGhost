@@ -34,7 +34,13 @@ async def api_get_connectortype():
     """查找所有支持的session type"""
     return {
         "code": 0,
-        "data": list(session_connector.session_connectors.keys()),
+        "data": [
+            {
+                "type": connectortype, 
+                "name": connector_class.connector_name_readable
+            }
+            for connectortype, connector_class in session_connector.session_connectors.items()
+        ],
     }
 
 
