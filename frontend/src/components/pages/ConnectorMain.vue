@@ -4,7 +4,9 @@ import IconRun from '../icons/iconRun.vue';
 import IconSetting from '../icons/iconSetting.vue';
 import LoadingButton from '../LoadingButton.vue';
 import { getDataOrPopupError } from '@/assets/utils';
+import { useRouter } from 'vue-router';
 
+const router = useRouter()
 
 const connectors = ref([
     // {
@@ -51,9 +53,11 @@ async function connectorSwitch(connectorId) {
         }
     } finally {
         await fetchConnectors()
-
     }
+}
 
+function editConnector(connectorId) {
+    router.push(`/connector-editor/${connectorId}`)
 }
 
 </script>
@@ -68,7 +72,7 @@ async function connectorSwitch(connectorId) {
                 <LoadingButton :status="connectorStatus[connector.connector_id]">
                 </LoadingButton>
             </div>
-            <div class="connector-button setting-button">
+            <div class="connector-button setting-button" @click="editConnector(connector.connector_id)">
                 <IconSetting></IconSetting>
             </div>
         </div>

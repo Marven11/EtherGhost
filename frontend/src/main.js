@@ -21,6 +21,7 @@ import Terminal from "vue-web-terminal";
 import "./assets/vue-web-terminal.css";
 import ReverseShellMain from "./components/pages/ReverseShellMain.vue";
 import ConnectorMain from "./components/pages/ConnectorMain.vue";
+import ConnectorEditorMain from "./components/pages/ConnectorEditorMain.vue";
 
 const routes = [
   { path: "/", component: HomeMain, props: true },
@@ -42,6 +43,16 @@ const routes = [
   {
     path: "/connector/",
     component: ConnectorMain,
+    props: true,
+  },
+  {
+    path: "/connector-editor/:connector",
+    component: ConnectorEditorMain,
+    props: true,
+  },
+  {
+    path: "/connector-editor/",
+    component: ConnectorEditorMain,
     props: true,
   },
   {
