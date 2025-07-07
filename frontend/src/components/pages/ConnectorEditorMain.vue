@@ -123,13 +123,6 @@ function getCurrentConnector() {
   return connector
 }
 
-async function testConnector() {
-  let connector = getCurrentConnector()
-  if (!connector) return;
-  // 这里可以添加测试连接器的逻辑
-  addPopup("blue", "测试功能", "连接器测试功能待实现")
-}
-
 async function saveConnector() {
   let connector = getCurrentConnector()
   if (!connector) return;
@@ -155,7 +148,6 @@ function onUpdateOption(optionId, value) {
 const buttons = [
   { label: "取消" },
   { label: "保存" },
-  { label: "测试" }
 ]
 
 function onButtonClick(button) {
@@ -163,8 +155,6 @@ function onButtonClick(button) {
     router.push("/connector")
   } else if (button.label === "保存") {
     saveConnector()
-  } else if (button.label === "测试") {
-    testConnector()
   }
 }
 
