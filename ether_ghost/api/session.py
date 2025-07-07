@@ -1,4 +1,5 @@
 """Session相关API路由"""
+
 from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
 from uuid import UUID, uuid4
 from functools import wraps
@@ -11,7 +12,7 @@ import typing as t
 import re
 import chardet
 from fastapi import APIRouter, Body, File, Form, Request, UploadFile
-from fastapi.responses import  Response
+from fastapi.responses import Response
 
 from .. import session_manager, session_types, session_connector
 from ..core import SessionInterface, PHPSessionInterface
@@ -388,5 +389,5 @@ async def delete_session(session_id: UUID):
     )
     if session is None:
         return {"code": -400, "msg": "没有这个session"}
-    session_manager.delete_session_info_by_id(session_id)
+    await session_manager.delete_session_info_by_id(session_id)
     return {"code": 0, "data": True}

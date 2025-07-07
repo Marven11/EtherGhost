@@ -118,6 +118,13 @@ def add_session_info(info: SessionInfo):
     db.add_session_info(info)
 
 
-def delete_session_info_by_id(session_id: UUID):
-    """根据session id删除某个session"""
+async def delete_session_info_by_id(session_id: UUID):
+    """根据session id删除某个session
+    如果是Connector的session则通知connector关闭，否则从数据库中删除"""
+    if connector := session_connector.get_connector_of_session(session_id):
+        session_info = get_session_info_by_id(session_id)
+        assert (
+            session_info is not None
+        ), "Internal error: we should get session info when finding its connector"
+        await connector.close_session(session_info.connection)
     db.delete_session_info_by_id(session_id)

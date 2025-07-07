@@ -27,6 +27,20 @@ def get_session(client_id: uuid.UUID):
     return connector_sessions.get(client_id, None)
 
 
+def get_connector_of_session(client_id: uuid.UUID):
+    session = get_session(client_id)
+    if not session:
+        return None
+    connector = [
+        connector
+        for connector, _ in started_connectors.values()
+        if connector.get_session_type() == session.session_type
+    ]
+    if not connector:
+        return None
+    return connector.pop()
+
+
 def list_sessions():
     return list(connector_sessions.values())
 
@@ -118,16 +132,17 @@ async def stop_connector(connector_id: uuid.UUID):
     except asyncio.CancelledError:
         pass
 
+
 async def autostart_connectors():
     connectors = [
         connector.connector_id
         for connector in db.get_session_connector_all()
         if connector.autostart
     ]
-    tasks = await asyncio.gather(*[
-        start_connector(connector_id)
-        for connector_id in connectors
-    ], return_exceptions=True)
+    tasks = await asyncio.gather(
+        *[start_connector(connector_id) for connector_id in connectors],
+        return_exceptions=True,
+    )
     exceptions = [task for task in tasks if isinstance(task, Exception)]
     if exceptions:
         raise ExceptionGroup("自动启动Connector失败", exceptions)
