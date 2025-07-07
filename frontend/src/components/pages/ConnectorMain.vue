@@ -2,6 +2,8 @@
 import { reactive, ref, shallowRef } from 'vue';
 import IconRun from '../icons/iconRun.vue';
 import IconSetting from '../icons/iconSetting.vue';
+import IconPlug from '../icons/iconPlug.vue';
+import IconPlus from '../icons/iconPlus.vue';
 import LoadingButton from '../LoadingButton.vue';
 import { getDataOrPopupError } from '@/assets/utils';
 import { useRouter } from 'vue-router';
@@ -76,6 +78,13 @@ function editConnector(connectorId) {
                 <IconSetting></IconSetting>
             </div>
         </div>
+        <div class="no-connector-panel" v-if="connectors.length == 0">
+            <IconPlug></IconPlug>
+            <p>现在就添加一个连接器吧</p>
+        </div>
+    </div>
+    <div class="add-connector-button shadow-box" @click="router.push('/connector-editor/')">
+        <IconPlus />
     </div>
 </template>
 
@@ -146,5 +155,47 @@ function editConnector(connectorId) {
 .connector-button svg {
     width: 70%;
     stroke: #000000;
+}
+
+.no-connector-panel {
+    width: 100%;
+    height: 60vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.no-connector-panel svg {
+    width: 24%;
+    height: 24%;
+    stroke: var(--font-color-secondary);
+}
+
+.no-connector-panel p {
+    font-size: 1.5rem;
+    color: var(--font-color-secondary);
+    margin-top: 1rem;
+}
+
+.add-connector-button {
+    width: 3.5rem;
+    height: 3.5rem;
+    background-color: #00000030;
+    border-radius: 1000px;
+    position: fixed;
+    top: 90vh;
+    transition: background 0.3s ease;
+}
+
+.add-connector-button svg {
+    width: 80%;
+    stroke: var(--font-color-primary);
+    margin: 10%;
+}
+
+.add-connector-button:hover {
+    background-color: #00000015;
 }
 </style>
