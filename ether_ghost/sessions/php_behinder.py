@@ -68,7 +68,7 @@ def behinder_xor(payload: t.Union[str, bytes], key: bytes):
 class PHPWebshellBehinderAES(PHPWebshellCommunication, PHPWebshellActions):
     session_type = "BEHINDER_PHP_AES"
     readable_name = "冰蝎AES"
-    conn_options: t.List[OptionGroup] = [
+    conn_options: t.List[OptionGroup] = [  # type: ignore
         {
             "name": "基本连接配置",
             "options": [
@@ -153,7 +153,7 @@ class PHPWebshellBehinderAES(PHPWebshellCommunication, PHPWebshellActions):
 class PHPWebshellBehinderXor(PHPWebshellCommunication, PHPWebshellActions):
     session_type = "BEHINDER_PHP_XOR"
     readable_name = "冰蝎XOR"
-    conn_options: t.List[OptionGroup] = [
+    conn_options: t.List[OptionGroup] = [  # type: ignore
         {
             "name": "基本连接配置",
             "options": [

@@ -31,9 +31,9 @@ def base64_encode(s):
 
 @register_session
 class PHPWebshellRaw(PHPWebshellCommunication, PHPWebshellActions):
-    session_type = "PHP_RAW"
+    session_type = "php_raw"
     readable_name = "PHP Raw"
-    conn_options: t.List[OptionGroup] = [
+    conn_options: t.List[OptionGroup] = [  # type: ignore
         {
             "name": "基本连接配置",
             "options": [

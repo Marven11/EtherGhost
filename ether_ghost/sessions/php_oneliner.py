@@ -84,7 +84,7 @@ class PHPWebshellOneliner(PHPWebshellCommunication, PHPWebshellActions):
 
     session_type = "ONELINE_PHP"
     readable_name = "PHP一句话"
-    conn_options: t.List[OptionGroup] = [
+    conn_options: t.List[OptionGroup] = [  # type: ignore
         {
             "name": "基本连接配置",
             "options": [

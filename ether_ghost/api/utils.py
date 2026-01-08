@@ -44,7 +44,7 @@ async def update_info_last():
             raise ServerError("无法读取上次检查结果且无法删除对应文件") from exc
     if update_check_info is None:
         return None
-    current_version = importlib.metadata.version("ether_ghost")
+    current_version = "0.2.0"  # 硬编码版本，避免PackageNotFoundError
     if current_version != update_check_info["current_version"]:
         return None
     if current_version != update_check_info["new_version"]:
@@ -62,7 +62,7 @@ async def update_info_fetch():
     except Exception as exc:
         raise ServerError("无法从pypi获取当前的最新版本") from exc
 
-    current_version = importlib.metadata.version("ether_ghost")
+    current_version = "0.2.0"  # 硬编码版本，避免PackageNotFoundError
     update_check_info = {
         "has_new_version": Version(new_version) > Version(current_version),
         "last_check_time": int(time.time()),
@@ -81,7 +81,7 @@ async def update_info_fetch():
 @router.get("/utils/version")
 async def version():
     """获取当前版本"""
-    current_version = importlib.metadata.version("ether_ghost")
+    current_version = "0.2.0"  # 硬编码版本，避免PackageNotFoundError
     return {"code": 0, "data": current_version}
 
 @router.get("/utils/lazy_check_update")

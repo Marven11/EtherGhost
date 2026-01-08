@@ -36,9 +36,9 @@ logger = logging.getLogger("core.sessions.php_etherghost")
 
 @register_session
 class PHPWebshellEtherGhostOpen(PHPWebshellCommunication, PHPWebshellActions):
-    session_type = "ETHERGHOST_PHP_OPEN"
+    session_type = "etherghost_php_open"
     readable_name = "[开发中] 游魂Open"
-    conn_options: t.List[OptionGroup] = [
+    conn_options: t.List[OptionGroup] = [  # type: ignore
         {
             "name": "基本连接配置",
             "options": [
@@ -110,19 +110,21 @@ class PHPWebshellEtherGhostOpen(PHPWebshellCommunication, PHPWebshellActions):
             )
         self.key = private_decrypt_rsa(result)
 
-    async def submit_http(self, payload: t.Union[str, bytes]) -> t.Union[int, str]:
+    async def submit_http(self, payload: t.Union[str, bytes]) -> tuple[int, str]:
         async with self.key_communicate_lock:
             if not self.key:
                 await self.handshake_aes_key()
         # TODO: check encoding here, windows use gbk
         if isinstance(payload, str):
             payload = payload.encode("utf-8")
+        # self.key 在 handshake_aes_key() 后被赋值，不会是 None
+        assert self.key is not None
         payload_enc = encrypt_aes256_cbc(self.key, payload)
         status_code, result_enc = await self.submit_obfs("r", payload_enc)
         result = decrypt_aes256_cbc(self.key, result_enc)
         return status_code, result.decode("utf-8")
 
-    async def submit_obfs(self, action: str, data: bytes) -> t.Union[int, bytes]:
+    async def submit_obfs(self, action: str, data: bytes) -> tuple[int, bytes]:
         call = action.encode("utf-8") + data
 
         k = random.randbytes(8)
@@ -140,7 +142,7 @@ class PHPWebshellEtherGhostOpen(PHPWebshellCommunication, PHPWebshellActions):
             response.partition(self.start_mark)[2].partition(self.stop_mark)[0],
         )
 
-    async def submit_raw(self, payload: bytes) -> t.Union[int, bytes]:
+    async def submit_raw(self, payload: bytes) -> tuple[int, bytes]:
         try:
             response = await self.client.request(
                 method="POST", url=self.url, content=payload

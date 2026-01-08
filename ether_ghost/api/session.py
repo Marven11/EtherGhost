@@ -48,6 +48,14 @@ class PhpCodeRequest(BaseModel):
     code: str
 
 
+class HttpRequest(BaseModel):
+    url: str
+    method: str = "GET"
+    headers: t.Optional[t.Dict[str, str]] = None
+    params: t.Optional[t.Dict[str, t.Any]] = None
+    data: t.Optional[str] = None  # base64编码的字符串，因为二进制数据需要base64传输
+
+
 def catch_user_error(fn):
     @wraps(fn)
     async def _wraps(*args, **kwargs):
@@ -379,6 +387,38 @@ async def session_emulated_antsword(session_id: UUID, request: Request):
     body: bytes = await request.body()
     status_code, content = await session.emulated_antsword(body)
     return Response(status_code=status_code, content=content)
+
+
+@router.post("/session/{session_id}/send_http_request")
+@catch_user_error
+async def session_send_http_request(
+    session_id: UUID,
+    request: HttpRequest,
+):
+    """使用session发送HTTP请求"""
+    import base64
+    session: SessionInterface = session_manager.get_session_by_id(session_id)
+    # 解码data，如果提供的话
+    data_bytes = None
+    if request.data is not None:
+        data_bytes = base64.b64decode(request.data)
+    result = await session.send_http_request(
+        url=request.url,
+        method=request.method,
+        headers=request.headers,
+        params=request.params,
+        data=data_bytes,
+    )
+    # 将body进行base64编码，因为可能是二进制数据
+    body_b64 = base64.b64encode(result["body"]).decode() if result["body"] else ""
+    return {
+        "code": 0,
+        "data": {
+            "status_code": result["status_code"],
+            "headers": result["headers"],
+            "body": body_b64,
+        },
+    }
 
 
 @router.delete("/session/{session_id}")

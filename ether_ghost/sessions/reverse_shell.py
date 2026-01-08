@@ -14,6 +14,7 @@ from ..core.base import (
     OptionGroup,
     DirectoryEntry,
     BasicInfoEntry,
+    HttpResponseDict,
 )
 
 from ..utils.random_data import random_string
@@ -89,7 +90,7 @@ def parse_file_permission(perm: str):
 class ReverseShellSession(SessionInterface):
     session_type = REVERSE_SHELL_SESSION_TYPE
     readable_name = "反弹Shell"
-    conn_options: t.List[OptionGroup] = [
+    conn_options: t.List[OptionGroup] = [  # type: ignore
         {
             "name": "高级连接配置",
             "options": [
@@ -189,7 +190,7 @@ class ReverseShellSession(SessionInterface):
                     name=name,
                     permission=perm,
                     filesize=int(filesize),
-                    entry_type=filetype,
+                    entry_type=t.cast(t.Literal["dir", "file", "link-dir", "link-file", "unknown"], filetype),
                 )
             )
         return result
@@ -355,6 +356,115 @@ class ReverseShellSession(SessionInterface):
         raise exceptions.ServerError(
             "不支持此功能，你不会想用命令执行传HTTP吧？"
         )  # 可以是可以，用nc或者bash可以做，但是暂时不实现这个功能
+
+    async def send_http_request(
+        self,
+        url: str,
+        method: str = "GET",
+        headers: t.Optional[t.Dict[str, str]] = None,
+        params: t.Optional[t.Dict[str, t.Any]] = None,
+        data: t.Optional[t.Union[str, bytes]] = None
+    ) -> "HttpResponseDict":
+        """发送HTTP请求"""
+        import json
+        import base64
+        from urllib.parse import urlencode
+
+        # 检查curl是否存在
+        curl_check = await self.submit(["which", "curl"])
+        if not curl_check.strip():
+            raise exceptions.TargetError("目标系统未安装curl命令")
+
+        # 构建curl命令
+        cmd_parts = ["curl", "-s", "-i"]
+        cmd_parts.extend(["-X", method])
+
+        # 添加headers
+        if headers:
+            for key, value in headers.items():
+                cmd_parts.extend(["-H", f"{key}: {value}"])
+
+        # 构建URL和查询参数
+        full_url = url
+        if params:
+            # 将params转换为查询字符串
+            query_string = urlencode(params)
+            full_url = f"{url}?{query_string}"
+
+        # 添加data
+        if data is not None:
+            if isinstance(data, bytes):
+                # 将bytes转换为字符串，使用base64编码后通过管道传递
+                data_b64 = base64.b64encode(data).decode()
+                # 使用echo和base64解码后通过管道传递，避免bash进程替换
+                # 构建命令: echo <base64> | base64 -d | curl ... --data-binary @-
+                # 但curl命令已经构建，我们改为使用临时文件方法
+                # 先检查是否支持mktemp
+                temp_check = await self.submit(["which", "mktemp"])
+                if temp_check.strip():
+                    # 使用临时文件
+                    temp_file = "/tmp/curl_data_$(mktemp -u)"
+                    upload_cmd = f"echo {data_b64} | base64 -d > {temp_file}"
+                    await self.submit(upload_cmd)
+                    cmd_parts.extend(["--data-binary", f"@{temp_file}"])
+                    # 注意：临时文件需要在请求后清理，但这里先简单处理
+                else:
+                    # 回退到直接传递字符串，但可能有限制
+                    # 将bytes解码为字符串（假设是文本）
+                    try:
+                        data_str = data.decode('utf-8')
+                        cmd_parts.extend(["--data", data_str])
+                    except UnicodeDecodeError:
+                        # 如果无法解码，则使用base64编码的字符串作为数据
+                        cmd_parts.extend(["--data", data_b64])
+            else:
+                # 字符串数据
+                cmd_parts.extend(["--data", data])
+
+        cmd_parts.append(full_url)
+
+        # 执行curl命令
+        cmd_str = " ".join([shlex.quote(part) for part in cmd_parts])
+        output = await self.submit(cmd_str)
+
+        # 解析输出：分离响应头和响应体
+        lines = output.splitlines()
+        if not lines:
+            raise exceptions.NetworkError("HTTP请求无响应")
+
+        # 解析状态行
+        status_line = lines[0]
+        if not status_line.startswith("HTTP/"):
+            raise exceptions.NetworkError(f"无效的HTTP响应: {status_line}")
+        # 提取状态码
+        try:
+            status_code = int(status_line.split()[1])
+        except (IndexError, ValueError):
+            raise exceptions.NetworkError(f"无法解析状态码: {status_line}")
+
+        # 解析headers
+        headers_dict = {}
+        body_lines = []
+        in_body = False
+        for line in lines[1:]:
+            if not in_body:
+                if line.strip() == "":
+                    in_body = True
+                    continue
+                if ":" in line:
+                    key, value = line.split(":", 1)
+                    headers_dict[key.strip()] = value.strip()
+            else:
+                body_lines.append(line)
+
+        body = "\n".join(body_lines)
+        body_bytes = body.encode() if body else b""
+
+        return {
+            "status_code": status_code,
+            "headers": headers_dict,
+            "body": body_bytes
+        }
 
     async def get_send_tcp_support_methods(self) -> t.List[str]:
         """得到发送字节支持的TCP方法"""

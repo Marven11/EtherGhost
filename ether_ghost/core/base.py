@@ -47,6 +47,13 @@ class BasicInfoEntry:
     value: str
 
 
+class HttpResponseDict(t.TypedDict):
+    """HTTP响应字典"""
+    status_code: int
+    headers: t.Dict[str, str]
+    body: bytes
+
+
 # Session对象会在处理一个请求的时候创建，请求结束时立即丢弃
 # 所以Session对象基本上是无状态的，状态会在请求结束后被丢弃
 
@@ -132,6 +139,18 @@ class SessionInterface:
 
     async def open_reverse_shell(self, host: str, port: int) -> None:
         """打开一个反弹shell"""
+        raise NotImplementedError()
+
+    async def send_http_request(
+        self,
+        url: str,
+        method: str = "GET",
+        headers: t.Optional[t.Dict[str, str]] = None,
+        params: t.Optional[t.Dict[str, t.Any]] = None,
+        data: t.Optional[t.Union[str, bytes]] = None
+    ) -> HttpResponseDict:
+        """发送HTTP请求
+        """
         raise NotImplementedError()
 
 
