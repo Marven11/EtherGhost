@@ -48,6 +48,21 @@ def java_repr(obj):
         return json.dumps(obj)
     if isinstance(obj, list) and all(isinstance(x, str) for x in obj):
         return "(new String[]{" + ",".join(java_repr(x) for x in obj) + "})"
+    if isinstance(obj, dict):
+        # 转换为Java HashMap<String, String>
+        entries = []
+        for key, value in obj.items():
+            if not isinstance(key, str) or not isinstance(value, str):
+                # 如果键或值不是字符串，尝试转换为字符串
+                key_str = str(key) if not isinstance(key, str) else key
+                value_str = str(value) if not isinstance(value, str) else value
+                entries.append(f'put({java_repr(key_str)}, {java_repr(value_str)})')
+            else:
+                entries.append(f'put({java_repr(key)}, {java_repr(value)})')
+        if entries:
+            return "new java.util.HashMap<String, String>() {{" + ";".join(entries) + ";}}"
+        else:
+            return "new java.util.HashMap<String, String>()"
     raise NotImplementedError(f"{type(obj)=}")
 
 

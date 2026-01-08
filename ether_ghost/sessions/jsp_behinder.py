@@ -5,6 +5,7 @@ import re
 import json
 import logging
 import subprocess
+import os
 import typing as t
 import tempfile
 
@@ -129,6 +130,22 @@ class JSPWebshellBehinderAES:
                     default_value="1.8",
                     alternatives=None,
                 ),
+                Option(
+                    id="extra_compile_args",
+                    name="额外编译参数",
+                    type="text",
+                    placeholder="额外的javac编译参数，JSON列表格式，如'[\"-parameters\", \"-Xlint:unchecked\"]'",
+                    default_value="[]",
+                    alternatives=None,
+                ),
+                Option(
+                    id="compile_env_vars",
+                    name="编译环境变量",
+                    type="text",
+                    placeholder="编译时的环境变量，JSON字典格式，如'{\"CLASSPATH\": \"/path/to/servlet-api.jar\"}'",
+                    default_value="{}",
+                    alternatives=None,
+                ),
             ],
         },
     ]
@@ -153,6 +170,23 @@ class JSPWebshellBehinderAES:
         self.javac_source_version = session_conn.get("javac_source_version", "1.8")
 
         self.javac_target_version = session_conn.get("javac_target_version", "1.8")
+        
+        extra_args_str = session_conn.get("extra_compile_args", "[]")
+        try:
+            self.extra_compile_args = json.loads(extra_args_str)
+            if not isinstance(self.extra_compile_args, list):
+                self.extra_compile_args = []
+        except json.JSONDecodeError:
+            self.extra_compile_args = []
+        
+        compile_env_vars_str = session_conn.get("compile_env_vars", "{}")
+        self.compile_env_vars = os.environ.copy()  # 默认使用当前环境
+        try:
+            user_env_vars = json.loads(compile_env_vars_str)
+            if isinstance(user_env_vars, dict):
+                self.compile_env_vars.update(user_env_vars)
+        except json.JSONDecodeError:
+            pass  # 保持默认环境
 
     async def submit_code(self, action_code: str):
         code = PAYLOAD_PATH.read_text()
@@ -166,16 +200,10 @@ class JSPWebshellBehinderAES:
             payload_code_filepath.write_text(code)
             return_code = None
             async with self.compile_semaphore:
-                p = subprocess.Popen(
-                    [
-                        "javac",
-                        "-source",
-                        self.javac_source_version,
-                        "-target",
-                        self.javac_target_version,
-                        payload_code_filepath.as_posix(),
-                    ]
-                )
+                command = ["javac", "-source", self.javac_source_version, "-target", self.javac_target_version]
+                command.extend(self.extra_compile_args)
+                command.append(payload_code_filepath.as_posix())
+                p = subprocess.Popen(command, env=self.compile_env_vars)
                 while p.poll() is None:
                     await asyncio.sleep(0)
                 return_code = p.wait()
