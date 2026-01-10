@@ -1,0 +1,1 @@
+# Script package for EtherGhost

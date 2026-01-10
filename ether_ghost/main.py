@@ -100,8 +100,8 @@ async def lifespan(api: FastAPI):
 
 DIR = Path(__file__).parent
 app = FastAPI(lifespan=lifespan)
-app.mount("/public", StaticFiles(directory=DIR / "public"), name="public")
-app.mount("/assets", StaticFiles(directory=DIR / "public" / "assets"), name="assets")
+app.mount("/public", StaticFiles(directory=DIR.parent / "public"), name="public")
+app.mount("/assets", StaticFiles(directory=DIR.parent / "public" / "assets"), name="assets")
 app.include_router(connector_router)
 app.include_router(forward_proxy_router)
 app.include_router(session_router)

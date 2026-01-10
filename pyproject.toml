@@ -11,6 +11,7 @@ include = [
 
 [tool.poetry.scripts]
 ether_ghost = "ether_ghost.__main__:main"
+build-frontend = "script.build_frontend:build_frontend"
 
 [tool.poetry.dependencies]
 python = "^3.8"

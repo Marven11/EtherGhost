@@ -143,6 +143,28 @@ poetry shell
 python -m ether_ghost
 ```
 
+### 构建
+
+在打包之前，需要先构建前端。现在可以使用以下命令：
+
+```bash
+poetry run build-frontend
+```
+
+或者直接运行bash脚本：
+
+```bash
+bash script/build.sh
+```
+
+然后使用Poetry打包：
+
+```bash
+poetry build
+```
+
+这将生成`dist/`目录，包含源码包和wheel包。
+
 ## 为什么不用蚁剑？
 
 我自从学习渗透开始就一直在用蚁剑，蚁剑是一个非常优秀的 webshell 管理器，但是在我想要二开蚁剑的时候才发现蚁剑的架构存在一些问题，无法实现我想要的功能。具体来说：
