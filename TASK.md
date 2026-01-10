@@ -10,14 +10,18 @@ EtherGhost使用poetry管理代码，使用pyright保证代码质量
 
 # 任务
 
-- [ ] 测试上一个commit添加的http发送请求功能
-  - [ ] php和linux shell的已经检查过，需要检查jsp的
-  - [ ] 在dell nixos的/tmp文件夹写一个有漏洞的spring项目，支持被攻击者上传jsp shell
-  - [ ] 使用docker在dell nixos上搭建那个有漏洞的spring项目，然后从当前机器访问
-  - [ ] 尝试上传恶意的test_environment/shell.jsp
-  - [ ] 启动ether_ghost，尝试配置刚刚上传的恶意jsp shell并测试基本功能
-  - [ ] 尝试http发送请求功能
+- [ ] 当前项目在打包时直接使用git仓库自带的public构建结果，但是public文件夹是当前文件夹中的frontend这个子项目的构建结果，这不合理
+  - 删除当前仓库的ether_ghost/public文件夹
+  - 调整frontend子项目的构建脚本build.sh，使其不要将public文件夹直接输出到ether_ghost文件夹下，而是输出到合适的目录
+  - 新建script/文件夹，将build.sh移动到script/文件夹
+  - 调整pyproject.toml使其包含构建脚本
+  - 调整.gitignore使其不包含这个public文件夹
+  - 测试poetry打包并调整
+  - 测试nix打包并调整
+  - 启动服务器并尝试访问index.html等打包进来的文件，查看服务器是否可以正常返回
+
 
 # 暂时搁置
 
-无
+- [ ] 重构当前的右键菜单系统
+- [ ] 添加批量测试webshell的功能 - 得先重构当前的右键菜单系统
