@@ -153,3 +153,34 @@ export function readableFileSize(fileSize) {
     fileSize /= diff
   }
 }
+
+export function ClickMenuManagerDualLayer(items, handleSelected) {
+  const showClickMenu = ref(false)
+  const clickMenuX = ref(0)
+  const clickMenuY = ref(0)
+
+  function onShowClickMenu(event) {
+    event.preventDefault()
+    showClickMenu.value = true
+    clickMenuX.value = event.clientX;
+    clickMenuY.value = event.clientY;
+  }
+  function onclickEvent(item) {
+    // 注意：对于有子菜单的项，item.children存在时应该由组件处理展开，不触发handleSelected
+    // 只有当项没有children或者子项被点击时才触发handleSelected
+    showClickMenu.value = false
+    handleSelected(item)
+  }
+  function onRemove(_) {
+    showClickMenu.value = false
+  }
+  return {
+    "items": shallowRef(items),
+    "show": showClickMenu,
+    "onshow": onShowClickMenu,
+    "onclick": onclickEvent,
+    "onremove": onRemove,
+    "x": clickMenuX,
+    "y": clickMenuY,
+  }
+}

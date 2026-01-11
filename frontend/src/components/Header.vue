@@ -10,14 +10,15 @@ import IconSetting from "@/components/icons/iconSetting.vue"
 import { useRouter } from "vue-router"
 import { store } from "@/assets/store.js"
 import IconCode from "@/components/icons/iconCode.vue"
-import { addPopup, ClickMenuManager } from "@/assets/utils"
+import { addPopup, ClickMenuManager, ClickMenuManagerDualLayer } from "@/assets/utils"
 import IconHash from "@/components/icons/iconHash.vue"
 import IconEdit from "@/components/icons/iconEdit.vue"
 import ClickMenu from "./ClickMenu.vue"
-import IconSpider from "@/components/icons/iconSpider.vue"
-import IconLeft from "@/components/icons/iconLeft.vue"
-import IconRight from "@/components/icons/iconRight.vue"
-import IconKnife from "@/components/icons/iconKnife.vue"
+import ClickMenuDualLayer from "./ClickMenuDualLayer.vue"
+import IconSpider from "./icons/iconSpider.vue"
+import IconLeft from "./icons/iconLeft.vue"
+import IconRight from "./icons/iconRight.vue"
+import IconKnife from "./icons/iconKnife.vue"
 import IconWarning from "./icons/iconWarning.vue"
 import IconPlug from "./icons/iconPlug.vue"
 import IconUsb from "./icons/iconUsb.vue"
@@ -111,8 +112,7 @@ const iconsCount = computed(() => icons.value.length)
 // 右键点击clickMenuOthers时会打开clickMenuOthersRightClick
 // 然后在clickMenuOthersRightClick关闭时一并关闭clickMenuOthers
 
-// 其中rightClickedOtherEntry作为判断何时关闭clickMenuOthersRightClick的标志
-// 需要在clickMenuOthersRightClick关闭时一并清零
+
 
 let rightClickedIcon = undefined
 
@@ -144,7 +144,7 @@ const clickMenuRightClick = ClickMenuManager(
   }
 )
 
-const clickMenuOthers = ClickMenuManager(
+const clickMenuOthers = ClickMenuManagerDualLayer(
   [
     {
       name: "shell_command",
@@ -172,14 +172,44 @@ const clickMenuOthers = ClickMenuManager(
       text: "对接蚁剑",
       icon: IconSpider,
       color: "white",
-      link: "/emulated-antsword/SESSION"
+      children: [
+        {
+          name: "open_antsword",
+          text: "打开",
+          icon: IconHash,
+          color: "white",
+          link: "/emulated-antsword/SESSION"
+        },
+        {
+          name: "open_antsword_new_page",
+          text: "在新标签页打开",
+          icon: IconCode,
+          color: "white",
+          link: "/emulated-antsword/SESSION"
+        }
+      ]
     },
     {
       name: "awd_tools",
       text: "AWD实用工具",
       icon: IconKnife,
       color: "white",
-      link: "/awd-tools/SESSION"
+      children: [
+        {
+          name: "open_awd_tools",
+          text: "打开",
+          icon: IconHash,
+          color: "white",
+          link: "/awd-tools/SESSION"
+        },
+        {
+          name: "open_awd_tools_new_page",
+          text: "在新标签页打开",
+          icon: IconCode,
+          color: "white",
+          link: "/awd-tools/SESSION"
+        }
+      ]
     },
     {
       name: "about",
@@ -197,7 +227,7 @@ const clickMenuOthers = ClickMenuManager(
     },
   ],
   (item) => {
-    if (!store.session && item.link.indexOf("SESSION") != -1) {
+    if (!store.session && item.link && item.link.indexOf("SESSION") != -1) {
       addPopup("red", "没有选中WebShell", "请先在主页选中Webshell")
     } else if (item.link) {
       const uri = item.link.replace("SESSION", store.session)
@@ -206,35 +236,6 @@ const clickMenuOthers = ClickMenuManager(
   }
 )
 
-let rightClickedOtherEntry = undefined
-
-const clickMenuOthersRightClick = ClickMenuManager(
-  [
-    {
-      name: "open",
-      text: "打开",
-      icon: IconHash,
-      color: "white",
-    },
-    {
-      name: "open_in_new_page",
-      text: "在新标签页打开",
-      icon: IconCode,
-      color: "white",
-    },
-  ],
-  (item) => {
-    const uri = rightClickedOtherEntry.link.replace("SESSION", store.session)
-    if (!store.session) {
-      addPopup("red", "没有选中WebShell", "请先在主页选中Webshell")
-    } else if (item.name == "open") {
-      router.push(uri)
-    } else {
-      let link = router.resolve({ path: uri })
-      window.open(link.href, '_blank');
-    }
-  }
-)
 
 function clickIcon(event, icon) {
   if (icon.type == "others") {
@@ -301,10 +302,9 @@ function historyForward() {
 
   <transition>
     <div v-if="clickMenuOthers.show.value" class="header-click-menu">
-      <ClickMenu :mouse_y="clickMenuOthers.y" :mouse_x="clickMenuOthers.x" :menuItems="clickMenuOthers.items.value"
-        @remove="(x) => { if (!rightClickedOtherEntry) { clickMenuOthers.onremove(x) } }"
-        @clickItem="clickMenuOthers.onclick"
-        @rightClickItem="(e, x) => { rightClickedOtherEntry = x; clickMenuOthersRightClick.onshow(e) }" />
+      <ClickMenuDualLayer :mouse_y="clickMenuOthers.y" :mouse_x="clickMenuOthers.x" :menuItems="clickMenuOthers.items.value" :show="clickMenuOthers.show.value"
+        @close="clickMenuOthers.onremove"
+        @select="clickMenuOthers.onclick" />
     </div>
   </transition>
   <transition>
@@ -314,14 +314,7 @@ function historyForward() {
         @clickItem="clickMenuRightClick.onclick" />
     </div>
   </transition>
-  <transition>
-    <div v-if="clickMenuOthersRightClick.show.value" class="header-click-menu">
-      <ClickMenu :mouse_y="clickMenuOthersRightClick.y" :mouse_x="clickMenuOthersRightClick.x"
-        :menuItems="clickMenuOthersRightClick.items.value"
-        @remove="x => { clickMenuOthersRightClick.onremove(x); clickMenuOthers.show.value = false; rightClickedOtherEntry = undefined; }"
-        @clickItem="x => { clickMenuOthersRightClick.onclick(x); clickMenuOthers.show.value = false; rightClickedOtherEntry = undefined; }" />
-    </div>
-  </transition>
+
 </template>
 
 <style scoped>
