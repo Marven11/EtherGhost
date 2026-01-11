@@ -10,15 +10,13 @@ EtherGhost使用poetry管理代码，使用pyright保证代码质量
 
 # 任务
 
-- [ ] 当前项目在打包时直接使用git仓库自带的public构建结果，但是public文件夹是当前文件夹中的frontend这个子项目的构建结果，这不合理
-  - 删除当前仓库的ether_ghost/public文件夹
-  - 调整frontend子项目的构建脚本build.sh，使其不要将public文件夹直接输出到ether_ghost文件夹下，而是输出到合适的目录
-  - 新建script/文件夹，将build.sh移动到script/文件夹
-  - 调整pyproject.toml使其包含构建脚本
-  - 调整.gitignore使其不包含这个public文件夹
-  - 测试poetry打包并调整
-  - 测试nix打包并调整
-  - 启动服务器并尝试访问index.html等打包进来的文件，查看服务器是否可以正常返回
+- [ ] 我们需要准备开始重构前端，首先需要跑通同时启动前端和后端的流程
+  - 你需要完成以下流程
+  - 在终端启动ether_ghost服务端，使用--no-browser以只启动api服务
+  - 进入frontend/在另一个终端启动npm run dev
+  - 连接浏览器mcp并访问npm run dev提示的端口
+  - 导出截图，查看截图报告是否看到界面
+    - 界面上半部分20-30%有大块绿色圆角矩形header,其中左边有软件名，右边有一排按钮
 
 
 # 暂时搁置
