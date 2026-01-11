@@ -44,7 +44,6 @@
           ];
           shellHook = ''
             poetry install
-            poetry shell
           '';
         };
 
