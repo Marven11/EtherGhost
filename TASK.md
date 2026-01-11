@@ -10,32 +10,9 @@ EtherGhost使用poetry管理代码，使用pyright保证代码质量
 
 # 任务
 
-- [ ] 我们要重构主页等的右键菜单
-  - 开始前：先启动API服务器和npm run dev
-  - 目标：编写ClickMenuDualLayer
-    - 包含ClickMenuManager和frontend/src/components/ClickMenu.vue的功能
-    - 代码极简易懂可维护
-  - 当前问题
-    - 上层需要手动控制右键菜单的开启和关闭
-  - 当前header行为
-    - 点击按钮时出现右键菜单clickMenuRightClick/clickMenuOthers
-    - clickMenuRightClick: 包含选项“打开”/“在新标签页打开”
-    - clickMenuOthers
-      - 包含更多功能，如“对接蚁剑”
-      - 右键对接蚁剑等弹出clickMenuOthersRightClick，覆盖当前右键菜单
-    - clickMenuOthersRightClick
-      - 包含选项“打开”/“在新标签页打开”
-  - 重新设计
-    - CSS保持基本不变
-    - 有一列选项，选项：
-      - 支持自定义图标、文本、颜色和点击时的行为
-    - 选项分为两种：有些点击之后直达对应功能，有些点击之后展开二级菜单
-    - 二级菜单
-      - 点击二级菜单选项后会展开二级菜单，在选项的下面新增一系列子选项，再次点击时折叠
-      - 子选项背景更黑，样式基本不变
-  - 应用到header上
-    - 右键点击按钮时出现右键菜单
-    - 对接蚁剑等本来会弹出clickMenuOthersRightClick的选项改为二级菜单，点击时展开显示“打开”/“在新标签页打开”
+- [ ] 你刚刚在commit 6733a5f实现了新的右键菜单，现在需要用其替换掉原有的右键菜单
+  - 直接删除ClickMenu.vue和ClickMenuManager
+  - 重写所有用到ClickMenu.vue的地方
   - 需要规划测试清单到NOTES.md以全面测试所有功能
   - 需要将右键菜单截图，询问qwen界面排布是否正常
     - 期望：
