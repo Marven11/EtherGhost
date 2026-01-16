@@ -14,6 +14,7 @@ EtherGhost使用poetry管理代码，使用pyright保证代码质量
   - 直接删除ClickMenu.vue和ClickMenuManager
   - 重写所有用到ClickMenu.vue的地方
   - 需要规划测试清单到NOTES.md以全面测试所有功能
+  - 需要用浏览器测试右键点击对应元素，用js检查是否弹出对应的右键菜单
   - 需要将右键菜单截图，询问qwen界面排布是否正常
     - 期望：
       - 右键菜单为一个圆角矩形，其中有多行内容，每行内容有各自的图标和文本
@@ -25,6 +26,12 @@ EtherGhost使用poetry管理代码，使用pyright保证代码质量
 # 暂时搁置
 
 - [ ] 添加批量测试webshell的功能 - 得先重构当前的右键菜单系统
+- [ ] 重构，统一创建PHP webshell和反弹shell的逻辑
+  - 当前php webshell等session可以直接通过init函数创建，但是反弹shell则需要通过ReverseShellConnector连接
+  - 将所有session都统一为通过connector连接
+  - 需要重新设计SessionConnector的逻辑：运行、列出session，根据uuid获得session
+    - 有些connector支持添加session配置，例如添加php webshell连接配置，但是诸如反弹shell connector等则不支持，只能等待目标反向连接以获得session
+  - 重构session_type_info等旧的，用于直接构建session的逻辑
 
 # 注意
 
