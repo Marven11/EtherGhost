@@ -11,20 +11,11 @@ EtherGhost使用poetry管理代码，使用pyright保证代码质量
 # 任务
 
 - [ ] 通过api访问当前“测试dell nixos”webshell是否可以使用
-- [ ] 重构，统一创建PHP webshell和反弹shell的逻辑
-  - 这是一个巨大的重构，需要完全替换项目的核心逻辑，需要仔细思考，大量修改
-  - 重构不应该修改数据库保存格式，必须使用原有的表结构读取webshell信息
-  - 问题
-    - 当前php webshell等session可以直接通过init函数创建，但是反弹shell则需要通过ReverseShellConnector连接
-  - 任务
-    - 将所有session都统一为通过connector连接
-    - 需要重新设计SessionConnector的逻辑：运行、列出session，根据uuid获得session
-      - 有些connector支持添加session配置，例如添加php webshell连接配置，但是诸如反弹shell connector等则不支持，只能等待目标反向连接以获得session
-    - 重构session_type_info等旧的，用于直接构建session的逻辑
-  - 需要仔细规划以下问题
-    - api如何通过session connector获得每个session type的定义
-    - session connector如何设置
-    - api在构建session时如何通过session connector获得session的实例
+- [ ] 当前ether_ghost/session_connector.py很乱，大量违反简洁原则和深层价值观
+  - 删除注释，调整import
+  - 需要计划调整各类定义的位置：函数应该放在哪里，全局变量、函数、对象应该放在什么位置
+  - 删除所有不需要的函数么函数是根本不需要实现的，有什么函数只是wraper且是否应该删除
+- [ ] register_direct_session_class使用元编程定义类，严重违反简洁原则，重构为在各个webshell的实现中手动定义每个connector并用装饰器注册
 - [ ] 再次通过api访问当前“测试dell nixos”webshell是否可以使用
 
 # 暂时搁置
