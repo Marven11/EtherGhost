@@ -36,10 +36,12 @@ def session_info_to_session(session_info: SessionInfo) -> core.SessionInterface:
     Returns:
         session.Session: session对象
     """
-    if session_info.session_type not in session_type_info:
+    connector = session_connector.get_connector_instance_by_session_type(
+        session_info.session_type
+    )
+    if not connector:
         raise core.UserError(f"Session类型{session_info.session_type}不存在")
-    constructor = session_type_info[session_info.session_type]["constructor"]
-    return constructor(session_info.connection)
+    return connector.build_session(session_info.connection)
 
 
 def get_session_info_by_id(
@@ -100,7 +102,7 @@ def session_to_readable(sess: SessionInfo) -> t.Dict[str, t.Any]:
     """将SessionInfo对象转换为可读的字典"""
     return {
         "type": sess.session_type,
-        "readable_type": session_type_info[sess.session_type]["readable_name"],
+        "readable_type": session_type_info[sess.session_type].get("readable_name", sess.session_type),
         "id": sess.session_id,
         "name": sess.name,
         "note": sess.note,

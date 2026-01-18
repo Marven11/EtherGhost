@@ -3,6 +3,7 @@ import json
 import re
 import hashlib
 import base64
+import shlex
 
 
 from ..core import exceptions
@@ -41,13 +42,13 @@ def parse_permission(perm: str):
 def java_repr(obj):
     if isinstance(obj, (str, int)):
         if isinstance(obj, str) and len(obj) > 1000:
-            parts = ",".join(
+            parts = ",".join([
                 json.dumps(obj[i : i + 1000]) for i in range(0, len(obj), 1000)
-            )
+            ])
             return 'String.join("", ' + parts + ")"
         return json.dumps(obj)
     if isinstance(obj, list) and all(isinstance(x, str) for x in obj):
-        return "(new String[]{" + ",".join(java_repr(x) for x in obj) + "})"
+        return "(new String[]{" + ",".join([java_repr(x) for x in obj]) + "})"
     if isinstance(obj, dict):
         # 转换为Java HashMap<String, String>
         entries = []
@@ -78,3 +79,10 @@ def base64_encode(s: str | bytes):
     if isinstance(s, str):
         s = s.encode("utf-8")
     return base64.b64encode(s).decode()
+
+
+def shell_join(cmd):
+    """将命令参数列表连接为shell转义的字符串"""
+    # pyright fix: explicitly convert to list of strings
+    quoted_cmd = [shlex.quote(str(arg)) for arg in cmd]
+    return ' '.join(quoted_cmd)

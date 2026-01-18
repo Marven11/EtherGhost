@@ -7,7 +7,7 @@ Session连接器管理模块
 - 处理session连接和生命周期
 """
 
-from typing import ClassVar, Protocol
+from typing import ClassVar, Protocol, Dict, Any
 import asyncio
 import uuid
 import logging
@@ -81,14 +81,68 @@ class SessionConnector(Protocol):
         raise NotImplementedError()
 
 
+class DirectSessionConnector(SessionConnector):
+    """直接型connector，用于不需要持续运行服务的session类型（如PHP webshell、CMD webshell）"""
+    connector_name: ClassVar[str]
+    connector_name_readable: ClassVar[str]
+    session_class: ClassVar[type[SessionInterface]]
+    options: ClassVar[list[OptionGroup]]
+
+    def __init__(self, connector_id: uuid.UUID, config: dict):
+        """提供connector实例对应的connector_id和对应的config"""
+        self.config = config
+        self.connector_id = connector_id
+
+    async def run(self) -> None:
+        """直接型connector无需持续运行"""
+        pass
+
+    def get_session_type(self) -> str:
+        raise NotImplementedError()
+
+    def build_session(self, config: dict) -> SessionInterface:
+        raise NotImplementedError()
+
+    async def close_session(self, config: dict):
+        pass
+
+
 session_connectors: dict[str, type[SessionConnector]] = {}
 started_connectors: dict[uuid.UUID, tuple[SessionConnector, asyncio.Task]] = {}
+
+# 存储直接型connector的映射：session_type -> connector_type
+_direct_connector_registry: Dict[str, str] = {}
+
+
+def register_direct_connector(session_type: str, connector_cls: type[SessionConnector]):
+    """注册一个直接型connector"""
+    session_connectors[connector_cls.connector_name] = connector_cls
+    _direct_connector_registry[session_type] = connector_cls.connector_name
+    return connector_cls
 
 
 def register_connector(clazz: type[SessionConnector]):
     session_connectors[clazz.connector_name] = clazz
     # register session_type_info when started
     return clazz
+
+
+def get_connector_for_session_type(session_type: str) -> type[SessionConnector] | None:
+    """根据session_type获取对应的connector类"""
+    # 先检查是否是直接型connector
+    if session_type in _direct_connector_registry:
+        connector_name = _direct_connector_registry[session_type]
+        return session_connectors.get(connector_name)
+
+    # 如果不是直接型，检查是否有已启动的connector匹配
+    for connector, _ in started_connectors.values():
+        if connector.get_session_type() == session_type:
+            # 返回这个connector的类
+            for connector_cls in session_connectors.values():
+                if connector_cls.connector_name == connector.connector_name:
+                    return connector_cls
+
+    return None
 
 
 async def start_connector(connector_id: uuid.UUID):
@@ -105,10 +159,14 @@ async def start_connector(connector_id: uuid.UUID):
     task = asyncio.create_task(connector.run())
 
     started_connectors[connector_id] = (connector, task)
-    session_type_info[connector.get_session_type()] = {
+
+    # 注册session_type_info
+    session_type = connector.get_session_type()
+    session_type_info[session_type] = {
         "constructor": connector.build_session,
         "options": clazz.session_class.conn_options,
         "readable_name": f"{connector_info.name} {clazz.session_class.readable_name}",
+        "session_class": clazz.session_class,
     }
 
     return task
@@ -162,3 +220,115 @@ async def example():
             await connector.close_session(session_info.connection)
             await asyncio.sleep(1)
         await asyncio.sleep(0)
+
+
+# 直接型connector默认实例字典
+_direct_connector_instances: dict[str, SessionConnector] = {}
+
+
+def register_direct_session_class(session_cls):
+    """注册一个直接型session类，为其创建一个直接型connector并注册"""
+    # 动态创建直接型connector类
+    connector_name_value = session_cls.session_type
+    connector_name_readable_value = session_cls.readable_name
+    session_class_value = session_cls
+
+    class DirectConnector(DirectSessionConnector):
+        connector_name = connector_name_value
+        connector_name_readable = connector_name_readable_value
+        session_class = session_class_value
+        options = session_class_value.conn_options
+
+        def get_session_type(self) -> str:
+            return self.session_class.session_type
+
+        def build_session(self, config: dict) -> SessionInterface:
+            return self.session_class(config)
+
+        async def close_session(self, config: dict) -> None:
+            pass
+
+    # 注册到session_connectors
+    session_connectors[connector_name_value] = DirectConnector
+    # 创建默认实例并存储
+    virtual_connector_id = uuid.uuid5(uuid.NAMESPACE_DNS, connector_name_value)
+    default_instance = DirectConnector(virtual_connector_id, {})
+    _direct_connector_instances[connector_name_value] = default_instance
+
+    # 同时，将session_type映射到connector_name
+    _direct_connector_registry[session_cls.session_type] = connector_name_value
+    
+    # 确保session_type_info中有session_class字段
+    if session_cls.session_type in session_type_info:
+        session_type_info[session_cls.session_type]["session_class"] = session_cls
+    else:
+        # 如果session_type_info中还没有注册，则注册完整信息
+        session_type_info[session_cls.session_type] = {
+            "constructor": session_cls,
+            "options": session_cls.conn_options,
+            "readable_name": session_cls.readable_name,
+            "session_class": session_cls,
+        }
+
+
+def get_connector_instance_by_session_type(
+    session_type: str,
+) -> SessionConnector | None:
+    """根据session_type获取connector实例，优先返回直接型connector的默认实例，然后查找已启动的监听型connector"""
+    # 先检查直接型connector
+    if session_type in _direct_connector_instances:
+        return _direct_connector_instances[session_type]
+    # 然后检查已启动的监听型connector
+    for connector, _ in started_connectors.values():
+        if connector.get_session_type() == session_type:
+            return connector
+    # 如果都没有找到，但session_type在session_type_info中，则动态创建直接型connector
+    if session_type in session_type_info:
+        info = session_type_info[session_type]
+        # 优先使用session_class字段，如果不存在则使用constructor字段（可能是类）
+        session_cls = info.get("session_class")
+        if session_cls is None:
+            session_cls = info.get("constructor")
+            if session_cls is None:
+                # 两个字段都没有，无法创建直接型connector
+                return None
+        # 确保session_cls是一个类，而不是函数
+        # 如果constructor是函数（即build_session方法），那么session_cls应该是session_class字段，我们已经优先使用它
+        # 但如果session_cls仍然是函数，则无法创建直接型connector，返回None
+        if not isinstance(session_cls, type):
+            # 尝试从已启动的connector中查找
+            for connector, _ in started_connectors.values():
+                if connector.get_session_type() == session_type:
+                    return connector
+            return None
+        
+        # 参考register_direct_session_class的逻辑
+        connector_name_value = session_cls.session_type
+        connector_name_readable_value = session_cls.readable_name
+        session_class_value = session_cls
+
+        class DirectConnector(DirectSessionConnector):
+            connector_name = connector_name_value
+            connector_name_readable = connector_name_readable_value
+            session_class = session_class_value
+            options = session_class_value.conn_options
+
+            def get_session_type(self) -> str:
+                return self.session_class.session_type
+
+            def build_session(self, config: dict) -> SessionInterface:
+                return self.session_class(config)
+
+            async def close_session(self, config: dict) -> None:
+                pass
+
+        # 注册到session_connectors
+        session_connectors[connector_name_value] = DirectConnector
+        # 创建默认实例并存储
+        virtual_connector_id = uuid.uuid5(uuid.NAMESPACE_DNS, connector_name_value)
+        default_instance = DirectConnector(virtual_connector_id, {})
+        _direct_connector_instances[session_type] = default_instance
+        # 同时，将session_type映射到connector_name
+        _direct_connector_registry[session_type] = connector_name_value
+        return default_instance
+    return None

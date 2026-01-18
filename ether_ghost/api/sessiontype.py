@@ -27,7 +27,7 @@ async def get_session_type():
     """查找所有支持的session type"""
     SessionType = t.TypedDict("SessionType", {"id": str, "name": str})
     return [
-        SessionType({"id": type_id, "name": type_info["readable_name"]})
+        SessionType({"id": type_id, "name": type_info.get("readable_name", "Unknown")})
         for type_id, type_info in core.session_type_info.items()
     ]
 
@@ -36,7 +36,7 @@ async def get_sessiontype_conn_options(sessiontype: str) -> list[core.OptionGrou
 
     if sessiontype not in core.session_type_info:
         raise core.UserError("没有这个session type")
-    return core.session_type_info[sessiontype]["options"]
+    return core.session_type_info[sessiontype].get("options", [])
 
 
 @router.get("/sessiontype")

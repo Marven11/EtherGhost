@@ -49,6 +49,7 @@ class BasicInfoEntry:
 
 class HttpResponseDict(t.TypedDict):
     """HTTP响应字典"""
+
     status_code: int
     headers: t.Dict[str, str]
     body: bytes
@@ -64,6 +65,10 @@ class SessionInterface:
     session_type: t.ClassVar[str]
     readable_name: t.ClassVar[str]
     conn_options: t.ClassVar[t.List[OptionGroup]]
+
+    def __init__(self, session_conn: dict) -> None:
+        """初始化session，传入连接配置字典"""
+        pass
 
     async def execute_cmd(self, cmd: str) -> str:
         """在目标上执行命令"""
@@ -147,10 +152,9 @@ class SessionInterface:
         method: str = "GET",
         headers: t.Optional[t.Dict[str, str]] = None,
         params: t.Optional[t.Dict[str, t.Any]] = None,
-        data: t.Optional[t.Union[str, bytes]] = None
+        data: t.Optional[t.Union[str, bytes]] = None,
     ) -> HttpResponseDict:
-        """发送HTTP请求
-        """
+        """发送HTTP请求"""
         raise NotImplementedError()
 
 
@@ -177,10 +181,11 @@ class PHPSessionInterface(SessionInterface):
         raise NotImplementedError()
 
 
-class SessionTypeInfo(t.TypedDict):
+class SessionTypeInfo(t.TypedDict, total=False):
     constructor: t.Callable[[dict], SessionInterface]
     options: t.List[OptionGroup]
     readable_name: str
+    session_class: t.Type[SessionInterface]
 
 
 session_type_info: t.Dict[str, SessionTypeInfo] = {}
@@ -195,7 +200,11 @@ def register_session(cls):
         "constructor": cls,
         "options": cls.conn_options,
         "readable_name": cls.readable_name,
+        "session_class": cls,
     }
+    # 注册一个直接型connector
+    from .. import session_connector
+    session_connector.register_direct_session_class(cls)
     return cls
 
 
