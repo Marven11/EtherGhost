@@ -10,22 +10,6 @@ EtherGhost使用poetry管理代码，使用pyright保证代码质量
 
 # 任务
 
-- [ ] 你刚刚在commit 6733a5f实现了新的右键菜单，现在需要用其替换掉原有的右键菜单
-  - 直接删除ClickMenu.vue和ClickMenuManager
-  - 重写所有用到ClickMenu.vue的地方
-  - 需要规划测试清单到NOTES.md以全面测试所有功能
-  - 需要用浏览器测试右键点击对应元素，用js检查是否弹出对应的右键菜单
-  - 需要将右键菜单截图，询问qwen界面排布是否正常
-    - 期望：
-      - 右键菜单为一个圆角矩形，其中有多行内容，每行内容有各自的图标和文本
-      - 如果有二级选项：二级选项背景更深
-    - 分别截图并询问：
-      - 单纯的右键菜单
-      - 展开某个二级菜单
-
-# 暂时搁置
-
-- [ ] 添加批量测试webshell的功能 - 得先重构当前的右键菜单系统
 - [ ] 通过api访问当前“测试dell nixos”webshell是否可以使用
 - [ ] 重构，统一创建PHP webshell和反弹shell的逻辑
   - 这是一个巨大的重构，需要完全替换项目的核心逻辑，需要仔细思考，大量修改
@@ -42,6 +26,10 @@ EtherGhost使用poetry管理代码，使用pyright保证代码质量
     - session connector如何设置
     - api在构建session时如何通过session connector获得session的实例
 - [ ] 再次通过api访问当前“测试dell nixos”webshell是否可以使用
+
+# 暂时搁置
+
+- [ ] 添加批量测试webshell的功能 - 得先重构当前的右键菜单系统
 
 # 注意
 
