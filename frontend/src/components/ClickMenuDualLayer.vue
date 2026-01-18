@@ -47,16 +47,39 @@ function adjustPosition() {
 // 点击菜单项
 function handleItemClick(item, event) {
   event.stopPropagation()
+  console.log('点击菜单项:', item.text, '有children:', !!(item.children && item.children.length > 0))
   
   if (item.children && item.children.length > 0) {
     // 有子菜单：切换展开状态
-    if (expandedItems.value.has(item.name)) {
-      expandedItems.value.delete(item.name)
+    console.log('切换展开状态，当前expandedItems:', Array.from(expandedItems.value))
+    console.log('item.name:', item.name, '是否在expandedItems中:', expandedItems.value.has(item.name))
+    
+    const newSet = new Set(expandedItems.value)
+    if (newSet.has(item.name)) {
+      newSet.delete(item.name)
+      console.log('移除展开状态:', item.name)
     } else {
-      expandedItems.value.add(item.name)
+      newSet.add(item.name)
+      console.log('添加展开状态:', item.name)
     }
+    
+    // 使用新的Set来确保响应式更新
+    expandedItems.value = newSet
+    
+    console.log('更新后expandedItems:', Array.from(expandedItems.value))
+    
     // 需要重新调整位置，因为展开后高度变化
-    setTimeout(adjustPosition, 0)
+    setTimeout(() => {
+      console.log('调整位置，当前菜单元素:', clickMenu.value)
+      adjustPosition()
+      // 检查二级菜单是否应该显示
+      const shouldShowSubmenu = expandedItems.value.has(item.name)
+      console.log('二级菜单应显示:', shouldShowSubmenu)
+      if (shouldShowSubmenu) {
+        const submenu = document.querySelector('.submenu')
+        console.log('找到二级菜单元素:', !!submenu)
+      }
+    }, 0)
   } else if (item.action) {
     // 没有子菜单但有action：执行并关闭
     item.action()

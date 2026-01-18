@@ -13,12 +13,12 @@ import IconSymlinkDirectory from "@/components/icons/iconSymlinkDirectory.vue"
 import IconDelete from "@/components/icons/iconDelete.vue"
 
 import { ref, shallowRef, watch } from "vue";
-import ClickMenu from "@/components/ClickMenu.vue"
+import ClickMenuDualLayer from "@/components/ClickMenuDualLayer.vue"
 import HoverForm from "@/components/HoverForm.vue"
 import HoverStatus from "@/components/HoverBox.vue"
 import InputBox from "@/components/InputBox.vue"
 import { Codemirror } from 'vue-codemirror'
-import { getDataOrPopupError, postDataOrPopupError, addPopup, joinPath, ClickMenuManager, readableFileSize } from "@/assets/utils"
+import { getDataOrPopupError, postDataOrPopupError, addPopup, joinPath, ClickMenuManagerDualLayer, readableFileSize } from "@/assets/utils"
 import { store } from "@/assets/store"
 
 // --- CodeMirror Stuff
@@ -345,7 +345,7 @@ const menuItemsAll = [
     "entry_type": ["dir", "link-dir"]
   },
 ]
-const ClickMenuFolderEntry = ClickMenuManager([
+const ClickMenuFolderEntry = ClickMenuManagerDualLayer([
 
 ], (item) => {
   console.log(item)
@@ -751,9 +751,9 @@ function readableFilePerm(filePerm) {
   </div>
   <transition>
     <div v-if="ClickMenuFolderEntry.show.value">
-      <ClickMenu :mouse_x="ClickMenuFolderEntry.x" :mouse_y="ClickMenuFolderEntry.y"
-        :menuItems="ClickMenuFolderEntry.items.value" @remove="ClickMenuFolderEntry.onremove"
-        @clickItem="ClickMenuFolderEntry.onclick" />
+      <ClickMenuDualLayer :mouse_x="ClickMenuFolderEntry.x" :mouse_y="ClickMenuFolderEntry.y" :menuItems="ClickMenuFolderEntry.items.value" :show="ClickMenuFolderEntry.show.value"
+        @close="ClickMenuFolderEntry.onremove"
+        @select="ClickMenuFolderEntry.onclick" />
     </div>
   </transition>
 

@@ -12,8 +12,8 @@ import IconProxy from "@/components/icons/iconProxy.vue"
 import IconTerminal from "@/components/icons/iconTerminal.vue"
 
 
-import ClickMenu from "@/components/ClickMenu.vue"
-import { addPopup, ClickMenuManager, getDataOrPopupError, parseDataOrPopupError } from "@/assets/utils";
+import ClickMenuDualLayer from "@/components/ClickMenuDualLayer.vue"
+import { addPopup, ClickMenuManagerDualLayer, getDataOrPopupError, parseDataOrPopupError } from "@/assets/utils";
 import { useRouter } from "vue-router"
 import InputBox from "@/components/InputBox.vue"
 import axios from "axios"
@@ -36,7 +36,7 @@ const sessions = ref([
 const router = useRouter();
 let clickedSession = ""
 
-const ClickMenuSession = ClickMenuManager(
+const ClickMenuSession = ClickMenuManagerDualLayer(
   [
     {
       "name": "terminal",
@@ -232,8 +232,8 @@ async function onDeleteSessionConfirm(userConfirm) {
 
   <transition>
     <div v-if="ClickMenuSession.show.value">
-      <ClickMenu :mouse_y="ClickMenuSession.y" :mouse_x="ClickMenuSession.x" :menuItems="ClickMenuSession.items.value"
-        @remove="ClickMenuSession.onremove" @clickItem="ClickMenuSession.onclick" />
+      <ClickMenuDualLayer :mouse_y="ClickMenuSession.y" :mouse_x="ClickMenuSession.x" :menuItems="ClickMenuSession.items.value" :show="ClickMenuSession.show.value"
+        @close="ClickMenuSession.onremove" @select="ClickMenuSession.onclick" />
     </div>
   </transition>
 

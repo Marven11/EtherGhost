@@ -10,10 +10,9 @@ import IconSetting from "@/components/icons/iconSetting.vue"
 import { useRouter } from "vue-router"
 import { store } from "@/assets/store.js"
 import IconCode from "@/components/icons/iconCode.vue"
-import { addPopup, ClickMenuManager, ClickMenuManagerDualLayer } from "@/assets/utils"
+import { addPopup, ClickMenuManagerDualLayer } from "@/assets/utils"
 import IconHash from "@/components/icons/iconHash.vue"
 import IconEdit from "@/components/icons/iconEdit.vue"
-import ClickMenu from "./ClickMenu.vue"
 import ClickMenuDualLayer from "./ClickMenuDualLayer.vue"
 import IconSpider from "./icons/iconSpider.vue"
 import IconLeft from "./icons/iconLeft.vue"
@@ -116,7 +115,7 @@ const iconsCount = computed(() => icons.value.length)
 
 let rightClickedIcon = undefined
 
-const clickMenuRightClick = ClickMenuManager(
+const clickMenuRightClick = ClickMenuManagerDualLayer(
   [
     {
       name: "open",
@@ -302,16 +301,16 @@ function historyForward() {
 
   <transition>
     <div v-if="clickMenuOthers.show.value" class="header-click-menu">
-      <ClickMenuDualLayer :mouse_y="clickMenuOthers.y" :mouse_x="clickMenuOthers.x" :menuItems="clickMenuOthers.items.value" :show="clickMenuOthers.show.value"
+      <ClickMenuDualLayer :mouse_y="clickMenuOthers.y.value" :mouse_x="clickMenuOthers.x.value" :menuItems="clickMenuOthers.items.value" :show="clickMenuOthers.show.value"
         @close="clickMenuOthers.onremove"
         @select="clickMenuOthers.onclick" />
     </div>
   </transition>
   <transition>
     <div v-if="clickMenuRightClick.show.value" class="header-click-menu">
-      <ClickMenu :mouse_y="clickMenuRightClick.y" :mouse_x="clickMenuRightClick.x"
-        :menuItems="clickMenuRightClick.items.value" @remove="clickMenuRightClick.onremove"
-        @clickItem="clickMenuRightClick.onclick" />
+      <ClickMenuDualLayer :mouse_y="clickMenuRightClick.y.value" :mouse_x="clickMenuRightClick.x.value" :menuItems="clickMenuRightClick.items.value" :show="clickMenuRightClick.show.value"
+        @close="clickMenuRightClick.onremove"
+        @select="clickMenuRightClick.onclick" />
     </div>
   </transition>
 
