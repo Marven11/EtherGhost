@@ -10,18 +10,12 @@ EtherGhost使用poetry管理代码，使用pyright保证代码质量
 
 # 任务
 
-- [ ] 通过api访问当前“测试dell nixos”webshell是否可以使用
-- [ ] 当前ether_ghost/session_connector.py很乱，大量违反简洁原则和深层价值观
-  - 删除注释，调整import
-  - 需要计划调整各类定义的位置：函数应该放在哪里，全局变量、函数、对象应该放在什么位置
-  - 删除所有不需要的函数么函数是根本不需要实现的，有什么函数只是wraper且是否应该删除
-- [ ] register_direct_session_class使用元编程定义类，严重违反简洁原则，重构为在各个webshell的实现中手动定义每个connector并用装饰器注册
-- [ ] 再次通过api访问当前“测试dell nixos”webshell是否可以使用
+- [ ] 之前重构右键菜单之后点击session-icon-others不会弹出菜单，需要修复
+  - 重构之前的功能：无论是右键session还是点击菜单按钮都会弹出功能列表
+- [ ] 打开浏览器MCP，测试以上功能，截图并询问视觉大模型是否存在相关组件
 
 # 暂时搁置
 
-- [ ] 之前重构右键菜单之后点击session-icon-others不会弹出菜单，需要修复
-  - 重构之前的功能：无论是右键session还是点击菜单按钮都会弹出功能列表
 - [ ] 添加批量测试webshell的功能 - 得先重构当前的右键菜单系统
 
 # 注意
