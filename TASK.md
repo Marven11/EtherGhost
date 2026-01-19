@@ -20,6 +20,8 @@ EtherGhost使用poetry管理代码，使用pyright保证代码质量
 
 # 暂时搁置
 
+- [ ] 之前重构右键菜单之后点击session-icon-others不会弹出菜单，需要修复
+  - 重构之前的功能：无论是右键session还是点击菜单按钮都会弹出功能列表
 - [ ] 添加批量测试webshell的功能 - 得先重构当前的右键菜单系统
 
 # 注意
