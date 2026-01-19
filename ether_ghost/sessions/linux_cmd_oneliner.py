@@ -106,7 +106,6 @@ def parse_file_permission(perm: str):
     return result
 
 
-@register_session
 class LinuxCmdOneLiner:
     session_type = "LINUX_CMD_ONELINER"
     readable_name = "Linux命令执行"

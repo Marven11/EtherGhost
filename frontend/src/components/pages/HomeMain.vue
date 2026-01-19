@@ -128,6 +128,8 @@ const ClickMenuSession = ClickMenuManagerDualLayer(
 )
 
 function onClickIconOthers(event, sessionId) {
+  event.stopPropagation();
+  event.preventDefault();
   clickedSession = sessionId;
   ClickMenuSession.onshow(event)
 }
@@ -232,7 +234,7 @@ async function onDeleteSessionConfirm(userConfirm) {
 
   <transition>
     <div v-if="ClickMenuSession.show.value">
-      <ClickMenuDualLayer :mouse_y="ClickMenuSession.y" :mouse_x="ClickMenuSession.x" :menuItems="ClickMenuSession.items.value" :show="ClickMenuSession.show.value"
+      <ClickMenuDualLayer :mouse_y="ClickMenuSession.y.value" :mouse_x="ClickMenuSession.x.value" :menuItems="ClickMenuSession.items.value" :show="ClickMenuSession.show"
         @close="ClickMenuSession.onremove" @select="ClickMenuSession.onclick" />
     </div>
   </transition>
@@ -409,4 +411,13 @@ svg {
   width: 1.8rem;
   stroke: var(--font-color-primary);
 }
+.session-icon-others {
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 </style>

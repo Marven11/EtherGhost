@@ -40,7 +40,6 @@ def behinder_aes(payload: bytes, key: bytes) -> bytes:
     return base64.b64encode(encrypted_data)
 
 
-@register_session
 class JSPWebshellBehinderAES:
     session_type = "BEHINDER_JSP_AES"
     readable_name = "[测试] 冰蝎JSP"

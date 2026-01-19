@@ -34,7 +34,6 @@ from ..utils.cipher import (
 logger = logging.getLogger("core.sessions.php_etherghost")
 
 
-@register_session
 class PHPWebshellEtherGhostOpen(PHPWebshellCommunication, PHPWebshellActions):
     session_type = "etherghost_php_open"
     readable_name = "[开发中] 游魂Open"

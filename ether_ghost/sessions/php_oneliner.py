@@ -78,7 +78,6 @@ def eval_antsword_encoder(filename: str, pwd: str, php_payload) -> dict:
     return json.loads(nodejs_eval(code, [pwd, json.dumps(data)]))
 
 
-@register_session
 class PHPWebshellOneliner(PHPWebshellCommunication, PHPWebshellActions):
     """一句话的php webshell"""
 

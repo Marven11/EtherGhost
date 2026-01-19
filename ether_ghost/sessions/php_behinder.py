@@ -64,7 +64,6 @@ def behinder_xor(payload: t.Union[str, bytes], key: bytes):
     return base64_encode(payload_xor)
 
 
-@register_session
 class PHPWebshellBehinderAES(PHPWebshellCommunication, PHPWebshellActions):
     session_type = "BEHINDER_PHP_AES"
     readable_name = "冰蝎AES"
@@ -149,7 +148,6 @@ class PHPWebshellBehinderAES(PHPWebshellCommunication, PHPWebshellActions):
             ) from exc
 
 
-@register_session
 class PHPWebshellBehinderXor(PHPWebshellCommunication, PHPWebshellActions):
     session_type = "BEHINDER_PHP_XOR"
     readable_name = "冰蝎XOR"

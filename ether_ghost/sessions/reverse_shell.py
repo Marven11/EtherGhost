@@ -86,7 +86,6 @@ def parse_file_permission(perm: str):
     return result
 
 
-@register_session
 class ReverseShellSession(SessionInterface):
     session_type = REVERSE_SHELL_SESSION_TYPE
     readable_name = "反弹Shell"

@@ -751,7 +751,7 @@ function readableFilePerm(filePerm) {
   </div>
   <transition>
     <div v-if="ClickMenuFolderEntry.show.value">
-      <ClickMenuDualLayer :mouse_x="ClickMenuFolderEntry.x" :mouse_y="ClickMenuFolderEntry.y" :menuItems="ClickMenuFolderEntry.items.value" :show="ClickMenuFolderEntry.show.value"
+      <ClickMenuDualLayer :mouse_x="ClickMenuFolderEntry.x" :mouse_y="ClickMenuFolderEntry.y" :menuItems="ClickMenuFolderEntry.items" :show="ClickMenuFolderEntry.show"
         @close="ClickMenuFolderEntry.onremove"
         @select="ClickMenuFolderEntry.onclick" />
     </div>

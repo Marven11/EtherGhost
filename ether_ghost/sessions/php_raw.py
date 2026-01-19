@@ -29,7 +29,6 @@ def base64_encode(s):
     return base64.b64encode(s).decode()
 
 
-@register_session
 class PHPWebshellRaw(PHPWebshellCommunication, PHPWebshellActions):
     session_type = "php_raw"
     readable_name = "PHP Raw"
