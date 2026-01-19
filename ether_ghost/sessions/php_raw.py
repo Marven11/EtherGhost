@@ -99,3 +99,22 @@ class PHPWebshellRaw(PHPWebshellCommunication, PHPWebshellActions):
             raise exceptions.NetworkError("HTTP请求受控端超时") from exc
         except httpx.HTTPError as exc:
             raise exceptions.NetworkError("发送HTTP请求到受控端失败：" + str(exc)) from exc
+
+import uuid
+from ..session_connector import DirectSessionConnector, register_direct_connector
+
+@register_direct_connector
+class PHPRawConnector(DirectSessionConnector):
+    connector_name = "php_raw"
+    connector_name_readable = "PHP原生"
+    session_class = PHPWebshellRaw
+    options = PHPWebshellRaw.conn_options
+
+    def get_session_type(self) -> str:
+        return self.session_class.session_type
+
+    def build_session(self, config: dict):
+        return self.session_class(config)
+
+    async def close_session(self, config: dict):
+        pass

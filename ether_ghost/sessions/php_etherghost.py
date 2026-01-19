@@ -159,3 +159,23 @@ class PHPWebshellEtherGhostOpen(PHPWebshellCommunication, PHPWebshellActions):
             raise exceptions.NetworkError("HTTP请求受控端超时") from exc
         except httpx.HTTPError as exc:
             raise exceptions.NetworkError("发送HTTP请求到受控端失败：" + str(exc)) from exc
+
+
+import uuid
+from ..session_connector import DirectSessionConnector, register_direct_connector
+
+@register_direct_connector
+class PHPWebshellEtherGhostOpenConnector(DirectSessionConnector):
+    connector_name = "etherghost_php_open"
+    connector_name_readable = "EtherGhost PHP开源版"
+    session_class = PHPWebshellEtherGhostOpen
+    options = PHPWebshellEtherGhostOpen.conn_options
+
+    def get_session_type(self) -> str:
+        return self.session_class.session_type
+
+    def build_session(self, config: dict):
+        return self.session_class(config)
+
+    async def close_session(self, config: dict):
+        pass

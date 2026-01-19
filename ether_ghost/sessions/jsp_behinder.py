@@ -511,3 +511,23 @@ class JSPWebshellBehinderAES:
             "headers": headers_dict,
             "body": body_bytes
         }
+
+
+import uuid
+from ..session_connector import DirectSessionConnector, register_direct_connector
+
+@register_direct_connector
+class JSPWebshellBehinderAESConnector(DirectSessionConnector):
+    connector_name = "BEHINDER_JSP_AES"
+    connector_name_readable = "JSP冰蝎AES"
+    session_class = JSPWebshellBehinderAES
+    options = JSPWebshellBehinderAES.conn_options
+
+    def get_session_type(self) -> str:
+        return self.session_class.session_type
+
+    def build_session(self, config: dict):
+        return self.session_class(config)
+
+    async def close_session(self, config: dict):
+        pass

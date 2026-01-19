@@ -232,3 +232,23 @@ class PHPWebshellBehinderXor(PHPWebshellCommunication, PHPWebshellActions):
             raise exceptions.NetworkError(
                 "发送HTTP请求到受控端失败：" + str(exc)
             ) from exc
+
+
+import uuid
+from ..session_connector import DirectSessionConnector, register_direct_connector
+
+@register_direct_connector
+class PHPWebshellBehinderAESConnector(DirectSessionConnector):
+    connector_name = "BEHINDER_PHP_AES"
+    connector_name_readable = "PHP冰蝎AES"
+    session_class = PHPWebshellBehinderAES
+    options = PHPWebshellBehinderAES.conn_options
+
+    def get_session_type(self) -> str:
+        return self.session_class.session_type
+
+    def build_session(self, config: dict):
+        return self.session_class(config)
+
+    async def close_session(self, config: dict):
+        pass

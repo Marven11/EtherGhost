@@ -202,9 +202,7 @@ def register_session(cls):
         "readable_name": cls.readable_name,
         "session_class": cls,
     }
-    # 注册一个直接型connector
-    from .. import session_connector
-    session_connector.register_direct_session_class(cls)
+    # 不再自动注册直接型connector，现在需要手动定义并使用register_direct_connector装饰器
     return cls
 
 

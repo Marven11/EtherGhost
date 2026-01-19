@@ -561,3 +561,23 @@ class ReverseShellSession(SessionInterface):
             except Exception as e:
                 self.drop_self()  # 出现其他错误时通知connector删除自己
                 raise e
+
+
+import uuid
+from ..session_connector import DirectSessionConnector, register_direct_connector
+
+@register_direct_connector
+class ReverseShellSessionConnector(DirectSessionConnector):
+    connector_name = "REVERSE_SHELL"
+    connector_name_readable = "反向Shell"
+    session_class = ReverseShellSession
+    options = ReverseShellSession.conn_options
+
+    def get_session_type(self) -> str:
+        return self.session_class.session_type
+
+    def build_session(self, config: dict):
+        return self.session_class(config)
+
+    async def close_session(self, config: dict):
+        pass
