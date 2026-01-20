@@ -11,17 +11,10 @@ EtherGhost使用poetry管理代码，使用pyright保证代码质量
 # 任务
 
 - [ ] 使用浏览器MCP探索当前主页功能，报告当前session-icon-others菜单有什么功能，输出到/tmp规划文件夹中的HOMEPAGE.md中
-- [ ] 你在commit 0028586完成了批量选择并测试webshell的功能，查看这个commit的git diff以及其中的TASK.md，有这些问题需要修复
-  - 大量无用注释
-  - 在计算html中包含selectedSessionIds.has(session.id) && !batchOperationStatus[session.id],等复杂逻辑
-    - class应该直接通过ref指定
-    - 是否显示应该通过v-if+外部ref变量表示
-    - html仅通过读取这两个ref计算
-  - 鼠标悬浮在exit-multiselect-button按钮上时的描边没有动画
-  - 批量测试等功能的实现没有提取到独立的函数中而是全部集中在HomeMain.vue中
-  - 批量测试的功能没有并发测试，而是悲观地认为“不应该给服务器造成压力”而一个个测试
-- [ ] 添加批量测试webshell的功能
-  - 对选择的webshell进行测试，测试成功后通过小圆点显示状态
+- [ ] 你在commit 0028586完成了批量选择并测试webshell的功能，但是前端有一些逻辑问题需要修复
+  - 当用户右键某个webshell并选择“多选webshell”时，这个webshell需要被选中
+  - 当前没有选择webshell时多选模式没有自动退出，应该改成会自动退出
+  - webshell的描述文本可以被光标滑动选中，这会干扰点击操作，需要改成不可被选中
 - [ ] 打开浏览器MCP，测试以上功能，截图并询问视觉大模型是否存在相关组件
 
 # 暂时搁置
