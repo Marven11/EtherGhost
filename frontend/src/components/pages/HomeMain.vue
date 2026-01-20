@@ -115,7 +115,7 @@ const ClickMenuSession = ClickMenuManagerDualLayer(
       "icon": IconTerminal, // 临时图标，稍后可以更换
       "color": "white",
       "link": undefined,
-      "func": (session) => enterMultiSelectMode(),
+      "func": (session) => enterMultiSelectMode(session),
     },
     {
       "name": "delete_session",
@@ -170,9 +170,12 @@ function onClickIconOthers(event, sessionId) {
 }
 
 // 进入多选模式
-function enterMultiSelectMode() {
+function enterMultiSelectMode(sessionId = null) {
   isMultiSelectMode.value = true
   selectedSessionIds.value.clear()
+  if (sessionId) {
+    selectedSessionIds.value.add(sessionId)
+  }
   batchOperationStatus.value = {}
 }
 
@@ -202,6 +205,11 @@ function toggleSessionSelection(sessionId, event) {
     newSet.add(sessionId)
   }
   selectedSessionIds.value = newSet
+
+  // 如果选中集合为空且不在批量操作中，自动退出多选模式
+  if (newSet.size === 0 && !isBatchOperating.value) {
+    exitMultiSelectMode()
+  }
 }
 
 // 右键处理（多选模式下）
@@ -465,9 +473,11 @@ async function batchTestWebshell() {
   <div class="add-webshell-button shadow-box" @click="store.session = ''; router.push('/webshell-editor/')">
     <IconPlus />
   </div>
-  <div v-if="isMultiSelectMode" class="exit-multiselect-button shadow-box" @click="exitMultiSelectMode" title="退出多选模式">
-    ×
-  </div>
+  <transition name="fade-scale">
+    <div v-if="isMultiSelectMode" class="exit-multiselect-button shadow-box" @click="exitMultiSelectMode" title="退出多选模式">
+      ×
+    </div>
+  </transition>
   <transition>
     <InputBox v-if="showInputBox" :title="inputBoxTitle" :note="inputBoxNote" :requireInput="false"
       @result="inputBoxCallback" />
@@ -520,6 +530,7 @@ async function batchTestWebshell() {
   padding-right: 25px;
   border-radius: 20px;
   transition: all 0.3s ease;
+  user-select: none;
 }
 
 .session:hover {
@@ -721,4 +732,15 @@ svg {
   transform: translateX(-50%) scale(0.95);
 }
 
+/* 关闭按钮动画 */
+.fade-scale-enter-active,
+.fade-scale-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fade-scale-enter-from,
+.fade-scale-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) scale(0.8);
+}
 </style>
