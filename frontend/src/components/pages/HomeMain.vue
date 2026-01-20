@@ -34,11 +34,6 @@ const selectedSessionIds = ref(new Set())
 const batchOperationStatus = ref({}) // sessionId -> 'pending' | 'success' | 'error'
 const isBatchOperating = ref(false)
 
-// ################
-// --- Elements ---
-// ################
-
-
 const router = useRouter();
 let clickedSession = ""
 
@@ -245,19 +240,10 @@ async function fetchWebshell() {
 
 setTimeout(fetchWebshell, 0)
 
-// ################
-// --- InputBox ---
-// ################
-
-
 const showInputBox = ref(false)
 const inputBoxTitle = ref("")
 const inputBoxNote = ref("")
 let inputBoxCallback = ref(undefined)
-
-// ######################
-// --- Delete Session ---
-// ######################
 
 let sessionToDelete = undefined
 
@@ -331,6 +317,18 @@ async function batchPrintToConsole() {
       exitMultiSelectMode()
     }
   }, 3000)
+}
+
+// 获取session的小圆点类名
+function getSessionDotClass(sessionId) {
+  const batchStatus = batchOperationStatus.value[sessionId]
+  
+  if (batchStatus === 'pending') return 'pending'
+  if (batchStatus === 'success') return 'success'
+  if (batchStatus === 'error') return 'error'
+  if (selectedSessionIds.value.has(sessionId)) return 'selected'
+  
+  return ''
 }
 
 // 批量测试webshell
@@ -410,13 +408,7 @@ async function batchTestWebshell() {
         @click="event => handleSessionClick(event, session.id)"
         @click.right="event => handleSessionRightClick(event, session.id)">
         <!-- 小圆点状态指示器 -->
-        <div class="session-dot"
-          :class="{
-            'selected': selectedSessionIds.has(session.id) && !batchOperationStatus[session.id],
-            'pending': batchOperationStatus[session.id] === 'pending',
-            'success': batchOperationStatus[session.id] === 'success',
-            'error': batchOperationStatus[session.id] === 'error'
-          }">
+        <div class="session-dot" :class="getSessionDotClass(session.id)">
         </div>
         <div class="session-top">
           <div class="session-name">
@@ -710,7 +702,7 @@ svg {
   top: 90vh;
   left: calc(50% + 3.5rem); /* 在添加按钮右侧，间隔一些距离 */
   transform: translateX(-50%);
-  transition: background 0.3s ease, transform 0.2s ease;
+  transition: background 0.3s ease, transform 0.2s ease, border-color 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
