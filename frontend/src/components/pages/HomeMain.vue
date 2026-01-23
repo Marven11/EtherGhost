@@ -147,6 +147,13 @@ const ClickMenuBatchOperation = ClickMenuManagerDualLayer(
       "func": () => batchTestWebshell(),
     },
     {
+      "name": "batch_execute_command",
+      "text": "批量执行命令",
+      "icon": IconHash,
+      "color": "white",
+      "func": () => batchExecuteCommand(),
+    },
+    {
       "name": "batch_print_to_console",
       "text": "打印到console",
       "icon": IconTerminal,
@@ -283,6 +290,36 @@ async function onDeleteSessionConfirm(userConfirm) {
     sessionToDelete = undefined
     setTimeout(fetchWebshell, 0)
   }
+}
+
+// 批量执行命令
+async function batchExecuteCommand() {
+  if (selectedSessionIds.value.size === 0) {
+    addPopup("red", "错误", "没有选中任何webshell")
+    return
+  }
+
+  // 获取选中的webshell信息
+  const selectedSessions = sessions.value.filter(s => selectedSessionIds.value.has(s.id))
+  
+  // 将选中的webshell信息存储到store或localStorage，以便批量命令页面读取
+  const batchData = {
+    selectedSessionIds: Array.from(selectedSessionIds.value),
+    selectedSessions: selectedSessions.map(s => ({
+      id: s.id,
+      name: s.name,
+      type: s.type,
+      readable_type: s.readable_type,
+      location: s.location,
+      note: s.note
+    }))
+  }
+  
+  // 存储数据
+  localStorage.setItem('batch_command_selection', JSON.stringify(batchData))
+  
+  // 导航到批量命令页面
+  router.push('/batch-command')
 }
 
 // 批量打印到console（dummy功能）

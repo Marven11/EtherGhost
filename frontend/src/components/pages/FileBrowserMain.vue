@@ -862,7 +862,8 @@ input[type="text"] {
 }
 
 .filepath-icon svg {
-  width: 1.8rem;
+  width: 20px;
+  height: 20px;
 }
 
 .file-panel {
@@ -913,7 +914,8 @@ input[type="text"] {
 }
 
 .folder-entry-icon svg {
-  width: 2rem;
+  width: 20px;
+  height: 20px;
 }
 
 .folder-entry-info {
@@ -999,6 +1001,7 @@ input[type="text"] {
 .file-actions button {
   height: 2rem;
   margin-right: 10px;
+  border-radius: 20px;
 }
 
 .file-transfer {

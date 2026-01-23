@@ -17,6 +17,7 @@ import AwdActionsMain from "./components/pages/AwdToolsMain.vue";
 import Proxies from "./components/pages/Proxies.vue";
 import { createRouter, createWebHashHistory } from "vue-router";
 import Terminal from "vue-web-terminal";
+import BatchCommandPage from "./components/pages/BatchCommandPage.vue";
 //  亮色主题：vue-web-terminal/lib/theme/light.css
 import "./assets/vue-web-terminal.css";
 import ReverseShellMain from "./components/pages/ReverseShellMain.vue";
@@ -25,6 +26,7 @@ import ConnectorEditorMain from "./components/pages/ConnectorEditorMain.vue";
 
 const routes = [
   { path: "/", component: HomeMain, props: true },
+  { path: "/batch-command", component: BatchCommandPage, props: true },
   {
     path: "/webshell-editor/:session",
     component: WebshellEditorMain,
