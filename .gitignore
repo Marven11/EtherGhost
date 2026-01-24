@@ -322,3 +322,4 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+/tmp
