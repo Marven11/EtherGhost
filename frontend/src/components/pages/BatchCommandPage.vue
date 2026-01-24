@@ -1,114 +1,89 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import axios from "axios";
-import IconHash from "@/components/icons/iconHash.vue";
 import IconFileDownload from "@/components/icons/iconFileDownload.vue";
 import IconRun from "@/components/icons/iconRun.vue";
-import { addPopup, getCurrentApiUrl, parseDataOrPopupError } from "@/assets/utils";
-
-const router = useRouter();
+import StatusIndicator from "@/components/StatusIndicator.vue";
+import WebshellTypeDot from "@/components/WebshellTypeDot.vue";
+import { addPopup, getCurrentApiUrl, parseDataOrPopupError, getDataOrPopupError } from "@/assets/utils";
+const route = useRoute();
 const webshells = ref([]);
 const commandInput = ref("");
 const isExecuting = ref(false);
-const hasNoData = ref(false);
-
-// 加载选中的webshell数据
-function loadSelectedWebshells() {
+async function loadSelectedWebshells() {
   try {
-    const batchData = localStorage.getItem('batch_command_selection');
-    console.log('从localStorage读取的数据:', batchData); // 添加调试日志
-    if (batchData) {
-      const data = JSON.parse(batchData);
-      console.log('解析后的数据:', data); // 添加调试日志
-      
-      // 转换数据格式
-      webshells.value = data.selectedSessions.map(session => ({
-        id: session.id,
-        name: session.name,
-        type: session.type,
-        readable_type: session.readable_type || session.type,
-        location: session.location || "未知位置",
-        note: session.note || "",
-        status: "pending",
-        result: "等待执行命令...",
-        timestamp: ""
-      }));
-      console.log('转换后的webshells:', webshells.value); // 添加调试日志
-      
-      // 清除存储的数据 - 暂时注释掉以测试刷新
-      // localStorage.removeItem('batch_command_selection');
-      console.log('已读取localStorage数据，但不清除以测试刷新'); // 修改日志
-      hasNoData.value = false;
-    } else {
-      // 如果没有传递数据，显示空状态
-      console.log('未找到batch_command_selection数据'); // 添加调试日志
+    const selectedParam = route.query.selected;
+    if (!selectedParam) {
       webshells.value = [];
-      hasNoData.value = true;
       return;
     }
+    const selectedIds = String(selectedParam).split(' ').filter(id => id.trim());
+    if (selectedIds.length === 0) {
+      webshells.value = [];
+      return;
+    }
+    let allSessions = await getDataOrPopupError("/session");
+    const filtered = allSessions
+      .filter(session => selectedIds.includes(session.id));
+    const mapped = filtered.map(session => ({
+      id: session.id,
+      name: session.name,
+      type: session.type,
+      readable_type: session.readable_type || session.type,
+      location: session.location || "未知位置",
+      note: session.note || "",
+      status: "pending",
+      result: "等待执行命令...",
+      timestamp: ""
+    }));
+    webshells.value = mapped;
   } catch (error) {
-    console.error("加载选中webshell数据失败:", error);
     addPopup("red", "错误", "加载选中webshell数据失败喵~");
     webshells.value = [];
-    hasNoData.value = true;
   }
 }
-
 // 执行命令
 async function executeCommand() {
   if (!commandInput.value.trim()) {
     addPopup("red", "错误", "请输入要执行的命令喵~");
     return;
   }
-
   isExecuting.value = true;
   const command = commandInput.value.trim();
-  
   // 更新所有webshell状态为执行中
   for (const webshell of webshells.value) {
     webshell.status = 'executing';
     webshell.result = '执行中...';
     webshell.timestamp = '';
   }
-
   try {
-    // 并发执行所有webshell的命令
     const executionPromises = webshells.value.map(async (webshell) => {
       try {
-        // 调用后端API执行命令 - 使用正确端点
         const response = await axios.get(
           `${getCurrentApiUrl()}/session/${webshell.id}/execute_cmd`,
           { params: { cmd: command } }
         );
-        
         const result = parseDataOrPopupError(response);
-        // parseDataOrPopupError成功返回，意味着code为0，执行成功
         webshell.status = 'success';
         webshell.result = result || "无输出"; // result是字符串输出
         webshell.timestamp = ""; // 后端未提供执行时间
         webshell.return_code = 0; // 默认成功返回码为0
       } catch (error) {
-        console.error(`执行webshell ${webshell.id} 命令失败:`, error);
         webshell.status = 'error';
         webshell.result = error.message || "网络请求失败";
         webshell.timestamp = "";
         webshell.return_code = 1;
       }
     });
-
     // 等待所有执行完成
     await Promise.all(executionPromises);
-    
-    addPopup("green", "执行完成", "批量命令执行已完成喵~");
   } catch (error) {
-    console.error("批量执行命令失败:", error);
     addPopup("red", "执行失败", "批量命令执行过程中发生错误喵~");
   } finally {
     isExecuting.value = false;
   }
 }
-
 // 导出结果
 function exportResults() {
   const exportData = {
@@ -125,10 +100,8 @@ function exportResults() {
       location: ws.location
     }))
   };
-  
   const dataStr = JSON.stringify(exportData, null, 2);
   const dataBlob = new Blob([dataStr], { type: 'application/json' });
-  
   const downloadUrl = URL.createObjectURL(dataBlob);
   const link = document.createElement('a');
   link.href = downloadUrl;
@@ -137,10 +110,8 @@ function exportResults() {
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(downloadUrl);
-  
   addPopup("green", "导出成功", "执行结果已导出为JSON文件喵~");
 }
-
 // 复制到剪贴板
 function copyToClipboard(text) {
   navigator.clipboard.writeText(text).then(() => {
@@ -149,17 +120,6 @@ function copyToClipboard(text) {
     addPopup("red", "复制失败", "无法复制到剪贴板喵~");
   });
 }
-
-// 获取类型代码
-function getTypeCode(typeName) {
-  const typeMap = {
-    'Linux命令执行': 'LINUX_CMD_ONELINER',
-    'PHP一句话': 'ONELINE_PHP',
-    'JSP一句话': 'ONELINE_JSP'
-  };
-  return typeMap[typeName] || typeName;
-}
-
 // 确保类型显示正确
 function ensureTypeDisplay() {
   // 确保每个webshell都有readable_type
@@ -169,16 +129,12 @@ function ensureTypeDisplay() {
     }
   }
 }
-
-// 在mounted中调用
 onMounted(() => {
   setTimeout(() => {
     loadSelectedWebshells();
     ensureTypeDisplay();
-  }, 100); // 延迟加载确保数据传递完成
+  }, 100);
 });
-
-// 重置状态
 function resetStatus() {
   for (const webshell of webshells.value) {
     webshell.status = 'pending';
@@ -189,48 +145,33 @@ function resetStatus() {
   commandInput.value = '';
 }
 </script>
-
 <template>
   <div class="batch-command-page">
     <div class="page-header">
       <h1 class="page-title">批量执行命令</h1>
       <div class="page-subtitle">选择多个webshell并发执行相同命令喵~</div>
     </div>
-    
     <div class="main-scroll-area">
       <div class="webshell-list-header">
         <div class="header-status">状态</div>
         <div class="header-info">WebShell信息</div>
         <div class="header-result">执行结果</div>
       </div>
-      
       <div class="webshell-list">
-        <div v-if="hasNoData" class="empty-state">
+        <div v-if="webshells.length === 0" class="empty-state">
           <div class="empty-message">未选中任何webshell喵~</div>
         </div>
         <div v-else>
-          <div 
-            class="webshell-row" 
-            v-for="webshell in webshells" 
-            :key="webshell.id"
-            :class="webshell.status"
-          >
+          <div class="webshell-row" v-for="webshell in webshells" :key="webshell.id" :class="webshell.status">
             <!-- 状态指示区 -->
             <div class="status-area">
-              <div 
-                class="status-indicator" 
-                :class="webshell.status"
-                :title="webshell.status === 'pending' ? '未开始' : webshell.status === 'executing' ? '执行中' : webshell.status === 'success' ? '成功' : '失败'"
-              ></div>
+              <StatusIndicator :status="webshell.status" />
             </div>
-            
             <!-- WebShell信息区 -->
             <div class="info-area">
               <div class="info-main">
                 <div class="webshell-name">{{ webshell.name }}</div>
-                <div class="session-type-dot">
-                  <div :data-type="getTypeCode(webshell.type)"></div>
-                </div>
+                <WebshellTypeDot :type="webshell.type" />
                 <div class="webshell-type-label">{{ webshell.readable_type || webshell.type }}</div>
               </div>
               <div class="info-details">
@@ -238,12 +179,12 @@ function resetStatus() {
                 <span class="webshell-location" v-if="webshell.location">{{ webshell.location }}</span>
               </div>
             </div>
-            
             <!-- 结果区 -->
             <div class="result-area">
               <div class="result-content" :class="webshell.status">
                 <div class="output-section" v-if="webshell.status !== 'pending' && webshell.status !== 'executing'">
-                  <div class="output-text" @click="copyToClipboard(webshell.result)" title="点击复制">{{ webshell.result }}</div>
+                  <div class="output-text" @click="copyToClipboard(webshell.result)" title="点击复制">{{ webshell.result }}
+                  </div>
                 </div>
                 <div class="status-text" v-else>{{ webshell.status === 'executing' ? '执行中...' : '等待执行...' }}</div>
                 <div class="meta-section" v-if="webshell.status !== 'pending' && webshell.status !== 'executing'">
@@ -263,51 +204,28 @@ function resetStatus() {
         </div>
       </div>
     </div>
-    
     <div class="command-footer">
       <div class="command-input-wrapper">
         <div class="input-icon">$</div>
-        <input
-          v-model="commandInput"
-          type="text"
-          class="command-input"
-          placeholder="输入要批量执行的命令，例如：ls -la /tmp"
-          :disabled="isExecuting"
-        />
+        <input v-model="commandInput" type="text" class="command-input" placeholder="输入要批量执行的命令，例如：ls -la /tmp"
+          :disabled="isExecuting" />
       </div>
-      
       <div class="action-buttons">
-        <button 
-          class="action-button execute-button" 
-          @click="executeCommand"
-          :disabled="isExecuting || !commandInput.trim()"
-          title="执行命令"
-        >
+        <button class="action-button execute-button" @click="executeCommand"
+          :disabled="isExecuting || !commandInput.trim()" title="执行命令">
           <IconRun class="button-icon" />
         </button>
-        
-        <button 
-          class="action-button export-button" 
-          @click="exportResults"
-          :disabled="webshells.every(ws => ws.status === 'pending')"
-          title="导出结果"
-        >
+        <button class="action-button export-button" @click="exportResults"
+          :disabled="webshells.every(ws => ws.status === 'pending')" title="导出结果">
           <IconFileDownload class="button-icon" />
         </button>
-        
-        <button 
-          class="action-button reset-button" 
-          @click="resetStatus"
-          :disabled="isExecuting"
-          title="重置状态"
-        >
+        <button class="action-button reset-button" @click="resetStatus" :disabled="isExecuting" title="重置状态">
           <span class="reset-icon">↺</span>
         </button>
       </div>
     </div>
   </div>
 </template>
-
 <style scoped>
 .batch-command-page {
   display: flex;
@@ -400,12 +318,6 @@ function resetStatus() {
   border-bottom: none;
 }
 
-.webshell-row:hover {
-  background-color: var(--background-color-3);
-}
-
-
-
 .status-area {
   width: 100px;
   display: flex;
@@ -413,44 +325,6 @@ function resetStatus() {
   align-items: center;
   padding: 0 8px;
 }
-
-.status-indicator {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  margin-bottom: 6px;
-  position: relative;
-}
-
-.status-indicator.pending {
-  background-color: transparent;
-  border: 2px solid var(--font-color-secondary);
-  opacity: 0.4;
-}
-
-.status-indicator.executing {
-  background-color: var(--yellow);
-  animation: subtle-pulse 1.5s infinite;
-  box-shadow: 0 0 6px rgba(255, 193, 7, 0.5);
-}
-
-.status-indicator.success {
-  background-color: var(--green);
-  box-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
-}
-
-.status-indicator.error {
-  background-color: var(--red);
-  box-shadow: 0 0 8px rgba(244, 67, 54, 0.4);
-}
-
-@keyframes subtle-pulse {
-  0% { opacity: 0.8; }
-  50% { opacity: 1; }
-  100% { opacity: 0.8; }
-}
-
-
 
 .info-area {
   flex: 1;
@@ -476,38 +350,6 @@ function resetStatus() {
   margin-right: 12px;
   letter-spacing: -0.2px;
 }
-
-.session-type-dot {
-  width: 1rem;
-  height: 1rem;
-  margin-right: 0;
-}
-
-.session-type-dot div {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 20px;
-  margin: 0.25rem;
-  margin-left: 0rem;
-  background-color: var(--white);
-}
-
-.session-type-dot div[data-type="ONELINE_PHP"],
-.session-type-dot div[data-type="BEHINDER_PHP_AES"],
-.session-type-dot div[data-type="BEHINDER_PHP_XOR"] {
-  background-color: var(--color-php);
-}
-
-.session-type-dot div[data-type="ONELINE_JSP"],
-.session-type-dot div[data-type="BEHINDER_JSP_AES"] {
-  background-color: var(--color-java);
-}
-
-.session-type-dot div[data-type="LINUX_CMD_ONELINER"] {
-  background-color: var(--color-shell);
-}
-
-
 
 .webshell-type-label {
   font-size: 12px;
@@ -596,9 +438,17 @@ function resetStatus() {
 }
 
 @keyframes pulse {
-  0% { opacity: 0.8; }
-  50% { opacity: 1; }
-  100% { opacity: 0.8; }
+  0% {
+    opacity: 0.8;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.8;
+  }
 }
 
 .webshell-row.success .output-text {
@@ -800,7 +650,6 @@ function resetStatus() {
 .button-text {
   letter-spacing: 0.3px;
 }
-
 
 .empty-state {
   display: flex;

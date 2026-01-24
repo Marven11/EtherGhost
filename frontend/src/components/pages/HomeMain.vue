@@ -299,27 +299,9 @@ async function batchExecuteCommand() {
     return
   }
 
-  // 获取选中的webshell信息
-  const selectedSessions = sessions.value.filter(s => selectedSessionIds.value.has(s.id))
-  
-  // 将选中的webshell信息存储到store或localStorage，以便批量命令页面读取
-  const batchData = {
-    selectedSessionIds: Array.from(selectedSessionIds.value),
-    selectedSessions: selectedSessions.map(s => ({
-      id: s.id,
-      name: s.name,
-      type: s.type,
-      readable_type: s.readable_type,
-      location: s.location,
-      note: s.note
-    }))
-  }
-  
-  // 存储数据
-  localStorage.setItem('batch_command_selection', JSON.stringify(batchData))
-  
-  // 导航到批量命令页面
-  router.push('/batch-command')
+  // 导航到批量命令页面，传递选中的session IDs作为URL参数
+  const selectedIds = Array.from(selectedSessionIds.value)
+  router.push(`/batch-command?selected=${encodeURIComponent(selectedIds.join(' '))}`)
 }
 
 // 批量打印到console（dummy功能）
